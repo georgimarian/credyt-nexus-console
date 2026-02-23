@@ -1,0 +1,117 @@
+import { Product } from "./types";
+
+export const products: Product[] = [
+  {
+    id: "prod_01",
+    code: "ai-agent-payg",
+    name: "AI Agent PAYG",
+    status: "active",
+    created_at: "2024-11-15T10:00:00Z",
+    subscriber_count: 5,
+    versions: [
+      { version: 1, status: "archived", created_at: "2024-11-15T10:00:00Z", published_at: "2024-11-15T12:00:00Z" },
+      { version: 2, status: "published", created_at: "2024-12-01T09:00:00Z", published_at: "2024-12-01T10:00:00Z" },
+      { version: 3, status: "draft", created_at: "2025-01-10T14:00:00Z" },
+    ],
+    prices: [
+      {
+        id: "price_01",
+        type: "usage",
+        billing_model: "real_time",
+        event_type: "chat_completion",
+        usage_calculation: "volume",
+        volume_field: "total_tokens",
+        asset_code: "USD",
+        unit_price: 0.00003,
+        entitlements: [],
+      },
+      {
+        id: "price_02",
+        type: "usage",
+        billing_model: "real_time",
+        event_type: "image_generation",
+        usage_calculation: "unit",
+        asset_code: "USD",
+        unit_price: 0.04,
+        entitlements: [],
+      },
+    ],
+  },
+  {
+    id: "prod_02",
+    code: "pro-plan",
+    name: "Pro Plan",
+    status: "active",
+    created_at: "2024-10-01T08:00:00Z",
+    subscriber_count: 3,
+    versions: [
+      { version: 1, status: "published", created_at: "2024-10-01T08:00:00Z", published_at: "2024-10-01T09:00:00Z" },
+    ],
+    prices: [
+      {
+        id: "price_03",
+        type: "fixed",
+        billing_model: "recurring",
+        recurring_interval: "monthly",
+        asset_code: "USD",
+        amount: 49.00,
+        entitlements: [
+          { asset_code: "CREDITS", amount: 10000, refresh_strategy: "reset", schedule: "monthly" },
+        ],
+      },
+      {
+        id: "price_04",
+        type: "usage",
+        billing_model: "recurring",
+        recurring_interval: "monthly",
+        event_type: "chat_completion",
+        usage_calculation: "volume",
+        volume_field: "total_tokens",
+        asset_code: "CREDITS",
+        unit_price: 1,
+        entitlements: [],
+      },
+    ],
+  },
+  {
+    id: "prod_03",
+    code: "enterprise",
+    name: "Enterprise",
+    status: "active",
+    created_at: "2024-09-01T08:00:00Z",
+    subscriber_count: 1,
+    versions: [
+      { version: 1, status: "archived", created_at: "2024-09-01T08:00:00Z", published_at: "2024-09-01T10:00:00Z" },
+      { version: 2, status: "published", created_at: "2024-11-01T08:00:00Z", published_at: "2024-11-01T10:00:00Z" },
+    ],
+    prices: [
+      {
+        id: "price_05",
+        type: "usage",
+        billing_model: "real_time",
+        event_type: "chat_completion",
+        usage_calculation: "volume",
+        volume_field: "total_tokens",
+        dimensions: ["model_tier"],
+        asset_code: "USD",
+        tiers: [
+          { up_to: null, unit_price: 0.00002, dimensions: { model_tier: "standard" } },
+          { up_to: null, unit_price: 0.00006, dimensions: { model_tier: "premium" } },
+          { up_to: null, unit_price: 0.00015, dimensions: { model_tier: "ultra" } },
+        ],
+        entitlements: [],
+      },
+      {
+        id: "price_06",
+        type: "fixed",
+        billing_model: "recurring",
+        recurring_interval: "monthly",
+        asset_code: "USD",
+        amount: 299.00,
+        entitlements: [
+          { asset_code: "USD", amount: 200, refresh_strategy: "rollover", schedule: "monthly" },
+        ],
+      },
+    ],
+  },
+];
