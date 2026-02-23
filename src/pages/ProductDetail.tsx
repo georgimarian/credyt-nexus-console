@@ -1,13 +1,14 @@
 import { useParams, Link } from "react-router-dom";
 import { TerminalCard } from "@/components/terminal/TerminalCard";
 import { StatusBadge } from "@/components/terminal/StatusBadge";
-import { products } from "@/data/products";
+import { useProductStore } from "@/stores/productStore";
 import { customers } from "@/data/customers";
 import { ChevronRight, Play } from "lucide-react";
 import { useState } from "react";
 
 export default function ProductDetail() {
   const { id } = useParams<{ id: string }>();
+  const { products } = useProductStore();
   const product = products.find((p) => p.id === id);
   const [simPayload, setSimPayload] = useState('{\n  "event_type": "chat_completion",\n  "total_tokens": 1500\n}');
   const [simResult, setSimResult] = useState<string | null>(null);
