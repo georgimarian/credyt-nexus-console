@@ -1,0 +1,97 @@
+import { NavLink, useLocation } from "react-router-dom";
+import {
+  LayoutDashboard,
+  Package,
+  Users,
+  Activity,
+  Coins,
+  Truck,
+  Webhook,
+  Settings,
+  PanelLeftClose,
+  PanelLeft,
+} from "lucide-react";
+import { cn } from "@/lib/utils";
+import { ThemeToggle } from "./ThemeToggle";
+
+const navItems = [
+  { label: "Overview", path: "/", icon: LayoutDashboard },
+  { label: "Products", path: "/products", icon: Package },
+  { label: "Customers", path: "/customers", icon: Users },
+  { label: "Events", path: "/events", icon: Activity },
+  { label: "Assets", path: "/assets", icon: Coins },
+  { label: "Vendors", path: "/vendors", icon: Truck },
+  { label: "Webhooks", path: "/webhooks", icon: Webhook },
+  { label: "Settings", path: "/settings", icon: Settings },
+];
+
+interface AppSidebarProps {
+  collapsed: boolean;
+  onToggle: () => void;
+}
+
+export function AppSidebar({ collapsed, onToggle }: AppSidebarProps) {
+  const location = useLocation();
+
+  return (
+    <aside
+      className={cn(
+        "flex h-screen flex-col border-r border-dashed border-foreground/30 bg-sidebar transition-all duration-200",
+        collapsed ? "w-14" : "w-56"
+      )}
+    >
+      {/* Logo */}
+      <div className="flex h-14 items-center justify-between border-b border-dashed border-foreground/30 px-3">
+        {!collapsed && (
+          <span className="font-doto text-lg font-semibold tracking-wider text-foreground">
+            CREDYT
+          </span>
+        )}
+        <button
+          onClick={onToggle}
+          className="flex h-8 w-8 items-center justify-center text-muted-foreground transition-colors hover:text-foreground"
+          aria-label={collapsed ? "Expand sidebar" : "Collapse sidebar"}
+        >
+          {collapsed ? <PanelLeft className="h-4 w-4" /> : <PanelLeftClose className="h-4 w-4" />}
+        </button>
+      </div>
+
+      {/* Navigation */}
+      <nav className="flex-1 overflow-y-auto py-2">
+        {navItems.map((item) => {
+          const isActive =
+            item.path === "/"
+              ? location.pathname === "/"
+              : location.pathname.startsWith(item.path);
+
+          return (
+            <NavLink
+              key={item.path}
+              to={item.path}
+              className={cn(
+                "group flex items-center gap-3 px-3 py-2 font-space text-xs uppercase tracking-wide transition-colors",
+                isActive
+                  ? "bg-foreground text-background"
+                  : "text-muted-foreground hover:bg-accent hover:text-foreground"
+              )}
+              title={collapsed ? item.label : undefined}
+            >
+              <item.icon className="h-4 w-4 flex-shrink-0" />
+              {!collapsed && (
+                <span>
+                  <span className="mr-1 text-muted-foreground group-hover:text-current">▸</span>
+                  {item.label}
+                </span>
+              )}
+            </NavLink>
+          );
+        })}
+      </nav>
+
+      {/* Footer */}
+      <div className="border-t border-dashed border-foreground/30 p-3">
+        <ThemeToggle />
+      </div>
+    </aside>
+  );
+}
