@@ -3,6 +3,9 @@ import { StatusBadge } from "@/components/terminal/StatusBadge";
 import { customers } from "@/data/customers";
 import { events } from "@/data/events";
 import { vendors } from "@/data/vendors";
+import { useProductStore } from "@/stores/productStore";
+import { Link } from "react-router-dom";
+import { Check, Package, Users, Activity, ArrowRight } from "lucide-react";
 import {
   AreaChart, Area, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
 } from "recharts";
@@ -43,8 +46,58 @@ const kpis = [
   { title: "GROSS MARGIN", value: `${grossMargin.toFixed(1)}%`, trend: "healthy", trendUp: true },
 ];
 
+interface ChecklistItem {
+  key: string;
+  label: string;
+  description: string;
+  icon: React.ReactNode;
+  done: boolean;
+  link: string;
+  linkLabel: string;
+}
+
 export default function Overview() {
+  const { products } = useProductStore();
   const recentEvents = events.slice(0, 15);
+
+  const hasProducts = products.length > 0;
+  const hasCustomers = customers.length > 0;
+  const hasEvents = events.length > 0;
+
+  const checklist: ChecklistItem[] = [
+    {
+      key: "product",
+      label: "Create your first product",
+      description: "Define how you charge — usage-based, fixed, or both.",
+      icon: <Package className="h-4 w-4" />,
+      done: hasProducts,
+      link: "/products",
+      linkLabel: "Go to Products",
+    },
+    {
+      key: "customer",
+      label: "Add a customer",
+      description: "Register a customer and set up their wallet.",
+      icon: <Users className="h-4 w-4" />,
+      done: hasCustomers,
+      link: "/customers",
+      linkLabel: "Go to Customers",
+    },
+    {
+      key: "event",
+      label: "Send your first event",
+      description: "Send a usage event via the API to start billing.",
+      icon: <Activity className="h-4 w-4" />,
+      done: hasEvents,
+      link: "/events",
+      linkLabel: "View Events",
+    },
+  ];
+
+  const completedCount = checklist.filter((c) => c.done).length;
+  const allDone = completedCount === checklist.length;
+  const progressFilled = Math.round((completedCount / checklist.length) * 20);
+  const progressBar = "█".repeat(progressFilled) + "░".repeat(20 - progressFilled);
 
   return (
     <div className="space-y-6">
@@ -52,6 +105,51 @@ export default function Overview() {
         <h1 className="font-space text-2xl font-bold uppercase tracking-wide">$ overview</h1>
         <p className="font-ibm-plex text-sm text-muted-foreground">system status: <span className="text-terminal-green">✓ online</span></p>
       </div>
+
+      {/* Onboarding Checklist */}
+      {!allDone && (
+        <TerminalCard title="GETTING STARTED">
+          <div className="space-y-3">
+            <div className="flex items-center justify-between font-ibm-plex text-xs">
+              <span className="text-muted-foreground">
+                {completedCount}/{checklist.length} completed
+              </span>
+              <span className="text-muted-foreground">{progressBar} {Math.round((completedCount / checklist.length) * 100)}%</span>
+            </div>
+
+            {checklist.map((item) => (
+              <div
+                key={item.key}
+                className={`flex items-start gap-3 border border-dashed p-3 transition-colors ${
+                  item.done
+                    ? "border-terminal-green/30 bg-terminal-green/5"
+                    : "border-foreground/15 hover:bg-accent/50"
+                }`}
+              >
+                <div className={`mt-0.5 flex h-5 w-5 items-center justify-center border border-dashed ${
+                  item.done ? "border-terminal-green text-terminal-green" : "border-foreground/30 text-muted-foreground"
+                }`}>
+                  {item.done ? <Check className="h-3 w-3" /> : item.icon}
+                </div>
+                <div className="flex-1">
+                  <div className={`font-space text-xs uppercase tracking-wide ${item.done ? "text-terminal-green line-through" : ""}`}>
+                    {item.label}
+                  </div>
+                  <p className="mt-0.5 font-ibm-plex text-[10px] text-muted-foreground">{item.description}</p>
+                </div>
+                {!item.done && (
+                  <Link
+                    to={item.link}
+                    className="flex items-center gap-1 font-space text-[10px] uppercase tracking-wide text-muted-foreground transition-colors hover:text-foreground"
+                  >
+                    {item.linkLabel} <ArrowRight className="h-3 w-3" />
+                  </Link>
+                )}
+              </div>
+            ))}
+          </div>
+        </TerminalCard>
+      )}
 
       {/* KPI Cards */}
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
