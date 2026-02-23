@@ -15,7 +15,7 @@ export interface Price {
   billing_model: "real_time" | "recurring";
   recurring_interval?: "monthly" | "yearly";
   event_type?: string;
-  usage_calculation?: "unit" | "volume" | "unit_volume";
+  usage_calculation?: "unit" | "volume" | "unit_and_volume";
   volume_field?: string;
   dimensions?: string[];
   amount?: number;
