@@ -1,17 +1,24 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { TerminalCard } from "@/components/terminal/TerminalCard";
 import { FieldLabel } from "@/components/terminal/FieldLabel";
 import { useProductStore } from "@/stores/productStore";
 import { X, ArrowRight, ArrowLeft, Check, Plus, Trash2, Zap, CreditCard, Layers } from "lucide-react";
 import type { Product, Price, Entitlement, PriceTier } from "@/data/types";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+} from "@/components/ui/dialog";
+import { ScrollArea } from "@/components/ui/scroll-area";
 
 type PricingModel = "realtime" | "fixed" | "hybrid";
 type Step = "basics" | "model" | "prices" | "entitlements" | "review";
 
 const ALL_STEPS: { key: Step; label: string }[] = [
-  { key: "basics", label: "Basics" },
   { key: "model", label: "Model" },
+  { key: "basics", label: "Basics" },
   { key: "prices", label: "Prices" },
   { key: "entitlements", label: "Entitlements" },
   { key: "review", label: "Review" },
@@ -56,7 +63,7 @@ interface CreateProductWizardProps {
 export function CreateProductWizard({ onClose }: CreateProductWizardProps) {
   const navigate = useNavigate();
   const { addProduct } = useProductStore();
-  const [step, setStep] = useState<Step>("basics");
+  const [step, setStep] = useState<Step>("model");
 
   // Basics
   const [name, setName] = useState("");
@@ -103,8 +110,8 @@ export function CreateProductWizard({ onClose }: CreateProductWizardProps) {
   const stepIndex = activeSteps.findIndex((s) => s.key === step);
 
   const canNext = (): boolean => {
-    if (step === "basics") return name.trim().length > 0 && code.trim().length > 0;
     if (step === "model") return pricingModel !== null;
+    if (step === "basics") return name.trim().length > 0 && code.trim().length > 0;
     return true;
   };
 
@@ -218,51 +225,54 @@ export function CreateProductWizard({ onClose }: CreateProductWizardProps) {
   const btnPrimaryCls = "border border-dashed border-foreground/30 bg-foreground px-4 py-2.5 font-space text-xs uppercase text-background transition-colors hover:bg-muted-foreground";
 
   return (
-    <TerminalCard
-      title="CREATE PRODUCT"
-      actions={
-        <button onClick={onClose} className="text-muted-foreground transition-colors hover:text-foreground">
-          <X className="h-4 w-4" />
-        </button>
-      }
-    >
-      {/* ── Step indicator ── */}
-      <div className="mb-8 space-y-3">
-        <div className="flex items-center gap-2 sm:gap-4 font-ibm-plex text-xs">
-          {activeSteps.map((s, i) => (
-            <button
-              key={s.key}
-              onClick={() => { if (i <= stepIndex || canNext()) setStep(s.key); }}
-              className={`flex items-center gap-1.5 transition-colors ${
-                s.key === step
-                  ? "text-foreground font-bold"
-                  : i < stepIndex
-                  ? "text-terminal-green"
-                  : "text-muted-foreground"
-              }`}
-            >
-              <span className={`inline-flex h-6 w-6 items-center justify-center border border-dashed text-[10px] ${
-                i < stepIndex ? "border-terminal-green" : "border-current"
-              }`}>
-                {i < stepIndex ? "✓" : i + 1}
-              </span>
-              <span className="hidden sm:inline uppercase">{s.label}</span>
-              {i < activeSteps.length - 1 && <span className="text-muted-foreground/40 ml-1">→</span>}
-            </button>
-          ))}
-        </div>
-        <div className="font-ibm-plex text-[11px] text-muted-foreground tracking-wider">
-          {progressBar} {progressPct.toFixed(0)}%
-        </div>
-      </div>
+    <Dialog open onOpenChange={(open) => { if (!open) onClose(); }}>
+      <DialogContent className="max-w-2xl p-0 gap-0 border-foreground/[0.12] dark:bg-white/[0.02]">
+        <DialogHeader className="px-6 pt-6 pb-0">
+          <DialogTitle className="font-space text-xs uppercase tracking-widest text-muted-foreground">
+            ┌─ CREATE PRODUCT ─────────────────────────┐
+          </DialogTitle>
+          <DialogDescription className="sr-only">Create a new product</DialogDescription>
+        </DialogHeader>
 
-      {/* ── Help text ── */}
-      <p className="mb-6 font-ibm-plex text-xs text-muted-foreground leading-relaxed">
-        {STEP_HELP[step]}
-      </p>
+        <ScrollArea className="max-h-[70vh]">
+          <div className="px-6 py-6">
+            {/* ── Step indicator ── */}
+            <div className="mb-8 space-y-3">
+              <div className="flex items-center gap-2 sm:gap-4 font-ibm-plex text-xs">
+                {activeSteps.map((s, i) => (
+                  <button
+                    key={s.key}
+                    onClick={() => { if (i <= stepIndex || canNext()) setStep(s.key); }}
+                    className={`flex items-center gap-1.5 transition-all duration-150 ${
+                      s.key === step
+                        ? "text-foreground font-bold"
+                        : i < stepIndex
+                        ? "text-terminal-green"
+                        : "text-muted-foreground"
+                    }`}
+                  >
+                    <span className={`inline-flex h-6 w-6 items-center justify-center border border-foreground/[0.12] text-[10px] rounded-sm ${
+                      i < stepIndex ? "border-terminal-green" : "border-current"
+                    }`}>
+                      {i < stepIndex ? "✓" : i + 1}
+                    </span>
+                    <span className="hidden sm:inline uppercase">{s.label}</span>
+                    {i < activeSteps.length - 1 && <span className="text-muted-foreground/40 ml-1">→</span>}
+                  </button>
+                ))}
+              </div>
+              <div className="font-ibm-plex text-[11px] text-muted-foreground tracking-wider">
+                {progressBar} {progressPct.toFixed(0)}%
+              </div>
+            </div>
 
-      {/* ═══════════════ Step: Basics ═══════════════ */}
-      {step === "basics" && (
+            {/* ── Help text ── */}
+            <p className="mb-6 font-ibm-plex text-xs text-muted-foreground leading-relaxed">
+              {STEP_HELP[step]}
+            </p>
+
+            {/* ═══════════════ Step: Model (now first) ═══════════════ */}
+            {step === "model" && (
         <div className="space-y-6">
           <div>
             <FieldLabel label="Product Name" required tooltip="Display name shown to customers in invoices and the dashboard." />
@@ -286,8 +296,8 @@ export function CreateProductWizard({ onClose }: CreateProductWizardProps) {
         </div>
       )}
 
-      {/* ═══════════════ Step: Pricing Model ═══════════════ */}
-      {step === "model" && (
+            {/* ═══════════════ Step: Basics (now second) ═══════════════ */}
+            {step === "basics" && (
         <div className="space-y-4">
           {(Object.keys(MODEL_INFO) as PricingModel[]).map((key) => {
             const m = MODEL_INFO[key];
@@ -325,8 +335,8 @@ export function CreateProductWizard({ onClose }: CreateProductWizardProps) {
         </div>
       )}
 
-      {/* ═══════════════ Step: Prices ═══════════════ */}
-      {step === "prices" && (
+            {/* ═══════════════ Step: Prices ═══════════════ */}
+            {step === "prices" && (
         <div className="space-y-6">
           {/* Contextual guidance */}
           <div className="border border-dashed border-foreground/10 p-4 font-ibm-plex text-xs text-muted-foreground space-y-1.5 leading-relaxed">
@@ -767,8 +777,8 @@ export function CreateProductWizard({ onClose }: CreateProductWizardProps) {
         </div>
       )}
 
-      {/* ═══════════════ Step: Entitlements ═══════════════ */}
-      {step === "entitlements" && (
+            {/* ═══════════════ Step: Entitlements ═══════════════ */}
+            {step === "entitlements" && (
         <div className="space-y-6">
           <div className="border border-dashed border-foreground/10 p-4 font-ibm-plex text-xs text-muted-foreground space-y-1.5 leading-relaxed">
             <p>→ Entitlements are right-to-use grants bundled with the subscription.</p>
@@ -867,8 +877,8 @@ export function CreateProductWizard({ onClose }: CreateProductWizardProps) {
         </div>
       )}
 
-      {/* ═══════════════ Step: Review ═══════════════ */}
-      {step === "review" && (
+            {/* ═══════════════ Step: Review ═══════════════ */}
+            {step === "review" && (
         <div className="space-y-6">
           {/* Warnings */}
           {warnings.length > 0 && (
@@ -1000,37 +1010,40 @@ export function CreateProductWizard({ onClose }: CreateProductWizardProps) {
         </div>
       )}
 
-      {/* ── Navigation ── */}
-      <div className="mt-8 flex items-center justify-between border-t border-dashed border-foreground/20 pt-5">
-        <div>
-          {stepIndex > 0 && (
-            <button
-              onClick={goBack}
-              className="flex items-center gap-1.5 font-space text-xs uppercase tracking-wide text-muted-foreground transition-colors hover:text-foreground"
-            >
-              <ArrowLeft className="h-3.5 w-3.5" /> Back
-            </button>
-          )}
-        </div>
-        <div className="flex gap-3">
-          <button onClick={onClose} className={btnOutlineCls}>
-            Cancel
-          </button>
-          {step !== "review" ? (
-            <button
-              onClick={goNext}
-              disabled={!canNext()}
-              className={`flex items-center gap-1.5 ${btnPrimaryCls} disabled:opacity-30`}
-            >
-              Next <ArrowRight className="h-3.5 w-3.5" />
-            </button>
-          ) : (
-            <button onClick={handleCreate} className={`flex items-center gap-1.5 ${btnPrimaryCls}`}>
-              <Check className="h-3.5 w-3.5" /> Create Product
-            </button>
-          )}
-        </div>
-      </div>
-    </TerminalCard>
+            {/* ── Navigation ── */}
+            <div className="mt-8 flex items-center justify-between border-t border-foreground/[0.08] pt-5">
+              <div>
+                {stepIndex > 0 && (
+                  <button
+                    onClick={goBack}
+                    className="flex items-center gap-1.5 font-space text-xs uppercase tracking-wide text-muted-foreground transition-all duration-150 hover:text-foreground"
+                  >
+                    <ArrowLeft className="h-3.5 w-3.5" /> Back
+                  </button>
+                )}
+              </div>
+              <div className="flex gap-3">
+                <button onClick={onClose} className={btnOutlineCls}>
+                  Cancel
+                </button>
+                {step !== "review" ? (
+                  <button
+                    onClick={goNext}
+                    disabled={!canNext()}
+                    className={`flex items-center gap-1.5 ${btnPrimaryCls} disabled:opacity-30`}
+                  >
+                    Next <ArrowRight className="h-3.5 w-3.5" />
+                  </button>
+                ) : (
+                  <button onClick={handleCreate} className={`flex items-center gap-1.5 ${btnPrimaryCls}`}>
+                    <Check className="h-3.5 w-3.5" /> Create Product
+                  </button>
+                )}
+              </div>
+            </div>
+          </div>
+        </ScrollArea>
+      </DialogContent>
+    </Dialog>
   );
 }
