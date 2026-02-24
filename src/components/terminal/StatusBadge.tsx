@@ -14,6 +14,7 @@ const statusConfig: Record<string, { symbol: string; color: string }> = {
   cancelled: { symbol: "✗", color: "text-terminal-red" },
   failed: { symbol: "✗", color: "text-terminal-red" },
   error: { symbol: "✗", color: "text-terminal-red" },
+  suspended: { symbol: "✗", color: "text-terminal-red" },
   pending: { symbol: "→", color: "text-terminal-yellow" },
   draft: { symbol: "→", color: "text-terminal-yellow" },
   warning: { symbol: "⚠", color: "text-terminal-yellow" },

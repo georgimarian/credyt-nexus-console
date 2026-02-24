@@ -6,8 +6,10 @@ export const customers: Customer[] = [
     name: "Acme Corp",
     email: "billing@acmecorp.ai",
     external_id: "acme-001",
+    status: "active",
     metadata: { plan: "enterprise", industry: "fintech" },
     created_at: "2024-09-15T10:00:00Z",
+    auto_topup: { enabled: true, threshold: 50, amount: 500 },
     subscriptions: [
       { id: "sub_01", product_id: "prod_03", product_name: "Enterprise", status: "active", start_date: "2024-09-15T10:00:00Z" },
     ],
@@ -31,7 +33,9 @@ export const customers: Customer[] = [
     name: "TechStart AI",
     email: "hello@techstart.ai",
     external_id: "ts-002",
+    status: "active",
     created_at: "2024-10-20T08:00:00Z",
+    auto_topup: { enabled: true, threshold: 10, amount: 25 },
     subscriptions: [
       { id: "sub_02", product_id: "prod_01", product_name: "AI Agent PAYG", status: "active", start_date: "2024-10-20T08:00:00Z" },
     ],
@@ -51,6 +55,7 @@ export const customers: Customer[] = [
     name: "Neural Labs",
     email: "ops@neurallabs.co",
     external_id: "nl-003",
+    status: "active",
     created_at: "2024-11-05T12:00:00Z",
     subscriptions: [
       { id: "sub_03", product_id: "prod_02", product_name: "Pro Plan", status: "active", start_date: "2024-11-05T12:00:00Z" },
@@ -75,7 +80,9 @@ export const customers: Customer[] = [
     name: "DataFlow Inc",
     email: "admin@dataflow.io",
     external_id: "df-004",
+    status: "active",
     created_at: "2024-12-01T09:00:00Z",
+    auto_topup: { enabled: true, threshold: 25, amount: 100 },
     subscriptions: [
       { id: "sub_04", product_id: "prod_01", product_name: "AI Agent PAYG", status: "active", start_date: "2024-12-01T09:00:00Z" },
     ],
@@ -97,6 +104,7 @@ export const customers: Customer[] = [
     name: "CloudMind",
     email: "team@cloudmind.dev",
     external_id: "cm-005",
+    status: "active",
     created_at: "2025-01-10T14:00:00Z",
     subscriptions: [
       { id: "sub_05", product_id: "prod_02", product_name: "Pro Plan", status: "active", start_date: "2025-01-10T14:00:00Z" },
@@ -120,6 +128,7 @@ export const customers: Customer[] = [
     name: "AIsmith",
     email: "dev@aismith.tools",
     external_id: "as-006",
+    status: "active",
     created_at: "2025-01-20T11:00:00Z",
     subscriptions: [
       { id: "sub_06", product_id: "prod_01", product_name: "AI Agent PAYG", status: "active", start_date: "2025-01-20T11:00:00Z" },
@@ -140,6 +149,7 @@ export const customers: Customer[] = [
     name: "Quantum Dev",
     email: "support@quantumdev.sh",
     external_id: "qd-007",
+    status: "active",
     created_at: "2025-01-25T16:00:00Z",
     subscriptions: [
       { id: "sub_07", product_id: "prod_01", product_name: "AI Agent PAYG", status: "pending", start_date: "2025-02-01T00:00:00Z" },
@@ -159,6 +169,7 @@ export const customers: Customer[] = [
     name: "ByteForge",
     email: "billing@byteforge.ai",
     external_id: "bf-008",
+    status: "suspended",
     created_at: "2025-02-01T09:00:00Z",
     subscriptions: [
       { id: "sub_08", product_id: "prod_02", product_name: "Pro Plan", status: "cancelled", start_date: "2025-02-01T09:00:00Z", end_date: "2025-02-15T00:00:00Z" },

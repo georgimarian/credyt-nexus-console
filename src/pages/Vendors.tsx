@@ -25,13 +25,13 @@ export default function Vendors() {
   ).slice(0, 20);
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-10">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="font-space text-2xl font-bold uppercase tracking-wide">Vendors</h1>
-          <p className="mt-1 font-ibm-plex text-sm text-muted-foreground">{vendors.length} vendors</p>
+          <h1 className="font-space text-2xl font-bold uppercase tracking-wider mb-1">Vendors</h1>
+          <p className="font-ibm-plex text-sm text-muted-foreground">{vendors.length} vendors</p>
         </div>
-        <button className="flex items-center gap-2 border border-dashed border-foreground/30 bg-foreground px-4 py-2.5 font-space text-xs uppercase tracking-wide text-background transition-colors hover:bg-muted-foreground">
+        <button className="flex items-center gap-2 rounded-md bg-foreground px-4 py-2.5 font-space text-xs uppercase tracking-wide text-background transition-all duration-150 hover:bg-foreground/80">
           <Plus className="h-3.5 w-3.5" />
           New Vendor
         </button>
@@ -40,9 +40,8 @@ export default function Vendors() {
       <TerminalCard title="VENDOR LIST">
         <Table>
           <TableHeader>
-            <TableRow className="border-dashed border-foreground/20 hover:bg-transparent">
-              <TableHead className="h-10 px-4 font-space text-[10px] uppercase tracking-widest">Name</TableHead>
-              <TableHead className="h-10 px-4 font-space text-[10px] uppercase tracking-widest">Vendor ID</TableHead>
+            <TableRow className="border-foreground/[0.06] hover:bg-transparent">
+              <TableHead className="h-10 px-4 font-space text-[10px] uppercase tracking-widest">Vendor</TableHead>
               <TableHead className="h-10 px-4 font-space text-[10px] uppercase tracking-widest">External ID</TableHead>
               <TableHead className="h-10 px-4 font-space text-[10px] uppercase tracking-widest text-right">Total Costs</TableHead>
               <TableHead className="h-10 px-4 font-space text-[10px] uppercase tracking-widest">Created</TableHead>
@@ -50,16 +49,18 @@ export default function Vendors() {
           </TableHeader>
           <TableBody>
             {vendors.map((v) => (
-              <TableRow key={v.id} className="border-dashed border-foreground/10 hover:bg-accent/30">
-                <TableCell className="px-4 py-3.5 font-ibm-plex text-sm font-semibold">{v.name}</TableCell>
-                <TableCell className="px-4 py-3.5">
-                  <CopyableId value={v.id} truncate={16} />
+              <TableRow key={v.id} className="border-foreground/[0.04] transition-all duration-150 hover:bg-accent/20">
+                <TableCell className="px-4 py-3">
+                  <div>
+                    <div className="font-ibm-plex text-sm font-medium">{v.name}</div>
+                    <div className="font-ibm-plex text-xs text-muted-foreground mt-0.5"># {v.id}</div>
+                  </div>
                 </TableCell>
-                <TableCell className="px-4 py-3.5">
+                <TableCell className="px-4 py-3">
                   <CopyableId value={v.external_id} />
                 </TableCell>
-                <TableCell className="px-4 py-3.5 text-right font-ibm-plex text-sm text-terminal-red">${v.total_costs.toFixed(2)}</TableCell>
-                <TableCell className="px-4 py-3.5 font-ibm-plex text-xs text-muted-foreground">{new Date(v.created_at).toLocaleDateString()}</TableCell>
+                <TableCell className="px-4 py-3 text-right font-ibm-plex text-sm text-terminal-red">${v.total_costs.toFixed(2)}</TableCell>
+                <TableCell className="px-4 py-3 font-ibm-plex text-xs text-muted-foreground">{new Date(v.created_at).toLocaleDateString()}</TableCell>
               </TableRow>
             ))}
           </TableBody>
@@ -72,8 +73,8 @@ export default function Vendors() {
             <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
             <XAxis type="number" tick={{ fontSize: 10, fontFamily: "IBM Plex Mono" }} stroke="hsl(var(--muted-foreground))" />
             <YAxis type="category" dataKey="name" tick={{ fontSize: 11, fontFamily: "IBM Plex Mono" }} stroke="hsl(var(--muted-foreground))" width={80} />
-            <Tooltip contentStyle={{ fontFamily: "IBM Plex Mono", fontSize: 12, background: "hsl(var(--card))", border: "1px dashed hsl(var(--border))" }} />
-            <Bar dataKey="costs" fill="hsl(var(--terminal-red))" opacity={0.7} />
+            <Tooltip contentStyle={{ fontFamily: "IBM Plex Mono", fontSize: 12, background: "hsl(var(--card))", border: "1px solid hsl(var(--border))", borderRadius: 6 }} />
+            <Bar dataKey="costs" fill="hsl(var(--terminal-red))" opacity={0.7} radius={[0, 2, 2, 0]} />
           </BarChart>
         </ResponsiveContainer>
       </TerminalCard>
@@ -81,7 +82,7 @@ export default function Vendors() {
       <TerminalCard title="RECENT COSTS">
         <Table>
           <TableHeader>
-            <TableRow className="border-dashed border-foreground/20 hover:bg-transparent">
+            <TableRow className="border-foreground/[0.06] hover:bg-transparent">
               <TableHead className="h-10 px-4 font-space text-[10px] uppercase tracking-widest">Time</TableHead>
               <TableHead className="h-10 px-4 font-space text-[10px] uppercase tracking-widest text-right">Amount</TableHead>
               <TableHead className="h-10 px-4 font-space text-[10px] uppercase tracking-widest">Vendor</TableHead>
@@ -91,7 +92,7 @@ export default function Vendors() {
           </TableHeader>
           <TableBody>
             {vendorCosts.map((c, i) => (
-              <TableRow key={i} className="border-dashed border-foreground/10 hover:bg-accent/30">
+              <TableRow key={i} className="border-foreground/[0.04] transition-all duration-150 hover:bg-accent/20">
                 <TableCell className="px-4 py-3 font-ibm-plex text-xs text-muted-foreground">
                   {new Date(c.timestamp).toLocaleString("en-US", { month: "short", day: "2-digit", hour: "2-digit", minute: "2-digit", hour12: false })}
                 </TableCell>
