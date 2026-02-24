@@ -226,7 +226,7 @@ export function CreateProductWizard({ onClose }: CreateProductWizardProps) {
 
   return (
     <Dialog open onOpenChange={(open) => { if (!open) onClose(); }}>
-      <DialogContent className="max-w-2xl p-0 gap-0 border-foreground/[0.12] dark:bg-white/[0.02]">
+      <DialogContent className="max-w-2xl p-0 gap-0 border-foreground/[0.12] bg-background dark:bg-background">
         <DialogHeader className="px-6 pt-6 pb-0">
           <DialogTitle className="font-space text-xs uppercase tracking-widest text-muted-foreground">
             ┌─ CREATE PRODUCT ─────────────────────────┐
@@ -271,69 +271,69 @@ export function CreateProductWizard({ onClose }: CreateProductWizardProps) {
               {STEP_HELP[step]}
             </p>
 
-            {/* ═══════════════ Step: Model (now first) ═══════════════ */}
+            {/* ═══════════════ Step 1: Model ═══════════════ */}
             {step === "model" && (
-        <div className="space-y-6">
-          <div>
-            <FieldLabel label="Product Name" required tooltip="Display name shown to customers in invoices and the dashboard." />
-            <input
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              placeholder="e.g. AI Agent Pro"
-              autoFocus
-              className={inputCls}
-            />
-          </div>
-          <div>
-            <FieldLabel label="Product Code" required tooltip="Unique identifier used in API calls and event matching. Lowercase, no spaces." />
-            <input
-              value={code}
-              onChange={(e) => setCode(e.target.value)}
-              placeholder="e.g. ai-agent-pro"
-              className={inputCls}
-            />
-          </div>
-        </div>
-      )}
+              <div className="space-y-4">
+                {(Object.keys(MODEL_INFO) as PricingModel[]).map((key) => {
+                  const m = MODEL_INFO[key];
+                  const Icon = m.icon;
+                  const selected = pricingModel === key;
+                  return (
+                    <button
+                      key={key}
+                      onClick={() => setPricingModel(key)}
+                      className={`w-full text-left border border-dashed p-5 transition-all ${
+                        selected
+                          ? "border-foreground bg-foreground/5"
+                          : "border-foreground/15 hover:border-foreground/40 hover:bg-accent/30"
+                      }`}
+                    >
+                      <div className="flex items-start gap-4">
+                        <div className={`mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center border border-dashed ${
+                          selected ? "border-terminal-green text-terminal-green" : "border-foreground/20 text-muted-foreground"
+                        }`}>
+                          <Icon className="h-4 w-4" />
+                        </div>
+                        <div className="space-y-1.5">
+                          <div className="flex items-center gap-2">
+                            <span className="font-space text-sm font-bold uppercase tracking-wide">{m.title}</span>
+                            {selected && <span className="text-terminal-green text-[10px] font-ibm-plex">✓ selected</span>}
+                          </div>
+                          <p className="font-ibm-plex text-xs leading-relaxed">{m.desc}</p>
+                          <p className="font-ibm-plex text-[11px] text-muted-foreground leading-relaxed">{m.detail}</p>
+                          <p className="font-ibm-plex text-[10px] text-muted-foreground/60 italic">{m.examples}</p>
+                        </div>
+                      </div>
+                    </button>
+                  );
+                })}
+              </div>
+            )}
 
-            {/* ═══════════════ Step: Basics (now second) ═══════════════ */}
+            {/* ═══════════════ Step 2: Basics ═══════════════ */}
             {step === "basics" && (
-        <div className="space-y-4">
-          {(Object.keys(MODEL_INFO) as PricingModel[]).map((key) => {
-            const m = MODEL_INFO[key];
-            const Icon = m.icon;
-            const selected = pricingModel === key;
-            return (
-              <button
-                key={key}
-                onClick={() => setPricingModel(key)}
-                className={`w-full text-left border border-dashed p-5 transition-all ${
-                  selected
-                    ? "border-foreground bg-foreground/5"
-                    : "border-foreground/15 hover:border-foreground/40 hover:bg-accent/30"
-                }`}
-              >
-                <div className="flex items-start gap-4">
-                  <div className={`mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center border border-dashed ${
-                    selected ? "border-terminal-green text-terminal-green" : "border-foreground/20 text-muted-foreground"
-                  }`}>
-                    <Icon className="h-4 w-4" />
-                  </div>
-                  <div className="space-y-1.5">
-                    <div className="flex items-center gap-2">
-                      <span className="font-space text-sm font-bold uppercase tracking-wide">{m.title}</span>
-                      {selected && <span className="text-terminal-green text-[10px] font-ibm-plex">✓ selected</span>}
-                    </div>
-                    <p className="font-ibm-plex text-xs leading-relaxed">{m.desc}</p>
-                    <p className="font-ibm-plex text-[11px] text-muted-foreground leading-relaxed">{m.detail}</p>
-                    <p className="font-ibm-plex text-[10px] text-muted-foreground/60 italic">{m.examples}</p>
-                  </div>
+              <div className="space-y-6">
+                <div>
+                  <FieldLabel label="Product Name" required tooltip="Display name shown to customers in invoices and the dashboard." />
+                  <input
+                    value={name}
+                    onChange={(e) => setName(e.target.value)}
+                    placeholder="e.g. AI Agent Pro"
+                    autoFocus
+                    className={inputCls}
+                  />
                 </div>
-              </button>
-            );
-          })}
-        </div>
-      )}
+                <div>
+                  <FieldLabel label="Product Code" required tooltip="Unique identifier used in API calls and event matching. Lowercase, no spaces." />
+                  <input
+                    value={code}
+                    onChange={(e) => setCode(e.target.value)}
+                    placeholder="e.g. ai-agent-pro"
+                    className={inputCls}
+                  />
+                </div>
+              </div>
+            )}
 
             {/* ═══════════════ Step: Prices ═══════════════ */}
             {step === "prices" && (
