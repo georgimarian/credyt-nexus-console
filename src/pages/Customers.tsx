@@ -1,9 +1,13 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
 import { TerminalCard } from "@/components/terminal/TerminalCard";
+import { CopyableId } from "@/components/terminal/CopyableId";
 import { customers } from "@/data/customers";
 import { Input } from "@/components/ui/input";
 import { Search, ArrowRight } from "lucide-react";
+import {
+  Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
+} from "@/components/ui/table";
 
 export default function Customers() {
   const [search, setSearch] = useState("");
@@ -16,16 +20,16 @@ export default function Customers() {
   );
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-8">
       <div>
-        <h1 className="font-space text-2xl font-bold uppercase tracking-wide">$ customers</h1>
-        <p className="font-ibm-plex text-sm text-muted-foreground">{customers.length} customers</p>
+        <h1 className="font-space text-2xl font-bold uppercase tracking-wide">Customers</h1>
+        <p className="mt-1 font-ibm-plex text-sm text-muted-foreground">{customers.length} customers</p>
       </div>
 
       <div className="relative">
         <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
         <Input
-          placeholder="search by name, email, or external_id..."
+          placeholder="Search by name, email, or external_id..."
           value={search}
           onChange={(e) => setSearch(e.target.value)}
           className="border-dashed border-foreground/30 bg-transparent pl-10 font-ibm-plex text-sm"
@@ -33,57 +37,57 @@ export default function Customers() {
       </div>
 
       <TerminalCard title="CUSTOMER LIST">
-        <div className="overflow-x-auto">
-          <table className="w-full font-ibm-plex text-sm">
-            <thead>
-              <tr className="border-b border-dashed border-foreground/30 text-left">
-                <th className="px-3 py-2 font-space text-xs uppercase tracking-wide text-muted-foreground">Name</th>
-                <th className="px-3 py-2 font-space text-xs uppercase tracking-wide text-muted-foreground">Email</th>
-                <th className="px-3 py-2 font-space text-xs uppercase tracking-wide text-muted-foreground">External ID</th>
-                <th className="px-3 py-2 font-space text-xs uppercase tracking-wide text-muted-foreground">Subs</th>
-                <th className="px-3 py-2 font-space text-xs uppercase tracking-wide text-muted-foreground">Balance</th>
-                <th className="px-3 py-2 font-space text-xs uppercase tracking-wide text-muted-foreground">Created</th>
-                <th className="px-3 py-2"></th>
-              </tr>
-            </thead>
-            <tbody>
-              {filtered.map((customer) => {
-                const primaryBalance = customer.wallet.accounts[0];
-                return (
-                  <tr key={customer.id} className="border-b border-dashed border-foreground/10 transition-colors hover:bg-accent/50">
-                    <td className="px-3 py-3 font-bold">{customer.name}</td>
-                    <td className="px-3 py-3 text-muted-foreground">{customer.email}</td>
-                    <td className="px-3 py-3">{customer.external_id}</td>
-                    <td className="px-3 py-3">{customer.subscriptions.length}</td>
-                    <td className="px-3 py-3">
-                      {primaryBalance
-                        ? `${primaryBalance.available.toFixed(2)} ${primaryBalance.asset_code}`
-                        : "—"}
-                    </td>
-                    <td className="px-3 py-3 text-muted-foreground text-xs">
-                      {new Date(customer.created_at).toLocaleDateString()}
-                    </td>
-                    <td className="px-3 py-3">
-                      <Link
-                        to={`/customers/${customer.id}`}
-                        className="inline-flex items-center gap-1 text-xs text-muted-foreground transition-colors hover:text-foreground"
-                      >
-                        view <ArrowRight className="h-3 w-3" />
-                      </Link>
-                    </td>
-                  </tr>
-                );
-              })}
-              {filtered.length === 0 && (
-                <tr>
-                  <td colSpan={7} className="px-3 py-8 text-center text-muted-foreground">
-                    no customers found matching "{search}"
-                  </td>
-                </tr>
-              )}
-            </tbody>
-          </table>
-        </div>
+        <Table>
+          <TableHeader>
+            <TableRow className="border-dashed border-foreground/20 hover:bg-transparent">
+              <TableHead className="h-10 px-4 font-space text-[10px] uppercase tracking-widest">Name</TableHead>
+              <TableHead className="h-10 px-4 font-space text-[10px] uppercase tracking-widest">Email</TableHead>
+              <TableHead className="h-10 px-4 font-space text-[10px] uppercase tracking-widest">Customer ID</TableHead>
+              <TableHead className="h-10 px-4 font-space text-[10px] uppercase tracking-widest">External ID</TableHead>
+              <TableHead className="h-10 px-4 font-space text-[10px] uppercase tracking-widest text-center">Subs</TableHead>
+              <TableHead className="h-10 px-4 font-space text-[10px] uppercase tracking-widest text-right">Balance</TableHead>
+              <TableHead className="h-10 w-16 px-4"></TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {filtered.map((customer) => {
+              const primaryBalance = customer.wallet.accounts[0];
+              return (
+                <TableRow key={customer.id} className="border-dashed border-foreground/10 hover:bg-accent/30">
+                  <TableCell className="px-4 py-3.5 font-ibm-plex text-sm font-semibold">{customer.name}</TableCell>
+                  <TableCell className="px-4 py-3.5 font-ibm-plex text-sm text-muted-foreground">{customer.email}</TableCell>
+                  <TableCell className="px-4 py-3.5">
+                    <CopyableId value={customer.id} truncate={16} />
+                  </TableCell>
+                  <TableCell className="px-4 py-3.5">
+                    <CopyableId value={customer.external_id} />
+                  </TableCell>
+                  <TableCell className="px-4 py-3.5 text-center font-ibm-plex text-sm">{customer.subscriptions.length}</TableCell>
+                  <TableCell className="px-4 py-3.5 text-right font-ibm-plex text-sm">
+                    {primaryBalance
+                      ? `${primaryBalance.available.toFixed(2)} ${primaryBalance.asset_code}`
+                      : "—"}
+                  </TableCell>
+                  <TableCell className="px-4 py-3.5">
+                    <Link
+                      to={`/customers/${customer.id}`}
+                      className="inline-flex items-center gap-1 text-muted-foreground transition-colors hover:text-foreground"
+                    >
+                      <ArrowRight className="h-3.5 w-3.5" />
+                    </Link>
+                  </TableCell>
+                </TableRow>
+              );
+            })}
+            {filtered.length === 0 && (
+              <TableRow>
+                <TableCell colSpan={7} className="px-4 py-12 text-center font-ibm-plex text-sm text-muted-foreground">
+                  No customers found matching "{search}"
+                </TableCell>
+              </TableRow>
+            )}
+          </TableBody>
+        </Table>
       </TerminalCard>
     </div>
   );
