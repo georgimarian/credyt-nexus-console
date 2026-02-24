@@ -5,15 +5,10 @@ import { FieldLabel } from "@/components/terminal/FieldLabel";
 import { CopyableId } from "@/components/terminal/CopyableId";
 import { useProductStore } from "@/stores/productStore";
 import { customers } from "@/data/customers";
-import { ChevronRight, Play } from "lucide-react";
+import { ChevronRight } from "lucide-react";
 import { useState } from "react";
 import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
+  Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
 } from "@/components/ui/table";
 
 export default function ProductDetail() {
@@ -78,9 +73,9 @@ export default function ProductDetail() {
 
       {/* Prices */}
       <TerminalCard title="PRICES">
-        <div className="space-y-6">
-          {product.prices.map((price) => (
-            <div key={price.id} className="border border-dashed border-foreground/15 p-5">
+        <div className="space-y-0">
+          {product.prices.map((price, idx) => (
+            <div key={price.id} className={idx < product.prices.length - 1 ? "border-b border-foreground/10 pb-6 mb-6" : ""}>
               <div className="mb-4 flex items-center gap-3">
                 <CopyableId value={price.id} size="sm" />
                 <StatusBadge status={price.type === "usage" ? "active" : "published"} />
@@ -134,18 +129,18 @@ export default function ProductDetail() {
                   <div className="mb-2 font-space text-[10px] uppercase tracking-widest text-muted-foreground">Dimensional Tiers</div>
                   <Table>
                     <TableHeader>
-                      <TableRow className="border-dashed border-foreground/20 hover:bg-transparent">
+                      <TableRow className="border-foreground/10 hover:bg-transparent">
                         <TableHead className="h-8 px-3 font-space text-[10px] uppercase tracking-wide">Dimensions</TableHead>
                         <TableHead className="h-8 px-3 font-space text-[10px] uppercase tracking-wide">Unit Price</TableHead>
                       </TableRow>
                     </TableHeader>
                     <TableBody>
                       {price.tiers.map((tier, i) => (
-                        <TableRow key={i} className="border-dashed border-foreground/10 hover:bg-accent/30">
-                          <TableCell className="px-3 py-2.5 font-ibm-plex text-xs">
+                        <TableRow key={i} className="border-foreground/[0.06] hover:bg-accent/30">
+                          <TableCell className="px-3 py-4 font-ibm-plex text-xs">
                             {tier.dimensions ? JSON.stringify(tier.dimensions) : "—"}
                           </TableCell>
-                          <TableCell className="px-3 py-2.5 font-ibm-plex text-xs">
+                          <TableCell className="px-3 py-4 font-ibm-plex text-xs">
                             {tier.unit_price} {price.asset_code}
                           </TableCell>
                         </TableRow>
@@ -178,9 +173,9 @@ export default function ProductDetail() {
       <TerminalCard title="USAGE SIMULATOR" actions={
         <button
           onClick={runSimulation}
-          className="flex items-center gap-1.5 border border-dashed border-foreground/30 px-3 py-1.5 font-space text-xs uppercase tracking-wide transition-colors hover:bg-foreground hover:text-background"
+          className="rounded-none border border-foreground/40 bg-transparent px-3 py-1.5 font-space text-xs uppercase tracking-wide text-foreground transition-colors hover:bg-foreground hover:text-background"
         >
-          <Play className="h-3 w-3" /> Run
+          ▶ Run
         </button>
       }>
         <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
@@ -189,13 +184,13 @@ export default function ProductDetail() {
             <textarea
               value={simPayload}
               onChange={(e) => setSimPayload(e.target.value)}
-              className="h-36 w-full border border-dashed border-foreground/30 bg-transparent p-4 font-ibm-plex text-xs leading-relaxed focus:outline-none focus:ring-1 focus:ring-foreground"
+              className="h-36 w-full rounded-none border border-foreground/[0.12] bg-transparent p-4 font-ibm-plex text-xs leading-relaxed focus:outline-none focus:ring-1 focus:ring-foreground"
               spellCheck={false}
             />
           </div>
           <div>
             <FieldLabel label="Result" tooltip="Shows the calculated fee based on matching price rules." />
-            <pre className="h-36 overflow-auto border border-dashed border-foreground/15 bg-muted/50 p-4 font-ibm-plex text-xs leading-relaxed">
+            <pre className="h-36 overflow-auto rounded-none border border-foreground/[0.08] bg-muted/50 p-4 font-ibm-plex text-xs leading-relaxed">
               {simResult || "$ run simulation to see calculated fees..."}
             </pre>
           </div>
@@ -206,7 +201,7 @@ export default function ProductDetail() {
       <TerminalCard title="VERSION HISTORY">
         <Table>
           <TableHeader>
-            <TableRow className="border-dashed border-foreground/20 hover:bg-transparent">
+            <TableRow className="border-foreground/10 hover:bg-transparent">
               <TableHead className="h-9 px-3 font-space text-[10px] uppercase tracking-wide">Version</TableHead>
               <TableHead className="h-9 px-3 font-space text-[10px] uppercase tracking-wide">Status</TableHead>
               <TableHead className="h-9 px-3 font-space text-[10px] uppercase tracking-wide">Created</TableHead>
@@ -215,13 +210,13 @@ export default function ProductDetail() {
           </TableHeader>
           <TableBody>
             {product.versions.map((v) => (
-              <TableRow key={v.version} className="border-dashed border-foreground/10 hover:bg-accent/30">
-                <TableCell className="px-3 py-2.5 font-ibm-plex text-xs font-bold">v{v.version}</TableCell>
-                <TableCell className="px-3 py-2.5"><StatusBadge status={v.status} /></TableCell>
-                <TableCell className="px-3 py-2.5 font-ibm-plex text-xs text-muted-foreground">
+              <TableRow key={v.version} className="border-foreground/[0.06] hover:bg-accent/30">
+                <TableCell className="px-3 py-4 font-ibm-plex text-xs font-bold">v{v.version}</TableCell>
+                <TableCell className="px-3 py-4"><StatusBadge status={v.status} /></TableCell>
+                <TableCell className="px-3 py-4 font-ibm-plex text-xs text-muted-foreground">
                   {new Date(v.created_at).toLocaleDateString()}
                 </TableCell>
-                <TableCell className="px-3 py-2.5 font-ibm-plex text-xs text-muted-foreground">
+                <TableCell className="px-3 py-4 font-ibm-plex text-xs text-muted-foreground">
                   {v.published_at ? new Date(v.published_at).toLocaleDateString() : "—"}
                 </TableCell>
               </TableRow>
@@ -237,7 +232,7 @@ export default function ProductDetail() {
         ) : (
           <Table>
             <TableHeader>
-              <TableRow className="border-dashed border-foreground/20 hover:bg-transparent">
+              <TableRow className="border-foreground/10 hover:bg-transparent">
                 <TableHead className="h-9 px-3 font-space text-[10px] uppercase tracking-wide">Name</TableHead>
                 <TableHead className="h-9 px-3 font-space text-[10px] uppercase tracking-wide">Email</TableHead>
                 <TableHead className="h-9 px-3 text-right font-space text-[10px] uppercase tracking-wide">External ID</TableHead>
@@ -245,14 +240,14 @@ export default function ProductDetail() {
             </TableHeader>
             <TableBody>
               {subscribers.map((c) => (
-                <TableRow key={c.id} className="border-dashed border-foreground/10 hover:bg-accent/30">
-                  <TableCell className="px-3 py-2.5">
+                <TableRow key={c.id} className="border-foreground/[0.06] hover:bg-accent/30">
+                  <TableCell className="px-3 py-4">
                     <Link to={`/customers/${c.id}`} className="font-ibm-plex text-xs font-bold transition-colors hover:text-terminal-green">
                       {c.name}
                     </Link>
                   </TableCell>
-                  <TableCell className="px-3 py-2.5 font-ibm-plex text-xs text-muted-foreground">{c.email}</TableCell>
-                  <TableCell className="px-3 py-2.5 text-right font-ibm-plex text-xs text-muted-foreground">{c.external_id}</TableCell>
+                  <TableCell className="px-3 py-4 font-ibm-plex text-xs text-muted-foreground">{c.email}</TableCell>
+                  <TableCell className="px-3 py-4 text-right font-ibm-plex text-xs text-muted-foreground">{c.external_id}</TableCell>
                 </TableRow>
               ))}
             </TableBody>

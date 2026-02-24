@@ -9,7 +9,7 @@ export function AppLayout() {
     <div className="flex min-h-screen w-full">
       <AppSidebar collapsed={collapsed} onToggle={() => setCollapsed(!collapsed)} />
       <main className="flex-1 overflow-auto">
-        <div className="mx-auto max-w-7xl p-6">
+        <div className="mx-auto max-w-7xl px-10 py-10">
           <Outlet />
         </div>
       </main>

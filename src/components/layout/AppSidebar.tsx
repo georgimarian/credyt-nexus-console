@@ -1,28 +1,16 @@
 import { NavLink, useLocation } from "react-router-dom";
-import {
-  LayoutDashboard,
-  Package,
-  Users,
-  Activity,
-  Coins,
-  Truck,
-  Webhook,
-  Settings,
-  PanelLeftClose,
-  PanelLeft,
-} from "lucide-react";
 import { cn } from "@/lib/utils";
 import { ThemeToggle } from "./ThemeToggle";
 
 const navItems = [
-  { label: "Overview", path: "/", icon: LayoutDashboard },
-  { label: "Products", path: "/products", icon: Package },
-  { label: "Customers", path: "/customers", icon: Users },
-  { label: "Events", path: "/events", icon: Activity },
-  { label: "Assets", path: "/assets", icon: Coins },
-  { label: "Vendors", path: "/vendors", icon: Truck },
-  { label: "Webhooks", path: "/webhooks", icon: Webhook },
-  { label: "Settings", path: "/settings", icon: Settings },
+  { label: "Overview", path: "/" },
+  { label: "Products", path: "/products" },
+  { label: "Customers", path: "/customers" },
+  { label: "Events", path: "/events" },
+  { label: "Assets", path: "/assets" },
+  { label: "Vendors", path: "/vendors" },
+  { label: "Webhooks", path: "/webhooks" },
+  { label: "Settings", path: "/settings" },
 ];
 
 interface AppSidebarProps {
@@ -49,10 +37,10 @@ export function AppSidebar({ collapsed, onToggle }: AppSidebarProps) {
         )}
         <button
           onClick={onToggle}
-          className="flex h-8 w-8 items-center justify-center text-muted-foreground transition-colors hover:text-foreground"
+          className="flex h-8 w-8 items-center justify-center font-space text-xs text-muted-foreground transition-colors hover:text-foreground"
           aria-label={collapsed ? "Expand sidebar" : "Collapse sidebar"}
         >
-          {collapsed ? <PanelLeft className="h-4 w-4" /> : <PanelLeftClose className="h-4 w-4" />}
+          {collapsed ? "→" : "←"}
         </button>
       </div>
 
@@ -76,13 +64,13 @@ export function AppSidebar({ collapsed, onToggle }: AppSidebarProps) {
               )}
               title={collapsed ? item.label : undefined}
             >
-              <item.icon className="h-4 w-4 flex-shrink-0" />
               {!collapsed && (
                 <span>
                   <span className="mr-1 text-muted-foreground group-hover:text-current">▸</span>
                   {item.label}
                 </span>
               )}
+              {collapsed && <span className="text-[10px]">{item.label.charAt(0)}</span>}
             </NavLink>
           );
         })}

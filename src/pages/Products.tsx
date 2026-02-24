@@ -6,7 +6,7 @@ import { EmptyState } from "@/components/terminal/EmptyState";
 import { useProductStore } from "@/stores/productStore";
 import { CreateProductWizard } from "@/components/products/CreateProductWizard";
 import { Input } from "@/components/ui/input";
-import { Search, Plus, ArrowRight, Package } from "lucide-react";
+import { ArrowRight } from "lucide-react";
 import {
   Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
 } from "@/components/ui/table";
@@ -31,22 +31,20 @@ export default function Products() {
         </div>
         <button
           onClick={() => setShowCreate(true)}
-          className="flex items-center gap-2 rounded-md bg-foreground px-4 py-2.5 font-space text-xs uppercase tracking-wide text-background transition-all duration-150 hover:bg-foreground/80"
+          className="rounded-none bg-foreground px-4 py-2.5 font-space text-xs uppercase tracking-wide text-background transition-all duration-150 hover:bg-foreground/80"
         >
-          <Plus className="h-3.5 w-3.5" />
-          New Product
+          + New Product
         </button>
       </div>
 
       {showCreate && <CreateProductWizard onClose={() => setShowCreate(false)} />}
 
       <div className="relative">
-        <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
         <Input
           placeholder="Search by code or name..."
           value={search}
           onChange={(e) => setSearch(e.target.value)}
-          className="rounded-md border-foreground/[0.12] bg-transparent pl-10 font-ibm-plex text-sm"
+          className="rounded-none border-foreground/[0.12] bg-transparent pl-4 font-ibm-plex text-sm"
         />
       </div>
 
@@ -66,17 +64,17 @@ export default function Products() {
             <TableBody>
               {filtered.map((product) => (
                 <TableRow key={product.id} className="border-foreground/[0.04] transition-all duration-150 hover:bg-accent/20">
-                  <TableCell className="px-4 py-3">
-                    <div>
+                  <TableCell className="px-4 py-4">
+                    <div className="space-y-1">
                       <div className="font-ibm-plex text-sm font-medium">{product.name}</div>
-                      <div className="font-ibm-plex text-xs text-muted-foreground mt-0.5"># {product.id}</div>
+                      <div className="font-ibm-plex text-[10px] text-muted-foreground"># {product.id}</div>
                     </div>
                   </TableCell>
-                  <TableCell className="px-4 py-3 font-ibm-plex text-sm text-muted-foreground">{product.code}</TableCell>
-                  <TableCell className="px-4 py-3"><StatusBadge status={product.status} /></TableCell>
-                  <TableCell className="px-4 py-3 text-center font-ibm-plex text-sm">{product.prices.length}</TableCell>
-                  <TableCell className="px-4 py-3 text-center font-ibm-plex text-sm">{product.subscriber_count}</TableCell>
-                  <TableCell className="px-4 py-3">
+                  <TableCell className="px-4 py-4 font-ibm-plex text-sm text-muted-foreground">{product.code}</TableCell>
+                  <TableCell className="px-4 py-4"><StatusBadge status={product.status} /></TableCell>
+                  <TableCell className="px-4 py-4 text-center font-ibm-plex text-sm">{product.prices.length}</TableCell>
+                  <TableCell className="px-4 py-4 text-center font-ibm-plex text-sm">{product.subscriber_count}</TableCell>
+                  <TableCell className="px-4 py-4">
                     <Link
                       to={`/products/${product.id}`}
                       className="inline-flex text-muted-foreground transition-all duration-150 hover:text-foreground"
@@ -90,7 +88,7 @@ export default function Products() {
           </Table>
         ) : (
           <EmptyState
-            icon={<Package className="h-8 w-8" />}
+            icon={<span className="font-space text-2xl">◇</span>}
             title={search ? `No products matching "${search}"` : "No products yet"}
             description={
               search
@@ -101,9 +99,9 @@ export default function Products() {
               !search ? (
                 <button
                   onClick={() => setShowCreate(true)}
-                  className="flex items-center gap-2 rounded-md bg-foreground px-4 py-2.5 font-space text-xs uppercase tracking-wide text-background transition-all duration-150 hover:bg-foreground/80"
+                  className="rounded-none bg-foreground px-4 py-2.5 font-space text-xs uppercase tracking-wide text-background transition-all duration-150 hover:bg-foreground/80"
                 >
-                  <Plus className="h-3 w-3" /> Create First Product
+                  + Create First Product
                 </button>
               ) : undefined
             }
