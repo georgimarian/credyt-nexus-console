@@ -52,8 +52,14 @@ export interface Customer {
   name: string;
   email: string;
   external_id: string;
+  status: "active" | "suspended";
   metadata?: Record<string, string>;
   created_at: string;
+  auto_topup?: {
+    enabled: boolean;
+    threshold: number;
+    amount: number;
+  };
   subscriptions: Subscription[];
   wallet: Wallet;
 }

@@ -21,7 +21,6 @@ const totalRevenue = customers.reduce((sum, c) => {
 const totalCosts = vendors.reduce((sum, v) => sum + v.total_costs, 0);
 const grossMargin = totalRevenue > 0 ? ((totalRevenue - totalCosts) / totalRevenue) * 100 : 0;
 
-// Generate 30-day chart data
 function generateChartData() {
   const data = [];
   const now = new Date("2025-02-23");
@@ -101,10 +100,10 @@ export default function Overview() {
   const progressBar = "█".repeat(progressFilled) + "░".repeat(20 - progressFilled);
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-10">
       <div>
-        <h1 className="font-space text-2xl font-bold uppercase tracking-wide">Overview</h1>
-        <p className="mt-1 font-ibm-plex text-sm text-muted-foreground">System status: <span className="text-terminal-green">✓ Online</span></p>
+        <h1 className="font-space text-2xl font-bold uppercase tracking-wider mb-1">Overview</h1>
+        <p className="font-ibm-plex text-sm text-muted-foreground">System status: <span className="text-terminal-green">✓ Online</span></p>
       </div>
 
       {/* Onboarding Checklist */}
@@ -112,23 +111,20 @@ export default function Overview() {
         <TerminalCard title="GETTING STARTED">
           <div className="space-y-4">
             <div className="flex items-center justify-between font-ibm-plex text-xs">
-              <span className="text-muted-foreground">
-                {completedCount}/{checklist.length} completed
-              </span>
+              <span className="text-muted-foreground">{completedCount}/{checklist.length} completed</span>
               <span className="text-muted-foreground tracking-wider">{progressBar} {Math.round((completedCount / checklist.length) * 100)}%</span>
             </div>
-
             {checklist.map((item) => (
               <div
                 key={item.key}
-                className={`flex items-start gap-4 border border-dashed p-4 transition-colors ${
+                className={`flex items-start gap-4 rounded-md border p-4 transition-all duration-150 ${
                   item.done
-                    ? "border-terminal-green/30 bg-terminal-green/5"
-                    : "border-foreground/15 hover:bg-accent/30"
+                    ? "border-terminal-green/20 bg-terminal-green/5"
+                    : "border-foreground/[0.08] hover:bg-accent/20"
                 }`}
               >
-                <div className={`mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center border border-dashed ${
-                  item.done ? "border-terminal-green text-terminal-green" : "border-foreground/30 text-muted-foreground"
+                <div className={`mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded border ${
+                  item.done ? "border-terminal-green text-terminal-green" : "border-foreground/20 text-muted-foreground"
                 }`}>
                   {item.done ? <Check className="h-3.5 w-3.5" /> : item.icon}
                 </div>
@@ -141,7 +137,7 @@ export default function Overview() {
                 {!item.done && (
                   <Link
                     to={item.link}
-                    className="flex items-center gap-1.5 font-space text-[10px] uppercase tracking-wide text-muted-foreground transition-colors hover:text-foreground"
+                    className="flex items-center gap-1.5 font-space text-[10px] uppercase tracking-wide text-muted-foreground transition-all duration-150 hover:text-foreground"
                   >
                     {item.linkLabel} <ArrowRight className="h-3 w-3" />
                   </Link>
@@ -174,7 +170,7 @@ export default function Overview() {
               <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
               <XAxis dataKey="day" tick={{ fontSize: 10, fontFamily: "IBM Plex Mono" }} stroke="hsl(var(--muted-foreground))" />
               <YAxis tick={{ fontSize: 10, fontFamily: "IBM Plex Mono" }} stroke="hsl(var(--muted-foreground))" />
-              <Tooltip contentStyle={{ fontFamily: "IBM Plex Mono", fontSize: 12, background: "hsl(var(--card))", border: "1px dashed hsl(var(--border))" }} />
+              <Tooltip contentStyle={{ fontFamily: "IBM Plex Mono", fontSize: 12, background: "hsl(var(--card))", border: "1px solid hsl(var(--border))", borderRadius: 6 }} />
               <Area type="monotone" dataKey="revenue" stackId="1" stroke="hsl(var(--terminal-green))" fill="hsl(var(--terminal-green) / 0.2)" />
               <Area type="monotone" dataKey="costs" stackId="2" stroke="hsl(var(--terminal-red))" fill="hsl(var(--terminal-red) / 0.2)" />
             </AreaChart>
@@ -187,8 +183,8 @@ export default function Overview() {
               <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
               <XAxis dataKey="day" tick={{ fontSize: 10, fontFamily: "IBM Plex Mono" }} stroke="hsl(var(--muted-foreground))" />
               <YAxis tick={{ fontSize: 10, fontFamily: "IBM Plex Mono" }} stroke="hsl(var(--muted-foreground))" />
-              <Tooltip contentStyle={{ fontFamily: "IBM Plex Mono", fontSize: 12, background: "hsl(var(--card))", border: "1px dashed hsl(var(--border))" }} />
-              <Bar dataKey="events" fill="hsl(var(--foreground))" opacity={0.7} />
+              <Tooltip contentStyle={{ fontFamily: "IBM Plex Mono", fontSize: 12, background: "hsl(var(--card))", border: "1px solid hsl(var(--border))", borderRadius: 6 }} />
+              <Bar dataKey="events" fill="hsl(var(--foreground))" opacity={0.7} radius={[2, 2, 0, 0]} />
             </BarChart>
           </ResponsiveContainer>
         </TerminalCard>
@@ -206,11 +202,14 @@ export default function Overview() {
               : "";
 
             return (
-              <div key={event.id} className="flex items-center gap-3 border-b border-dashed border-foreground/5 py-2.5 hover:bg-accent/30 transition-colors">
+              <div key={event.id} className="flex items-center gap-3 border-b border-foreground/[0.04] py-2.5 transition-all duration-150 hover:bg-accent/20">
                 <span className="w-32 font-ibm-plex text-xs text-muted-foreground">[{time}]</span>
                 <StatusBadge status={event.status} />
                 <span className="font-ibm-plex text-xs text-terminal-yellow">{event.event_type}</span>
-                <CopyableId value={event.customer_id} label={event.customer_name} truncate={10} href={`/customers/${event.customer_id}`} />
+                <div className="flex-1">
+                  <span className="font-ibm-plex text-xs font-medium">{event.customer_name}</span>
+                  <span className="ml-1.5 font-ibm-plex text-[10px] text-muted-foreground"># {event.customer_id}</span>
+                </div>
                 <span className="ml-auto font-ibm-plex text-xs text-terminal-green">{feeAmount}</span>
               </div>
             );

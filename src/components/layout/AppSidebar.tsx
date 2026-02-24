@@ -36,12 +36,12 @@ export function AppSidebar({ collapsed, onToggle }: AppSidebarProps) {
   return (
     <aside
       className={cn(
-        "flex h-screen flex-col border-r border-dashed border-foreground/30 bg-sidebar transition-all duration-200",
+        "flex h-screen flex-col border-r border-foreground/[0.08] bg-sidebar transition-all duration-200",
         collapsed ? "w-14" : "w-56"
       )}
     >
       {/* Logo */}
-      <div className="flex h-14 items-center justify-between border-b border-dashed border-foreground/30 px-3">
+      <div className="flex h-14 items-center justify-between border-b border-foreground/[0.06] px-3">
         {!collapsed && (
           <span className="font-doto text-lg font-semibold tracking-wider text-foreground">
             CREDYT
@@ -89,7 +89,7 @@ export function AppSidebar({ collapsed, onToggle }: AppSidebarProps) {
       </nav>
 
       {/* Footer */}
-      <div className="border-t border-dashed border-foreground/30 p-3">
+      <div className="border-t border-foreground/[0.06] p-3">
         <ThemeToggle />
       </div>
     </aside>

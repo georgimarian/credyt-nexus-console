@@ -13,14 +13,14 @@ export function TerminalCard({ title, children, className, actions }: TerminalCa
   const dashes = "─".repeat(dashCount);
 
   return (
-    <div className={cn("border border-dashed border-foreground/30 bg-card", className)}>
-      <div className="flex items-center justify-between border-b border-dashed border-foreground/30 px-4 py-2">
-        <span className="font-space text-xs uppercase tracking-widest text-muted-foreground">
+    <div className={cn("rounded-md border border-foreground/[0.12] bg-card dark:bg-white/[0.02]", className)}>
+      <div className="flex items-center justify-between border-b border-foreground/[0.08] px-6 py-3">
+        <span className="font-space text-[10px] uppercase tracking-widest text-muted-foreground">
           ┌─ {title} {dashes}┐
         </span>
         {actions && <div className="flex items-center gap-2">{actions}</div>}
       </div>
-      <div className="p-4">{children}</div>
+      <div className="p-6">{children}</div>
     </div>
   );
 }
