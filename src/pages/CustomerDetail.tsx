@@ -2,9 +2,13 @@ import { useParams, Link } from "react-router-dom";
 import { useState } from "react";
 import { TerminalCard } from "@/components/terminal/TerminalCard";
 import { StatusBadge } from "@/components/terminal/StatusBadge";
+import { CopyableId } from "@/components/terminal/CopyableId";
 import { customers } from "@/data/customers";
 import { events } from "@/data/events";
 import { ChevronRight } from "lucide-react";
+import {
+  Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
+} from "@/components/ui/table";
 
 type Tab = "subscriptions" | "wallet" | "events";
 
@@ -16,7 +20,7 @@ export default function CustomerDetail() {
   if (!customer) {
     return (
       <div className="flex min-h-[50vh] items-center justify-center">
-        <p className="font-ibm-plex text-muted-foreground">customer not found</p>
+        <p className="font-ibm-plex text-muted-foreground">Customer not found</p>
       </div>
     );
   }
@@ -30,9 +34,9 @@ export default function CustomerDetail() {
   ];
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-8">
       {/* Breadcrumb */}
-      <nav className="flex items-center gap-1 font-ibm-plex text-sm text-muted-foreground">
+      <nav className="flex items-center gap-1.5 font-ibm-plex text-sm text-muted-foreground">
         <Link to="/customers" className="transition-colors hover:text-foreground">Customers</Link>
         <ChevronRight className="h-3 w-3" />
         <span className="text-foreground">{customer.name}</span>
@@ -41,10 +45,13 @@ export default function CustomerDetail() {
       {/* Header */}
       <div>
         <h1 className="font-space text-2xl font-bold uppercase tracking-wide">{customer.name}</h1>
-        <div className="mt-1 flex flex-wrap gap-4 font-ibm-plex text-xs text-muted-foreground">
-          <span>email: {customer.email}</span>
-          <span>external_id: {customer.external_id}</span>
-          <span>created: {new Date(customer.created_at).toLocaleDateString()}</span>
+        <div className="mt-3 flex flex-wrap items-center gap-x-6 gap-y-2">
+          <CopyableId label="ID" value={customer.id} size="sm" />
+          <CopyableId label="External" value={customer.external_id} size="sm" />
+          <span className="font-ibm-plex text-xs text-muted-foreground">{customer.email}</span>
+          <span className="font-ibm-plex text-xs text-muted-foreground">
+            Created {new Date(customer.created_at).toLocaleDateString()}
+          </span>
         </div>
         {customer.metadata && (
           <div className="mt-2 font-ibm-plex text-xs text-muted-foreground">
@@ -54,12 +61,12 @@ export default function CustomerDetail() {
       </div>
 
       {/* Tabs */}
-      <div className="flex gap-0 border-b border-dashed border-foreground/30">
+      <div className="flex gap-0 border-b border-dashed border-foreground/20">
         {tabs.map((tab) => (
           <button
             key={tab.key}
             onClick={() => setActiveTab(tab.key)}
-            className={`px-4 py-2 font-space text-xs uppercase tracking-wide transition-colors ${
+            className={`px-5 py-2.5 font-space text-xs uppercase tracking-wide transition-colors ${
               activeTab === tab.key
                 ? "border-b-2 border-foreground text-foreground"
                 : "text-muted-foreground hover:text-foreground"
@@ -74,64 +81,91 @@ export default function CustomerDetail() {
       {activeTab === "subscriptions" && (
         <TerminalCard title="SUBSCRIPTIONS">
           {customer.subscriptions.length === 0 ? (
-            <p className="font-ibm-plex text-xs text-muted-foreground">no subscriptions</p>
+            <p className="font-ibm-plex text-sm text-muted-foreground">No subscriptions</p>
           ) : (
-            <div className="space-y-2">
-              {customer.subscriptions.map((sub) => (
-                <div key={sub.id} className="flex items-center gap-4 border-b border-dashed border-foreground/10 py-3 font-ibm-plex text-xs">
-                  <Link to={`/products/${sub.product_id}`} className="font-bold hover:underline">{sub.product_name}</Link>
-                  <StatusBadge status={sub.status} />
-                  <span className="text-muted-foreground">start: {new Date(sub.start_date).toLocaleDateString()}</span>
-                  {sub.end_date && <span className="text-terminal-red">end: {new Date(sub.end_date).toLocaleDateString()}</span>}
-                </div>
-              ))}
-            </div>
+            <Table>
+              <TableHeader>
+                <TableRow className="border-dashed border-foreground/20 hover:bg-transparent">
+                  <TableHead className="h-10 px-4 font-space text-[10px] uppercase tracking-widest">Product</TableHead>
+                  <TableHead className="h-10 px-4 font-space text-[10px] uppercase tracking-widest">Subscription ID</TableHead>
+                  <TableHead className="h-10 px-4 font-space text-[10px] uppercase tracking-widest">Product ID</TableHead>
+                  <TableHead className="h-10 px-4 font-space text-[10px] uppercase tracking-widest">Status</TableHead>
+                  <TableHead className="h-10 px-4 font-space text-[10px] uppercase tracking-widest">Start</TableHead>
+                  <TableHead className="h-10 px-4 font-space text-[10px] uppercase tracking-widest">End</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {customer.subscriptions.map((sub) => (
+                  <TableRow key={sub.id} className="border-dashed border-foreground/10 hover:bg-accent/30">
+                    <TableCell className="px-4 py-3.5">
+                      <Link to={`/products/${sub.product_id}`} className="font-ibm-plex text-sm font-semibold transition-colors hover:text-terminal-green">
+                        {sub.product_name}
+                      </Link>
+                    </TableCell>
+                    <TableCell className="px-4 py-3.5">
+                      <CopyableId value={sub.id} truncate={18} />
+                    </TableCell>
+                    <TableCell className="px-4 py-3.5">
+                      <CopyableId value={sub.product_id} truncate={16} href={`/products/${sub.product_id}`} />
+                    </TableCell>
+                    <TableCell className="px-4 py-3.5"><StatusBadge status={sub.status} /></TableCell>
+                    <TableCell className="px-4 py-3.5 font-ibm-plex text-xs text-muted-foreground">
+                      {new Date(sub.start_date).toLocaleDateString()}
+                    </TableCell>
+                    <TableCell className="px-4 py-3.5 font-ibm-plex text-xs text-muted-foreground">
+                      {sub.end_date ? new Date(sub.end_date).toLocaleDateString() : "—"}
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
           )}
         </TerminalCard>
       )}
 
       {/* Wallet Tab */}
       {activeTab === "wallet" && (
-        <div className="space-y-4">
-          {/* Balances */}
+        <div className="space-y-6">
           <TerminalCard title="ACCOUNT BALANCES">
-            <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
               {customer.wallet.accounts.map((acc) => (
-                <div key={acc.asset_code} className="border border-dashed border-foreground/15 p-3">
-                  <div className="font-space text-xs uppercase text-muted-foreground">{acc.asset_code}</div>
-                  <div className="font-space text-xl font-bold">{acc.available.toFixed(2)}</div>
-                  <div className="mt-1 flex gap-3 font-ibm-plex text-xs text-muted-foreground">
-                    <span>pending_in: {acc.pending_in.toFixed(2)}</span>
-                    <span>pending_out: {acc.pending_out.toFixed(2)}</span>
+                <div key={acc.asset_code} className="border border-dashed border-foreground/15 p-5">
+                  <div className="font-space text-[10px] uppercase tracking-widest text-muted-foreground">{acc.asset_code}</div>
+                  <div className="mt-1 font-space text-2xl font-bold tracking-tight">{acc.available.toFixed(2)}</div>
+                  <div className="mt-3 flex gap-4 font-ibm-plex text-xs text-muted-foreground">
+                    <span>Pending in: {acc.pending_in.toFixed(2)}</span>
+                    <span>Pending out: {acc.pending_out.toFixed(2)}</span>
                   </div>
                 </div>
               ))}
             </div>
           </TerminalCard>
 
-          {/* Credit Grants */}
           <TerminalCard title="CREDIT GRANTS">
             {customer.wallet.credit_grants.length === 0 ? (
-              <p className="font-ibm-plex text-xs text-muted-foreground">no credit grants</p>
+              <p className="font-ibm-plex text-sm text-muted-foreground">No credit grants</p>
             ) : (
-              <div className="space-y-2">
+              <div className="space-y-3">
                 {customer.wallet.credit_grants.map((cg) => {
                   const pct = cg.amount > 0 ? (cg.remaining / cg.amount) * 100 : 0;
                   const barFilled = Math.round(pct / 5);
                   const bar = "█".repeat(barFilled) + "░".repeat(20 - barFilled);
                   return (
-                    <div key={cg.id} className="border-b border-dashed border-foreground/10 py-2 font-ibm-plex text-xs">
+                    <div key={cg.id} className="border border-dashed border-foreground/10 p-4">
                       <div className="flex items-center gap-3">
-                        <span className="font-bold">{cg.remaining}/{cg.amount} {cg.asset_code}</span>
+                        <span className="font-ibm-plex text-sm font-bold">{cg.remaining}/{cg.amount} {cg.asset_code}</span>
                         <StatusBadge status={cg.purpose === "paid" ? "active" : cg.purpose === "promotional" ? "warning" : "published"} />
-                        <span className="text-muted-foreground">{cg.purpose}</span>
+                        <span className="font-ibm-plex text-xs text-muted-foreground">{cg.purpose}</span>
                       </div>
-                      <div className="mt-1 font-ibm-plex text-xs text-muted-foreground">
+                      <div className="mt-2 font-ibm-plex text-xs text-muted-foreground tracking-wider">
                         {bar} {pct.toFixed(0)}%
                       </div>
-                      <div className="mt-1 text-muted-foreground">
-                        effective: {new Date(cg.effective_at).toLocaleDateString()}
-                        {cg.expires_at && ` · expires: ${new Date(cg.expires_at).toLocaleDateString()}`}
+                      <div className="mt-2 flex items-center gap-3">
+                        <CopyableId label="Grant" value={cg.id} truncate={20} />
+                        <span className="font-ibm-plex text-xs text-muted-foreground">
+                          Effective: {new Date(cg.effective_at).toLocaleDateString()}
+                          {cg.expires_at && ` · Expires: ${new Date(cg.expires_at).toLocaleDateString()}`}
+                        </span>
                       </div>
                     </div>
                   );
@@ -140,23 +174,37 @@ export default function CustomerDetail() {
             )}
           </TerminalCard>
 
-          {/* Transactions */}
           <TerminalCard title="TRANSACTION HISTORY">
-            <div className="space-y-0.5">
-              {customer.wallet.transactions.map((tx) => (
-                <div key={tx.id} className="flex items-center gap-3 border-b border-dashed border-foreground/10 py-2 font-ibm-plex text-xs">
-                  <span className="w-24 text-muted-foreground">
-                    {new Date(tx.created_at).toLocaleDateString()}
-                  </span>
-                  <span className={`w-16 font-bold ${tx.amount >= 0 ? "text-terminal-green" : "text-terminal-red"}`}>
-                    {tx.amount >= 0 ? "+" : ""}{tx.amount.toFixed(2)}
-                  </span>
-                  <span className="w-12 text-muted-foreground">{tx.asset_code}</span>
-                  <span className="uppercase">{tx.type}</span>
-                  <span className="flex-1 text-muted-foreground">{tx.description}</span>
-                </div>
-              ))}
-            </div>
+            <Table>
+              <TableHeader>
+                <TableRow className="border-dashed border-foreground/20 hover:bg-transparent">
+                  <TableHead className="h-10 px-4 font-space text-[10px] uppercase tracking-widest">Date</TableHead>
+                  <TableHead className="h-10 px-4 font-space text-[10px] uppercase tracking-widest text-right">Amount</TableHead>
+                  <TableHead className="h-10 px-4 font-space text-[10px] uppercase tracking-widest">Asset</TableHead>
+                  <TableHead className="h-10 px-4 font-space text-[10px] uppercase tracking-widest">Type</TableHead>
+                  <TableHead className="h-10 px-4 font-space text-[10px] uppercase tracking-widest">Description</TableHead>
+                  <TableHead className="h-10 px-4 font-space text-[10px] uppercase tracking-widest">TX ID</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {customer.wallet.transactions.map((tx) => (
+                  <TableRow key={tx.id} className="border-dashed border-foreground/10 hover:bg-accent/30">
+                    <TableCell className="px-4 py-3 font-ibm-plex text-xs text-muted-foreground">
+                      {new Date(tx.created_at).toLocaleDateString()}
+                    </TableCell>
+                    <TableCell className={`px-4 py-3 text-right font-ibm-plex text-sm font-semibold ${tx.amount >= 0 ? "text-terminal-green" : "text-terminal-red"}`}>
+                      {tx.amount >= 0 ? "+" : ""}{tx.amount.toFixed(2)}
+                    </TableCell>
+                    <TableCell className="px-4 py-3 font-ibm-plex text-xs text-muted-foreground">{tx.asset_code}</TableCell>
+                    <TableCell className="px-4 py-3 font-ibm-plex text-xs uppercase">{tx.type}</TableCell>
+                    <TableCell className="px-4 py-3 font-ibm-plex text-xs text-muted-foreground">{tx.description}</TableCell>
+                    <TableCell className="px-4 py-3">
+                      <CopyableId value={tx.id} truncate={14} />
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
           </TerminalCard>
         </div>
       )}
@@ -165,23 +213,36 @@ export default function CustomerDetail() {
       {activeTab === "events" && (
         <TerminalCard title="EVENT LOG">
           {customerEvents.length === 0 ? (
-            <p className="font-ibm-plex text-xs text-muted-foreground">no events</p>
+            <p className="font-ibm-plex text-sm text-muted-foreground">No events</p>
           ) : (
-            <div className="space-y-0.5 max-h-96 overflow-y-auto">
-              {customerEvents.map((event) => (
-                <div key={event.id} className="flex items-center gap-2 py-1 font-ibm-plex text-xs hover:bg-accent/50">
-                  <span className="text-muted-foreground">$</span>
-                  <span className="w-32 text-muted-foreground">
-                    [{new Date(event.timestamp).toLocaleString("en-US", { month: "short", day: "2-digit", hour: "2-digit", minute: "2-digit", hour12: false })}]
-                  </span>
-                  <StatusBadge status={event.status} />
-                  <span className="text-terminal-yellow">{event.event_type}</span>
-                  <span className="ml-auto text-terminal-green">
-                    {event.fees?.[0] && `→ ${event.fees[0].amount} ${event.fees[0].asset_code}`}
-                  </span>
-                </div>
-              ))}
-            </div>
+            <Table>
+              <TableHeader>
+                <TableRow className="border-dashed border-foreground/20 hover:bg-transparent">
+                  <TableHead className="h-10 px-4 font-space text-[10px] uppercase tracking-widest">Time</TableHead>
+                  <TableHead className="h-10 px-4 font-space text-[10px] uppercase tracking-widest">Event ID</TableHead>
+                  <TableHead className="h-10 px-4 font-space text-[10px] uppercase tracking-widest">Status</TableHead>
+                  <TableHead className="h-10 px-4 font-space text-[10px] uppercase tracking-widest">Type</TableHead>
+                  <TableHead className="h-10 px-4 font-space text-[10px] uppercase tracking-widest text-right">Fee</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {customerEvents.map((event) => (
+                  <TableRow key={event.id} className="border-dashed border-foreground/10 hover:bg-accent/30">
+                    <TableCell className="px-4 py-3 font-ibm-plex text-xs text-muted-foreground">
+                      {new Date(event.timestamp).toLocaleString("en-US", { month: "short", day: "2-digit", hour: "2-digit", minute: "2-digit", hour12: false })}
+                    </TableCell>
+                    <TableCell className="px-4 py-3">
+                      <CopyableId value={event.id} truncate={14} />
+                    </TableCell>
+                    <TableCell className="px-4 py-3"><StatusBadge status={event.status} /></TableCell>
+                    <TableCell className="px-4 py-3 font-ibm-plex text-xs text-terminal-yellow">{event.event_type}</TableCell>
+                    <TableCell className="px-4 py-3 text-right font-ibm-plex text-xs text-terminal-green">
+                      {event.fees?.[0] && `${event.fees[0].amount} ${event.fees[0].asset_code}`}
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
           )}
         </TerminalCard>
       )}

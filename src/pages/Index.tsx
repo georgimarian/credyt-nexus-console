@@ -1,5 +1,6 @@
 import { TerminalCard } from "@/components/terminal/TerminalCard";
 import { StatusBadge } from "@/components/terminal/StatusBadge";
+import { CopyableId } from "@/components/terminal/CopyableId";
 import { customers } from "@/data/customers";
 import { events } from "@/data/events";
 import { vendors } from "@/data/vendors";
@@ -100,47 +101,47 @@ export default function Overview() {
   const progressBar = "█".repeat(progressFilled) + "░".repeat(20 - progressFilled);
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-8">
       <div>
-        <h1 className="font-space text-2xl font-bold uppercase tracking-wide">$ overview</h1>
-        <p className="font-ibm-plex text-sm text-muted-foreground">system status: <span className="text-terminal-green">✓ online</span></p>
+        <h1 className="font-space text-2xl font-bold uppercase tracking-wide">Overview</h1>
+        <p className="mt-1 font-ibm-plex text-sm text-muted-foreground">System status: <span className="text-terminal-green">✓ Online</span></p>
       </div>
 
       {/* Onboarding Checklist */}
       {!allDone && (
         <TerminalCard title="GETTING STARTED">
-          <div className="space-y-3">
+          <div className="space-y-4">
             <div className="flex items-center justify-between font-ibm-plex text-xs">
               <span className="text-muted-foreground">
                 {completedCount}/{checklist.length} completed
               </span>
-              <span className="text-muted-foreground">{progressBar} {Math.round((completedCount / checklist.length) * 100)}%</span>
+              <span className="text-muted-foreground tracking-wider">{progressBar} {Math.round((completedCount / checklist.length) * 100)}%</span>
             </div>
 
             {checklist.map((item) => (
               <div
                 key={item.key}
-                className={`flex items-start gap-3 border border-dashed p-3 transition-colors ${
+                className={`flex items-start gap-4 border border-dashed p-4 transition-colors ${
                   item.done
                     ? "border-terminal-green/30 bg-terminal-green/5"
-                    : "border-foreground/15 hover:bg-accent/50"
+                    : "border-foreground/15 hover:bg-accent/30"
                 }`}
               >
-                <div className={`mt-0.5 flex h-5 w-5 items-center justify-center border border-dashed ${
+                <div className={`mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center border border-dashed ${
                   item.done ? "border-terminal-green text-terminal-green" : "border-foreground/30 text-muted-foreground"
                 }`}>
-                  {item.done ? <Check className="h-3 w-3" /> : item.icon}
+                  {item.done ? <Check className="h-3.5 w-3.5" /> : item.icon}
                 </div>
                 <div className="flex-1">
                   <div className={`font-space text-xs uppercase tracking-wide ${item.done ? "text-terminal-green line-through" : ""}`}>
                     {item.label}
                   </div>
-                  <p className="mt-0.5 font-ibm-plex text-[10px] text-muted-foreground">{item.description}</p>
+                  <p className="mt-1 font-ibm-plex text-[11px] text-muted-foreground leading-relaxed">{item.description}</p>
                 </div>
                 {!item.done && (
                   <Link
                     to={item.link}
-                    className="flex items-center gap-1 font-space text-[10px] uppercase tracking-wide text-muted-foreground transition-colors hover:text-foreground"
+                    className="flex items-center gap-1.5 font-space text-[10px] uppercase tracking-wide text-muted-foreground transition-colors hover:text-foreground"
                   >
                     {item.linkLabel} <ArrowRight className="h-3 w-3" />
                   </Link>
@@ -155,8 +156,8 @@ export default function Overview() {
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
         {kpis.map((kpi) => (
           <TerminalCard key={kpi.title} title={kpi.title}>
-            <div className="space-y-1">
-              <div className="font-space text-2xl font-bold">{kpi.value}</div>
+            <div className="space-y-1.5">
+              <div className="font-space text-2xl font-bold tracking-tight">{kpi.value}</div>
               <div className={`font-ibm-plex text-xs ${kpi.trendUp ? "text-terminal-green" : "text-terminal-red"}`}>
                 {kpi.trend}
               </div>
@@ -195,7 +196,7 @@ export default function Overview() {
 
       {/* Activity Feed */}
       <TerminalCard title="RECENT ACTIVITY">
-        <div className="max-h-80 space-y-0.5 overflow-y-auto font-ibm-plex text-xs">
+        <div className="max-h-80 space-y-0 overflow-y-auto">
           {recentEvents.map((event) => {
             const time = new Date(event.timestamp).toLocaleString("en-US", {
               month: "short", day: "2-digit", hour: "2-digit", minute: "2-digit", hour12: false,
@@ -205,13 +206,12 @@ export default function Overview() {
               : "";
 
             return (
-              <div key={event.id} className="flex items-center gap-2 py-1 hover:bg-accent/50">
-                <span className="text-muted-foreground">$</span>
-                <span className="w-32 text-muted-foreground">[{time}]</span>
+              <div key={event.id} className="flex items-center gap-3 border-b border-dashed border-foreground/5 py-2.5 hover:bg-accent/30 transition-colors">
+                <span className="w-32 font-ibm-plex text-xs text-muted-foreground">[{time}]</span>
                 <StatusBadge status={event.status} />
-                <span className="text-terminal-yellow">{event.event_type}</span>
-                <span className="text-muted-foreground">{event.customer_name}</span>
-                <span className="ml-auto text-terminal-green">{feeAmount}</span>
+                <span className="font-ibm-plex text-xs text-terminal-yellow">{event.event_type}</span>
+                <CopyableId value={event.customer_id} label={event.customer_name} truncate={10} href={`/customers/${event.customer_id}`} />
+                <span className="ml-auto font-ibm-plex text-xs text-terminal-green">{feeAmount}</span>
               </div>
             );
           })}

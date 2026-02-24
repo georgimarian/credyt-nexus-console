@@ -3,10 +3,14 @@ import { Link } from "react-router-dom";
 import { TerminalCard } from "@/components/terminal/TerminalCard";
 import { StatusBadge } from "@/components/terminal/StatusBadge";
 import { EmptyState } from "@/components/terminal/EmptyState";
+import { CopyableId } from "@/components/terminal/CopyableId";
 import { useProductStore } from "@/stores/productStore";
 import { CreateProductWizard } from "@/components/products/CreateProductWizard";
 import { Input } from "@/components/ui/input";
 import { Search, Plus, ArrowRight, Package } from "lucide-react";
+import {
+  Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
+} from "@/components/ui/table";
 
 export default function Products() {
   const { products } = useProductStore();
@@ -20,16 +24,16 @@ export default function Products() {
   );
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-8">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="font-space text-2xl font-bold uppercase tracking-wide">$ products</h1>
-          <p className="font-ibm-plex text-sm text-muted-foreground">{products.length} products configured</p>
+          <h1 className="font-space text-2xl font-bold uppercase tracking-wide">Products</h1>
+          <p className="mt-1 font-ibm-plex text-sm text-muted-foreground">{products.length} products configured</p>
         </div>
         {!showCreate && (
           <button
             onClick={() => setShowCreate(true)}
-            className="flex items-center gap-2 border border-dashed border-foreground/30 bg-foreground px-4 py-2 font-space text-xs uppercase tracking-wide text-background transition-colors hover:bg-muted-foreground"
+            className="flex items-center gap-2 border border-dashed border-foreground/30 bg-foreground px-4 py-2.5 font-space text-xs uppercase tracking-wide text-background transition-colors hover:bg-muted-foreground"
           >
             <Plus className="h-3.5 w-3.5" />
             New Product
@@ -37,7 +41,6 @@ export default function Products() {
         )}
       </div>
 
-      {/* Wizard */}
       {showCreate && <CreateProductWizard onClose={() => setShowCreate(false)} />}
 
       {!showCreate && (
@@ -45,7 +48,7 @@ export default function Products() {
           <div className="relative">
             <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
             <Input
-              placeholder="search by code or name..."
+              placeholder="Search by code or name..."
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               className="border-dashed border-foreground/30 bg-transparent pl-10 font-ibm-plex text-sm"
@@ -54,53 +57,55 @@ export default function Products() {
 
           <TerminalCard title="PRODUCT CATALOG">
             {filtered.length > 0 ? (
-              <div className="overflow-x-auto">
-                <table className="w-full font-ibm-plex text-sm">
-                  <thead>
-                    <tr className="border-b border-dashed border-foreground/30 text-left">
-                      <th className="px-3 py-2 font-space text-xs uppercase tracking-wide text-muted-foreground">Code</th>
-                      <th className="px-3 py-2 font-space text-xs uppercase tracking-wide text-muted-foreground">Name</th>
-                      <th className="px-3 py-2 font-space text-xs uppercase tracking-wide text-muted-foreground">Status</th>
-                      <th className="px-3 py-2 font-space text-xs uppercase tracking-wide text-muted-foreground">Prices</th>
-                      <th className="px-3 py-2 font-space text-xs uppercase tracking-wide text-muted-foreground">Subscribers</th>
-                      <th className="px-3 py-2"></th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {filtered.map((product) => (
-                      <tr key={product.id} className="border-b border-dashed border-foreground/10 transition-colors hover:bg-accent/50">
-                        <td className="px-3 py-3 font-bold">{product.code}</td>
-                        <td className="px-3 py-3">{product.name}</td>
-                        <td className="px-3 py-3"><StatusBadge status={product.status} /></td>
-                        <td className="px-3 py-3">{product.prices.length}</td>
-                        <td className="px-3 py-3">{product.subscriber_count}</td>
-                        <td className="px-3 py-3">
-                          <Link
-                            to={`/products/${product.id}`}
-                            className="inline-flex items-center gap-1 text-xs text-muted-foreground transition-colors hover:text-foreground"
-                          >
-                            view <ArrowRight className="h-3 w-3" />
-                          </Link>
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
+              <Table>
+                <TableHeader>
+                  <TableRow className="border-dashed border-foreground/20 hover:bg-transparent">
+                    <TableHead className="h-10 px-4 font-space text-[10px] uppercase tracking-widest">Code</TableHead>
+                    <TableHead className="h-10 px-4 font-space text-[10px] uppercase tracking-widest">Name</TableHead>
+                    <TableHead className="h-10 px-4 font-space text-[10px] uppercase tracking-widest">ID</TableHead>
+                    <TableHead className="h-10 px-4 font-space text-[10px] uppercase tracking-widest">Status</TableHead>
+                    <TableHead className="h-10 px-4 font-space text-[10px] uppercase tracking-widest text-center">Prices</TableHead>
+                    <TableHead className="h-10 px-4 font-space text-[10px] uppercase tracking-widest text-center">Subs</TableHead>
+                    <TableHead className="h-10 w-16 px-4"></TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {filtered.map((product) => (
+                    <TableRow key={product.id} className="border-dashed border-foreground/10 hover:bg-accent/30">
+                      <TableCell className="px-4 py-3.5 font-ibm-plex text-sm font-semibold">{product.code}</TableCell>
+                      <TableCell className="px-4 py-3.5 font-ibm-plex text-sm">{product.name}</TableCell>
+                      <TableCell className="px-4 py-3.5">
+                        <CopyableId value={product.id} truncate={16} />
+                      </TableCell>
+                      <TableCell className="px-4 py-3.5"><StatusBadge status={product.status} /></TableCell>
+                      <TableCell className="px-4 py-3.5 text-center font-ibm-plex text-sm">{product.prices.length}</TableCell>
+                      <TableCell className="px-4 py-3.5 text-center font-ibm-plex text-sm">{product.subscriber_count}</TableCell>
+                      <TableCell className="px-4 py-3.5">
+                        <Link
+                          to={`/products/${product.id}`}
+                          className="inline-flex items-center gap-1 font-ibm-plex text-xs text-muted-foreground transition-colors hover:text-foreground"
+                        >
+                          <ArrowRight className="h-3.5 w-3.5" />
+                        </Link>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
             ) : (
               <EmptyState
                 icon={<Package className="h-8 w-8" />}
-                title={search ? `no products matching "${search}"` : "no products yet"}
+                title={search ? `No products matching "${search}"` : "No products yet"}
                 description={
                   search
-                    ? "try a different search term or create a new product."
-                    : "products define how you charge your customers. create your first product to get started."
+                    ? "Try a different search term or create a new product."
+                    : "Products define how you charge your customers. Create your first product to get started."
                 }
                 action={
                   !search ? (
                     <button
                       onClick={() => setShowCreate(true)}
-                      className="flex items-center gap-2 border border-dashed border-foreground/30 bg-foreground px-4 py-2 font-space text-xs uppercase tracking-wide text-background transition-colors hover:bg-muted-foreground"
+                      className="flex items-center gap-2 border border-dashed border-foreground/30 bg-foreground px-4 py-2.5 font-space text-xs uppercase tracking-wide text-background transition-colors hover:bg-muted-foreground"
                     >
                       <Plus className="h-3 w-3" /> Create First Product
                     </button>

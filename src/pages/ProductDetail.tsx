@@ -2,6 +2,7 @@ import { useParams, Link } from "react-router-dom";
 import { TerminalCard } from "@/components/terminal/TerminalCard";
 import { StatusBadge } from "@/components/terminal/StatusBadge";
 import { FieldLabel } from "@/components/terminal/FieldLabel";
+import { CopyableId } from "@/components/terminal/CopyableId";
 import { useProductStore } from "@/stores/productStore";
 import { customers } from "@/data/customers";
 import { ChevronRight, Play } from "lucide-react";
@@ -67,7 +68,10 @@ export default function ProductDetail() {
       <div className="flex items-center gap-4">
         <div>
           <h1 className="font-space text-2xl font-bold uppercase tracking-wide">{product.name}</h1>
-          <p className="mt-1 font-ibm-plex text-sm text-muted-foreground">code: {product.code}</p>
+          <div className="mt-2 flex flex-wrap items-center gap-x-6 gap-y-2">
+            <CopyableId label="ID" value={product.id} size="sm" />
+            <span className="font-ibm-plex text-xs text-muted-foreground">code: {product.code}</span>
+          </div>
         </div>
         <StatusBadge status={product.status} />
       </div>
@@ -78,7 +82,7 @@ export default function ProductDetail() {
           {product.prices.map((price) => (
             <div key={price.id} className="border border-dashed border-foreground/15 p-5">
               <div className="mb-4 flex items-center gap-3">
-                <span className="font-space text-xs font-bold uppercase tracking-wide">{price.id}</span>
+                <CopyableId value={price.id} size="sm" />
                 <StatusBadge status={price.type === "usage" ? "active" : "published"} />
                 <span className="font-ibm-plex text-xs text-muted-foreground">
                   {price.type} · {price.billing_model}{price.recurring_interval ? ` (${price.recurring_interval})` : ""}
