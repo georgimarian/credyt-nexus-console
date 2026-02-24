@@ -4,7 +4,7 @@ import { StatusBadge } from "@/components/terminal/StatusBadge";
 import { CopyableId } from "@/components/terminal/CopyableId";
 import { events } from "@/data/events";
 import { Input } from "@/components/ui/input";
-import { Search, ChevronDown, ChevronRight } from "lucide-react";
+import { ChevronDown, ChevronRight } from "lucide-react";
 import {
   Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
 } from "@/components/ui/table";
@@ -27,27 +27,32 @@ export default function Events() {
   const paged = filtered.slice(page * perPage, (page + 1) * perPage);
   const totalPages = Math.ceil(filtered.length / perPage);
 
+  const totalBilled = events.reduce((s, e) => s + (e.fees?.reduce((fs, f) => fs + (f.asset_code === "USD" ? f.amount : 0), 0) || 0), 0);
+  const today = new Date().toISOString().split("T")[0];
+  const todayCount = events.filter((e) => e.timestamp.startsWith(today)).length;
+
   return (
     <div className="space-y-10">
       <div>
-        <h1 className="font-space text-2xl font-bold uppercase tracking-wider mb-1">Events</h1>
-        <p className="font-ibm-plex text-sm text-muted-foreground">{events.length} total events</p>
+        <h1 className="font-space text-2xl font-bold uppercase tracking-wider mb-2">Events</h1>
+        <p className="font-space text-xs uppercase tracking-widest text-muted-foreground">
+          {events.length} Events · ${totalBilled.toFixed(2)} Billed · Today: {todayCount}
+        </p>
       </div>
 
       <div className="flex flex-wrap gap-3">
         <div className="relative flex-1">
-          <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
           <Input
             placeholder="Search by customer or event ID..."
             value={search}
             onChange={(e) => { setSearch(e.target.value); setPage(0); }}
-            className="rounded-md border-foreground/[0.12] bg-transparent pl-10 font-ibm-plex text-sm"
+            className="rounded-none border-foreground/[0.12] bg-transparent pl-4 font-ibm-plex text-sm"
           />
         </div>
         <select
           value={typeFilter}
           onChange={(e) => { setTypeFilter(e.target.value); setPage(0); }}
-          className="rounded-md border border-foreground/[0.12] bg-transparent px-4 py-2.5 font-ibm-plex text-sm text-foreground focus:outline-none"
+          className="rounded-none border border-foreground/[0.12] bg-transparent px-4 py-2.5 font-ibm-plex text-sm text-foreground focus:outline-none"
         >
           <option value="">All event types</option>
           {eventTypes.map((t) => (
@@ -77,29 +82,29 @@ export default function Events() {
                   className="border-foreground/[0.04] cursor-pointer transition-all duration-150 hover:bg-accent/20"
                   onClick={() => setExpandedId(expandedId === event.id ? null : event.id)}
                 >
-                  <TableCell className="px-2 py-3">
+                  <TableCell className="px-2 py-4">
                     {expandedId === event.id
                       ? <ChevronDown className="h-3.5 w-3.5 text-muted-foreground" />
                       : <ChevronRight className="h-3.5 w-3.5 text-muted-foreground" />
                     }
                   </TableCell>
-                  <TableCell className="px-4 py-3 font-ibm-plex text-xs text-muted-foreground">
+                  <TableCell className="px-4 py-4 font-ibm-plex text-xs text-muted-foreground">
                     {new Date(event.timestamp).toLocaleString("en-US", { month: "short", day: "2-digit", hour: "2-digit", minute: "2-digit", hour12: false })}
                   </TableCell>
-                  <TableCell className="px-4 py-3">
+                  <TableCell className="px-4 py-4">
                     <div>
                       <CopyableId value={event.id} truncate={14} />
                     </div>
                   </TableCell>
-                  <TableCell className="px-4 py-3"><StatusBadge status={event.status} /></TableCell>
-                  <TableCell className="px-4 py-3 font-ibm-plex text-xs text-terminal-yellow">{event.event_type}</TableCell>
-                  <TableCell className="px-4 py-3">
-                    <div>
+                  <TableCell className="px-4 py-4"><StatusBadge status={event.status} /></TableCell>
+                  <TableCell className="px-4 py-4 font-ibm-plex text-xs">{event.event_type}</TableCell>
+                  <TableCell className="px-4 py-4">
+                    <div className="space-y-1">
                       <div className="font-ibm-plex text-xs font-medium">{event.customer_name}</div>
-                      <div className="font-ibm-plex text-[10px] text-muted-foreground mt-0.5"># {event.customer_id}</div>
+                      <div className="font-ibm-plex text-[10px] text-muted-foreground"># {event.customer_id}</div>
                     </div>
                   </TableCell>
-                  <TableCell className="px-4 py-3 text-right font-ibm-plex text-xs text-terminal-green">
+                  <TableCell className="px-4 py-4 text-right font-ibm-plex text-xs text-terminal-green">
                     {event.fees?.[0] && `${event.fees[0].amount.toFixed(4)} ${event.fees[0].asset_code}`}
                   </TableCell>
                 </TableRow>
@@ -111,7 +116,7 @@ export default function Events() {
                         <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
                           <div>
                             <div className="mb-2 font-space text-[10px] uppercase tracking-widest text-muted-foreground">Payload</div>
-                            <pre className="overflow-auto rounded-md border border-foreground/[0.08] bg-background p-4 font-ibm-plex text-xs leading-relaxed">
+                            <pre className="overflow-auto rounded-none border border-foreground/[0.08] bg-background p-4 font-ibm-plex text-xs leading-relaxed">
                               {JSON.stringify(event.properties, null, 2)}
                             </pre>
                           </div>
@@ -120,7 +125,7 @@ export default function Events() {
                             {event.fees && event.fees.length > 0 ? (
                               <div className="space-y-2">
                                 {event.fees.map((fee, i) => (
-                                  <div key={i} className="rounded-md border border-foreground/[0.08] p-4 space-y-2">
+                                  <div key={i} className="border border-foreground/[0.08] p-4 space-y-2">
                                     <div className="font-ibm-plex text-sm font-semibold">{fee.amount.toFixed(6)} {fee.asset_code}</div>
                                     <div className="space-y-1">
                                       <CopyableId label="Product" value={fee.product_code} />
@@ -143,7 +148,7 @@ export default function Events() {
                             {event.costs && event.costs.length > 0 ? (
                               <div className="space-y-2">
                                 {event.costs.map((cost, i) => (
-                                  <div key={i} className="rounded-md border border-foreground/[0.08] p-4 space-y-1">
+                                  <div key={i} className="border border-foreground/[0.08] p-4 space-y-1">
                                     <div className="font-ibm-plex text-sm font-semibold">{cost.amount.toFixed(4)} {cost.asset_code}</div>
                                     <CopyableId label="Vendor" value={cost.vendor_id} />
                                     <div className="font-ibm-plex text-xs text-muted-foreground">{cost.vendor_name}</div>
@@ -171,14 +176,14 @@ export default function Events() {
               <button
                 disabled={page === 0}
                 onClick={() => setPage(page - 1)}
-                className="rounded-md border border-foreground/[0.12] px-4 py-2 transition-all duration-150 hover:bg-foreground hover:text-background disabled:opacity-30"
+                className="rounded-none border border-foreground/40 px-4 py-2 font-space text-xs uppercase tracking-wide transition-all duration-150 hover:bg-foreground hover:text-background disabled:opacity-30"
               >
                 Prev
               </button>
               <button
                 disabled={page >= totalPages - 1}
                 onClick={() => setPage(page + 1)}
-                className="rounded-md border border-foreground/[0.12] px-4 py-2 transition-all duration-150 hover:bg-foreground hover:text-background disabled:opacity-30"
+                className="rounded-none border border-foreground/40 px-4 py-2 font-space text-xs uppercase tracking-wide transition-all duration-150 hover:bg-foreground hover:text-background disabled:opacity-30"
               >
                 Next
               </button>

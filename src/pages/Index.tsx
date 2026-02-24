@@ -1,17 +1,15 @@
 import { TerminalCard } from "@/components/terminal/TerminalCard";
 import { StatusBadge } from "@/components/terminal/StatusBadge";
-import { CopyableId } from "@/components/terminal/CopyableId";
 import { customers } from "@/data/customers";
 import { events } from "@/data/events";
 import { vendors } from "@/data/vendors";
 import { useProductStore } from "@/stores/productStore";
 import { Link } from "react-router-dom";
-import { Check, Package, Users, Activity, ArrowRight } from "lucide-react";
+import { ArrowRight } from "lucide-react";
 import {
   AreaChart, Area, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
 } from "recharts";
 
-// KPI calculations
 const totalCustomers = customers.length;
 const totalRevenue = customers.reduce((sum, c) => {
   return sum + c.wallet.transactions
@@ -50,7 +48,6 @@ interface ChecklistItem {
   key: string;
   label: string;
   description: string;
-  icon: React.ReactNode;
   done: boolean;
   link: string;
   linkLabel: string;
@@ -69,7 +66,6 @@ export default function Overview() {
       key: "product",
       label: "Create your first product",
       description: "Define how you charge — usage-based, fixed, or both.",
-      icon: <Package className="h-4 w-4" />,
       done: hasProducts,
       link: "/products",
       linkLabel: "Go to Products",
@@ -78,7 +74,6 @@ export default function Overview() {
       key: "customer",
       label: "Add a customer",
       description: "Register a customer and set up their wallet.",
-      icon: <Users className="h-4 w-4" />,
       done: hasCustomers,
       link: "/customers",
       linkLabel: "Go to Customers",
@@ -87,7 +82,6 @@ export default function Overview() {
       key: "event",
       label: "Send your first event",
       description: "Send a usage event via the API to start billing.",
-      icon: <Activity className="h-4 w-4" />,
       done: hasEvents,
       link: "/events",
       linkLabel: "View Events",
@@ -117,16 +111,16 @@ export default function Overview() {
             {checklist.map((item) => (
               <div
                 key={item.key}
-                className={`flex items-start gap-4 rounded-md border p-4 transition-all duration-150 ${
+                className={`flex items-start gap-4 border p-4 transition-all duration-150 ${
                   item.done
                     ? "border-terminal-green/20 bg-terminal-green/5"
                     : "border-foreground/[0.08] hover:bg-accent/20"
                 }`}
               >
-                <div className={`mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded border ${
+                <div className={`mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center border ${
                   item.done ? "border-terminal-green text-terminal-green" : "border-foreground/20 text-muted-foreground"
                 }`}>
-                  {item.done ? <Check className="h-3.5 w-3.5" /> : item.icon}
+                  {item.done ? "✓" : "○"}
                 </div>
                 <div className="flex-1">
                   <div className={`font-space text-xs uppercase tracking-wide ${item.done ? "text-terminal-green line-through" : ""}`}>
@@ -170,7 +164,7 @@ export default function Overview() {
               <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
               <XAxis dataKey="day" tick={{ fontSize: 10, fontFamily: "IBM Plex Mono" }} stroke="hsl(var(--muted-foreground))" />
               <YAxis tick={{ fontSize: 10, fontFamily: "IBM Plex Mono" }} stroke="hsl(var(--muted-foreground))" />
-              <Tooltip contentStyle={{ fontFamily: "IBM Plex Mono", fontSize: 12, background: "hsl(var(--card))", border: "1px solid hsl(var(--border))", borderRadius: 6 }} />
+              <Tooltip contentStyle={{ fontFamily: "IBM Plex Mono", fontSize: 12, background: "hsl(var(--card))", border: "1px solid hsl(var(--border))", borderRadius: 0 }} />
               <Area type="monotone" dataKey="revenue" stackId="1" stroke="hsl(var(--terminal-green))" fill="hsl(var(--terminal-green) / 0.2)" />
               <Area type="monotone" dataKey="costs" stackId="2" stroke="hsl(var(--terminal-red))" fill="hsl(var(--terminal-red) / 0.2)" />
             </AreaChart>
@@ -183,8 +177,8 @@ export default function Overview() {
               <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
               <XAxis dataKey="day" tick={{ fontSize: 10, fontFamily: "IBM Plex Mono" }} stroke="hsl(var(--muted-foreground))" />
               <YAxis tick={{ fontSize: 10, fontFamily: "IBM Plex Mono" }} stroke="hsl(var(--muted-foreground))" />
-              <Tooltip contentStyle={{ fontFamily: "IBM Plex Mono", fontSize: 12, background: "hsl(var(--card))", border: "1px solid hsl(var(--border))", borderRadius: 6 }} />
-              <Bar dataKey="events" fill="hsl(var(--foreground))" opacity={0.7} radius={[2, 2, 0, 0]} />
+              <Tooltip contentStyle={{ fontFamily: "IBM Plex Mono", fontSize: 12, background: "hsl(var(--card))", border: "1px solid hsl(var(--border))", borderRadius: 0 }} />
+              <Bar dataKey="events" fill="hsl(var(--foreground))" opacity={0.7} radius={[0, 0, 0, 0]} />
             </BarChart>
           </ResponsiveContainer>
         </TerminalCard>
@@ -205,7 +199,7 @@ export default function Overview() {
               <div key={event.id} className="flex items-center gap-3 border-b border-foreground/[0.04] py-2.5 transition-all duration-150 hover:bg-accent/20">
                 <span className="w-32 font-ibm-plex text-xs text-muted-foreground">[{time}]</span>
                 <StatusBadge status={event.status} />
-                <span className="font-ibm-plex text-xs text-terminal-yellow">{event.event_type}</span>
+                <span className="font-ibm-plex text-xs">{event.event_type}</span>
                 <div className="flex-1">
                   <span className="font-ibm-plex text-xs font-medium">{event.customer_name}</span>
                   <span className="ml-1.5 font-ibm-plex text-[10px] text-muted-foreground"># {event.customer_id}</span>

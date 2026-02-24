@@ -56,6 +56,7 @@ export default {
           green: "hsl(var(--terminal-green))",
           red: "hsl(var(--terminal-red))",
           yellow: "hsl(var(--terminal-yellow))",
+          teal: "hsl(var(--terminal-teal))",
         },
         sidebar: {
           DEFAULT: "hsl(var(--sidebar-background))",

@@ -5,7 +5,7 @@ import { StatusBadge } from "@/components/terminal/StatusBadge";
 import { CopyableId } from "@/components/terminal/CopyableId";
 import { customers } from "@/data/customers";
 import { events } from "@/data/events";
-import { ArrowLeft, ChevronRight, ChevronDown, DollarSign } from "lucide-react";
+import { ChevronRight, ChevronDown } from "lucide-react";
 import {
   Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
 } from "@/components/ui/table";
@@ -76,12 +76,14 @@ export default function CustomerDetail() {
     setTopupAmount("");
   };
 
+  const metadataEntries = customer.metadata ? Object.entries(customer.metadata) : [];
+
   return (
     <div className="space-y-10">
       {/* Breadcrumb */}
       <nav className="flex items-center gap-1.5 font-ibm-plex text-sm text-muted-foreground">
         <Link to="/customers" className="flex items-center gap-1 transition-all duration-150 hover:text-foreground">
-          <ArrowLeft className="h-3 w-3" /> Customers
+          ← Customers
         </Link>
         <ChevronRight className="h-3 w-3" />
         <span className="text-foreground">{customer.id}</span>
@@ -99,23 +101,23 @@ export default function CustomerDetail() {
           <div className="mt-1 font-ibm-plex text-sm text-muted-foreground"># {customer.id}</div>
         </div>
         <div className="flex items-center gap-2">
-          <button className="rounded-md px-4 py-2 font-space text-xs uppercase tracking-wide text-muted-foreground transition-all duration-150 hover:text-foreground">
+          <button className="rounded-none border border-foreground/40 bg-transparent px-4 py-2 font-space text-xs uppercase tracking-wide text-foreground transition-all duration-150 hover:bg-accent">
             Edit
           </button>
           <button
             onClick={() => setShowTopupModal(true)}
-            className="flex items-center gap-2 rounded-md bg-foreground px-4 py-2 font-space text-xs uppercase tracking-wide text-background transition-all duration-150 hover:bg-foreground/80"
+            className="rounded-none bg-foreground px-4 py-2 font-space text-xs uppercase tracking-wide text-background transition-all duration-150 hover:bg-foreground/80"
           >
-            <DollarSign className="h-3 w-3" /> Top Up Wallet
+            Top Up Wallet →
           </button>
-          <button className="rounded-md px-4 py-2 font-space text-xs uppercase tracking-wide text-muted-foreground transition-all duration-150 hover:text-terminal-red">
+          <button className="rounded-none border border-foreground/40 bg-transparent px-4 py-2 font-space text-xs uppercase tracking-wide text-foreground transition-all duration-150 hover:text-terminal-red">
             ⚠ Suspend
           </button>
         </div>
       </div>
 
-      {/* Two-column layout */}
-      <div className="grid grid-cols-1 gap-6 lg:grid-cols-[340px_1fr]">
+      {/* Two-column layout — 40/60 */}
+      <div className="grid grid-cols-1 gap-6 lg:grid-cols-[2fr_3fr]">
         {/* ── Left column ── */}
         <div className="space-y-6">
           <TerminalCard title="WALLET">
@@ -131,7 +133,7 @@ export default function CustomerDetail() {
                   <span className={row.bold ? "font-semibold" : ""}>{row.value}</span>
                 </div>
               ))}
-              <div className="border-t border-dashed border-foreground/[0.06] pt-3 mt-1">
+              <div className="border-t border-foreground/[0.06] pt-3 mt-1">
                 <div className="flex items-center justify-between font-ibm-plex text-sm">
                   <span className="text-muted-foreground">Auto Top-up</span>
                   <span className={customer.auto_topup?.enabled ? "text-terminal-green" : "text-muted-foreground"}>
@@ -167,11 +169,14 @@ export default function CustomerDetail() {
                   {row.copy ? <CopyableId value={row.value} /> : <span>{row.value}</span>}
                 </div>
               ))}
-              {customer.metadata && (
-                <div className="border-t border-dashed border-foreground/[0.06] pt-3 mt-1">
-                  <div className="font-ibm-plex text-xs text-muted-foreground">
-                    metadata: {JSON.stringify(customer.metadata)}
-                  </div>
+              {metadataEntries.length > 0 && (
+                <div className="border-t border-foreground/[0.06] pt-3 mt-1 space-y-2">
+                  {metadataEntries.map(([key, value]) => (
+                    <div key={key} className="flex items-center justify-between font-ibm-plex text-sm">
+                      <span className="text-muted-foreground">{key}</span>
+                      <span>{String(value)}</span>
+                    </div>
+                  ))}
                 </div>
               )}
             </div>
@@ -216,15 +221,15 @@ export default function CustomerDetail() {
                 </button>
               ))}
             </div>
-            <ResponsiveContainer width="100%" height={200}>
+            <ResponsiveContainer width="100%" height={220}>
               <BarChart data={chartData}>
                 <XAxis dataKey="day" tick={{ fontSize: 9, fontFamily: "IBM Plex Mono" }} stroke="hsl(var(--muted-foreground))" tickLine={false} axisLine={false} />
                 <YAxis tick={{ fontSize: 9, fontFamily: "IBM Plex Mono" }} stroke="hsl(var(--muted-foreground))" tickLine={false} axisLine={false} tickFormatter={(v) => `$${v}`} />
                 <Tooltip
-                  contentStyle={{ fontFamily: "IBM Plex Mono", fontSize: 11, background: "hsl(var(--card))", border: "1px solid hsl(var(--border))", borderRadius: 6 }}
+                  contentStyle={{ fontFamily: "IBM Plex Mono", fontSize: 11, background: "hsl(var(--card))", border: "1px solid hsl(var(--border))", borderRadius: 0 }}
                   formatter={(value: number) => [`$${value.toFixed(2)}`, "Spend"]}
                 />
-                <Bar dataKey="spend" fill="hsl(var(--foreground))" opacity={0.8} radius={[2, 2, 0, 0]} />
+                <Bar dataKey="spend" fill="hsl(var(--foreground))" opacity={0.8} radius={[0, 0, 0, 0]} />
               </BarChart>
             </ResponsiveContainer>
           </TerminalCard>
@@ -242,8 +247,8 @@ export default function CustomerDetail() {
                       <TableHead className="h-9 px-4 font-space text-[10px] uppercase tracking-widest">Timestamp</TableHead>
                       <TableHead className="h-9 px-4 font-space text-[10px] uppercase tracking-widest">Event Type</TableHead>
                       <TableHead className="h-9 px-4 font-space text-[10px] uppercase tracking-widest">Dimensions</TableHead>
-                      <TableHead className="h-9 px-4 font-space text-[10px] uppercase tracking-widest text-right">Cost</TableHead>
                       <TableHead className="h-9 px-4 font-space text-[10px] uppercase tracking-widest">Status</TableHead>
+                      <TableHead className="h-9 px-4 font-space text-[10px] uppercase tracking-widest text-right">Cost</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
@@ -254,33 +259,33 @@ export default function CustomerDetail() {
                           className="border-foreground/[0.04] cursor-pointer transition-all duration-150 hover:bg-accent/20"
                           onClick={() => setExpandedEventId(expandedEventId === event.id ? null : event.id)}
                         >
-                          <TableCell className="px-4 py-2.5 font-ibm-plex text-xs text-muted-foreground" title={event.timestamp}>
+                          <TableCell className="px-4 py-4 font-ibm-plex text-xs text-muted-foreground" title={event.timestamp}>
                             {relativeTime(event.timestamp)}
                           </TableCell>
-                          <TableCell className="px-4 py-2.5 font-ibm-plex text-xs text-terminal-yellow">{event.event_type}</TableCell>
-                          <TableCell className="px-4 py-2.5">
+                          <TableCell className="px-4 py-4 font-ibm-plex text-xs">{event.event_type}</TableCell>
+                          <TableCell className="px-4 py-4">
                             <div className="flex flex-wrap gap-1">
                               {Object.entries(event.properties)
                                 .filter(([k]) => k !== "event_type")
                                 .slice(0, 3)
                                 .map(([k, v]) => (
-                                  <span key={k} className="rounded border border-foreground/[0.08] px-1.5 py-0.5 font-ibm-plex text-[10px] text-muted-foreground">
+                                  <span key={k} className="border border-foreground/[0.08] px-1.5 py-0.5 font-ibm-plex text-[10px] text-muted-foreground">
                                     {k}:{String(v)}
                                   </span>
                                 ))}
                             </div>
                           </TableCell>
-                          <TableCell className="px-4 py-2.5 text-right font-ibm-plex text-xs text-terminal-green">
-                            {event.fees?.[0] && `${event.fees[0].amount.toFixed(4)} ${event.fees[0].asset_code}`}
-                          </TableCell>
-                          <TableCell className="px-4 py-2.5">
+                          <TableCell className="px-4 py-4">
                             <StatusBadge status={event.status} />
+                          </TableCell>
+                          <TableCell className="px-4 py-4 text-right font-ibm-plex text-xs text-terminal-green">
+                            {event.fees?.[0] && `$${event.fees[0].amount.toFixed(4)}`}
                           </TableCell>
                         </TableRow>
                         {expandedEventId === event.id && (
                           <TableRow key={`${event.id}-exp`} className="hover:bg-transparent">
                             <TableCell colSpan={5} className="p-0">
-                              <pre className="mx-4 mb-3 overflow-auto rounded-md bg-muted/30 p-4 font-ibm-plex text-xs leading-relaxed">
+                              <pre className="mx-4 mb-3 overflow-auto bg-muted/30 p-4 font-ibm-plex text-xs leading-relaxed">
                                 {JSON.stringify(event.properties, null, 2)}
                               </pre>
                             </TableCell>
@@ -293,7 +298,7 @@ export default function CustomerDetail() {
                 {visibleEvents < customerEvents.length && (
                   <button
                     onClick={() => setVisibleEvents((v) => v + 10)}
-                    className="mt-4 w-full rounded-md border border-foreground/[0.08] py-2 font-space text-xs uppercase tracking-wide text-muted-foreground transition-all duration-150 hover:text-foreground"
+                    className="mt-4 w-full rounded-none border border-foreground/40 py-2 font-space text-xs uppercase tracking-wide text-muted-foreground transition-all duration-150 hover:text-foreground"
                   >
                     Load More
                   </button>
@@ -330,14 +335,14 @@ export default function CustomerDetail() {
                     <TableBody>
                       {topups.map((tx) => (
                         <TableRow key={tx.id} className="border-foreground/[0.04] transition-all duration-150 hover:bg-accent/20">
-                          <TableCell className="px-4 py-2.5 font-ibm-plex text-xs text-muted-foreground">
+                          <TableCell className="px-4 py-4 font-ibm-plex text-xs text-muted-foreground">
                             {new Date(tx.created_at).toLocaleDateString()}
                           </TableCell>
-                          <TableCell className="px-4 py-2.5 text-right font-ibm-plex text-sm font-semibold text-terminal-green">
+                          <TableCell className="px-4 py-4 text-right font-ibm-plex text-sm font-semibold text-terminal-green">
                             +${tx.amount.toFixed(2)}
                           </TableCell>
-                          <TableCell className="px-4 py-2.5 font-ibm-plex text-xs text-muted-foreground">{tx.description}</TableCell>
-                          <TableCell className="px-4 py-2.5">
+                          <TableCell className="px-4 py-4 font-ibm-plex text-xs text-muted-foreground">{tx.description}</TableCell>
+                          <TableCell className="px-4 py-4">
                             <StatusBadge status="processed" />
                           </TableCell>
                         </TableRow>
@@ -353,8 +358,8 @@ export default function CustomerDetail() {
 
       {/* Top-up Modal */}
       <Dialog open={showTopupModal} onOpenChange={setShowTopupModal}>
-        <DialogContent className="rounded-md border-foreground/[0.12] bg-card dark:bg-[hsl(0_0%_6%)] sm:max-w-sm p-0 gap-0">
-          <div className="border-b border-dashed border-foreground/[0.08] px-6 py-4">
+        <DialogContent className="rounded-none border-foreground/[0.12] bg-card sm:max-w-sm p-0 gap-0">
+          <div className="border-b border-foreground/[0.08] px-6 py-4">
             <span className="font-space text-xs uppercase tracking-widest text-muted-foreground">
               ┌─ TOP UP WALLET ─┐
             </span>
@@ -371,7 +376,7 @@ export default function CustomerDetail() {
                   onChange={(e) => setTopupAmount(e.target.value)}
                   placeholder="25.00"
                   autoFocus
-                  className="w-full rounded-md border border-foreground/[0.12] bg-transparent py-2.5 pl-7 pr-3 font-ibm-plex text-sm focus:outline-none focus:ring-1 focus:ring-foreground/30"
+                  className="w-full rounded-none border border-foreground/[0.12] bg-transparent py-2.5 pl-7 pr-3 font-ibm-plex text-sm focus:outline-none focus:ring-1 focus:ring-foreground/30"
                 />
               </div>
             </div>
@@ -379,13 +384,13 @@ export default function CustomerDetail() {
           <div className="flex items-center justify-end gap-3 border-t border-foreground/[0.06] px-6 py-4">
             <button
               onClick={() => setShowTopupModal(false)}
-              className="rounded-md px-4 py-2 font-space text-xs uppercase tracking-wide text-muted-foreground transition-all duration-150 hover:text-foreground"
+              className="rounded-none border border-foreground/40 bg-transparent px-4 py-2 font-space text-xs uppercase tracking-wide text-foreground transition-all duration-150 hover:bg-accent"
             >
               Cancel
             </button>
             <button
               onClick={handleTopup}
-              className="rounded-md bg-foreground px-5 py-2 font-space text-xs uppercase tracking-wide text-background transition-all duration-150 hover:bg-foreground/80"
+              className="rounded-none bg-foreground px-5 py-2 font-space text-xs uppercase tracking-wide text-background transition-all duration-150 hover:bg-foreground/80"
             >
               Confirm Top Up →
             </button>

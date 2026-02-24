@@ -1,22 +1,18 @@
 import { cn } from "@/lib/utils";
 
-type Status = "active" | "published" | "processed" | "success" |
-              "inactive" | "archived" | "cancelled" | "failed" | "error" |
-              "pending" | "draft" | "warning";
-
 const statusConfig: Record<string, { symbol: string; color: string }> = {
-  active: { symbol: "▇", color: "text-terminal-green" },
-  published: { symbol: "▇", color: "text-terminal-green" },
+  active: { symbol: "✓", color: "text-terminal-green" },
+  published: { symbol: "✓", color: "text-terminal-green" },
   processed: { symbol: "✓", color: "text-terminal-green" },
   success: { symbol: "✓", color: "text-terminal-green" },
-  inactive: { symbol: "░", color: "text-muted-foreground" },
-  archived: { symbol: "░", color: "text-muted-foreground" },
+  inactive: { symbol: "✗", color: "text-muted-foreground" },
+  archived: { symbol: "✗", color: "text-muted-foreground" },
   cancelled: { symbol: "✗", color: "text-terminal-red" },
   failed: { symbol: "✗", color: "text-terminal-red" },
   error: { symbol: "✗", color: "text-terminal-red" },
   suspended: { symbol: "✗", color: "text-terminal-red" },
-  pending: { symbol: "→", color: "text-terminal-yellow" },
-  draft: { symbol: "→", color: "text-terminal-yellow" },
+  pending: { symbol: "→", color: "text-muted-foreground" },
+  draft: { symbol: "→", color: "text-muted-foreground" },
   warning: { symbol: "⚠", color: "text-terminal-yellow" },
 };
 
