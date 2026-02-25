@@ -22,6 +22,11 @@ export function AppLayout() {
     <div className="flex min-h-screen w-full">
       <AppSidebar collapsed={false} onToggle={() => {}} />
       <div className="flex-1 ml-60 flex flex-col">
+        {/* Sandbox Banner — absolute top */}
+        <div className="flex items-center gap-2 px-10 py-2 font-space text-xs shrink-0" style={{ backgroundColor: "#FACC15", color: "#000" }}>
+          ⚠ YOU'RE VIEWING DEMO DATA — Changes made here will not affect any live account
+        </div>
+
         {/* Top Bar */}
         <header className="h-12 border-b border-white/[0.08] flex items-center justify-between px-10 shrink-0" style={{ backgroundColor: "#0C0D10" }}>
           <span className="font-space text-xs uppercase tracking-widest text-white/40">{pageTitle}</span>
@@ -33,11 +38,6 @@ export function AppLayout() {
             </div>
           </div>
         </header>
-
-        {/* Sandbox Banner */}
-        <div className="flex items-center gap-2 px-10 py-2 font-space text-xs" style={{ backgroundColor: "#FACC15", color: "#000" }}>
-          ⚠ YOU'RE VIEWING DEMO DATA — Changes made here will not affect any live account
-        </div>
 
         {/* Main Content */}
         <main className="flex-1 overflow-auto px-10 py-10">

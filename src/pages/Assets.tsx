@@ -39,83 +39,72 @@ export default function Assets() {
       </div>
 
       {/* Asset Cards Grid */}
-      <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
+      <div className="grid grid-cols-1 gap-4 lg:grid-cols-2 items-stretch">
         {assetList.map((asset) => {
           const isFiat = asset.type === "fiat";
           const icon = isFiat ? "$" : "★";
+          const latestRate = asset.rates.length > 0 ? asset.rates[asset.rates.length - 1] : null;
 
           return (
-            <div key={asset.id} className="border border-white/10 p-8" style={{ backgroundColor: "#0d1f24" }}>
+            <div key={asset.id} className="border border-white/10 p-8 flex flex-col" style={{ backgroundColor: "#0D1117" }}>
               {/* Top */}
               <div className="flex items-start justify-between mb-1">
                 <div className="flex items-center gap-3">
                   <span className="text-2xl text-[#2DD4BF]">{icon}</span>
-                  <span className="font-space text-2xl font-bold">{asset.code}</span>
+                  <span className="font-space text-2xl font-bold text-white">{asset.code}</span>
                 </div>
                 <span className={`border px-2 py-0.5 font-space text-xs uppercase tracking-widest ${isFiat ? "border-[#4ADE80]/40 text-[#4ADE80]" : "border-[#FACC15]/40 text-[#FACC15]"}`}>
                   {asset.type}
                 </span>
               </div>
-              <div className="font-ibm-plex text-sm text-white/50 mb-6">{asset.name}</div>
+              <div className="font-ibm-plex text-sm text-white/50 mb-4">{asset.name}</div>
 
-              {/* Key/value rows */}
-              <div className="mb-6">
-                <div className="flex justify-between py-2 border-b border-white/[0.08]">
-                  <span className="font-space text-xs uppercase tracking-wider text-white/40">Type</span>
-                  <span className="font-ibm-plex text-sm font-medium">{asset.type}</span>
+              {/* 2-column grid fields */}
+              <div className="grid grid-cols-2 gap-x-8 gap-y-4 mt-2">
+                <div>
+                  <div className="font-space text-xs text-white/40 uppercase tracking-wider mb-1">Type</div>
+                  <div className="font-ibm-plex text-sm text-white">{asset.type}</div>
                 </div>
-                <div className="flex justify-between py-2 border-b border-white/[0.08]">
-                  <span className="font-space text-xs uppercase tracking-wider text-white/40">Precision</span>
-                  <span className="font-ibm-plex text-sm font-medium">{asset.scale} decimals</span>
+                <div>
+                  <div className="font-space text-xs text-white/40 uppercase tracking-wider mb-1">Precision</div>
+                  <div className="font-ibm-plex text-sm text-white">{asset.scale} decimals</div>
                 </div>
-                <div className="flex justify-between py-2 border-b border-white/[0.08]">
-                  <span className="font-space text-xs uppercase tracking-wider text-white/40">Symbol</span>
-                  <span className="font-ibm-plex text-sm font-medium">{asset.symbol || "—"}</span>
+                <div>
+                  <div className="font-space text-xs text-white/40 uppercase tracking-wider mb-1">Symbol</div>
+                  <div className="font-ibm-plex text-sm text-white">{asset.symbol || "—"}</div>
                 </div>
               </div>
 
               {/* Exchange rates — custom assets only */}
-              {!isFiat && asset.rates.length > 0 && (
-                <>
-                  <div className="border-t border-white/10 mt-6 pt-6">
-                    <div className="font-space text-xs uppercase tracking-wider text-white/40 mb-3">Exchange Rates</div>
-                    {asset.rates.slice(-1).map((rate, i) => {
-                      const perUnit = rate.rate > 0 ? (1 / rate.rate).toFixed(4) : "0";
-                      return (
-                        <div key={i} className="mb-3">
-                          <div className="font-ibm-plex text-sm">
-                            <span className="text-white/40">1 USD = </span>
-                            <span className="font-bold text-[#2DD4BF]">{rate.rate} {rate.to_asset}</span>
-                          </div>
-                          <div className="font-ibm-plex text-xs text-white/40 mt-0.5">
-                            ${perUnit} per {rate.to_asset}
-                          </div>
-                        </div>
-                      );
-                    })}
-                    <button
-                      onClick={() => setRateModalAsset(asset)}
-                      className="mt-4 border border-white/30 bg-transparent px-4 py-2 font-space text-xs uppercase tracking-wide text-white hover:bg-white/5"
-                    >
-                      + Add Rate
-                    </button>
-                  </div>
-                </>
-              )}
-
-              {/* Custom asset with no rates */}
-              {!isFiat && asset.rates.length === 0 && (
+              {!isFiat && latestRate && (
                 <div className="border-t border-white/10 mt-6 pt-6">
-                  <button
-                    onClick={() => setRateModalAsset(asset)}
-                    className="border border-white/30 bg-transparent px-4 py-2 font-space text-xs uppercase tracking-wide text-white hover:bg-white/5"
-                  >
-                    + Add Rate
-                  </button>
+                  <div className="font-space text-xs uppercase tracking-wider text-white/40 mb-3">Exchange Rates</div>
+                  <div className="font-ibm-plex text-sm">
+                    <span className="text-white/50">1 USD = </span>
+                    <span className="font-bold text-[#2DD4BF]">{latestRate.rate} {latestRate.to_asset}</span>
+                    <span className="text-white/30 text-xs ml-2">(${latestRate.rate > 0 ? (1 / latestRate.rate).toFixed(4) : "0"} per {latestRate.to_asset})</span>
+                  </div>
                 </div>
               )}
 
-              {/* Fiat cards: no explanation block, end after rows */}
+              {/* Explanation block — custom only */}
+              {!isFiat && (
+                <div className="bg-black/20 p-4 font-ibm-plex text-xs text-white/40 mt-4">
+                  Customers top up in {latestRate?.from_asset || "USD"} → receive {asset.code} at configured rate. Used in product pricing as a billing unit.
+                </div>
+              )}
+
+              {/* Add Rate button — custom only */}
+              {!isFiat && (
+                <button
+                  onClick={() => setRateModalAsset(asset)}
+                  className="mt-4 border border-white/30 bg-transparent px-4 py-2 font-space text-xs uppercase tracking-wide text-white hover:bg-white/5 self-start"
+                >
+                  + Add Rate
+                </button>
+              )}
+
+              {/* Fiat cards: end after grid fields, no explanation */}
             </div>
           );
         })}
