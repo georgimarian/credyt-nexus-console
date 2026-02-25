@@ -58,63 +58,64 @@ export default function Assets() {
               </div>
               <div className="font-ibm-plex text-sm text-white/50 mb-6">{asset.name}</div>
 
-              {/* Middle */}
-              <div className="grid grid-cols-2 gap-4 mb-6">
-                <div>
-                  <div className="font-space text-xs uppercase tracking-wider text-white/40 mb-1">Type</div>
-                  <div className="font-ibm-plex text-sm">{asset.type}</div>
+              {/* Key/value rows */}
+              <div className="mb-6">
+                <div className="flex justify-between py-2 border-b border-white/[0.08]">
+                  <span className="font-space text-xs uppercase tracking-wider text-white/40">Type</span>
+                  <span className="font-ibm-plex text-sm font-medium">{asset.type}</span>
                 </div>
-                <div>
-                  <div className="font-space text-xs uppercase tracking-wider text-white/40 mb-1">Precision</div>
-                  <div className="font-ibm-plex text-sm">{asset.scale} decimals</div>
+                <div className="flex justify-between py-2 border-b border-white/[0.08]">
+                  <span className="font-space text-xs uppercase tracking-wider text-white/40">Precision</span>
+                  <span className="font-ibm-plex text-sm font-medium">{asset.scale} decimals</span>
                 </div>
-                <div>
-                  <div className="font-space text-xs uppercase tracking-wider text-white/40 mb-1">Symbol</div>
-                  <div className="font-ibm-plex text-sm">{asset.symbol || "—"}</div>
+                <div className="flex justify-between py-2 border-b border-white/[0.08]">
+                  <span className="font-space text-xs uppercase tracking-wider text-white/40">Symbol</span>
+                  <span className="font-ibm-plex text-sm font-medium">{asset.symbol || "—"}</span>
                 </div>
               </div>
 
-              {/* Exchange rates */}
-              {asset.rates.length > 0 && (
+              {/* Exchange rates — custom assets only */}
+              {!isFiat && asset.rates.length > 0 && (
                 <>
-                  <div className="border-t border-white/10 my-6" />
-                  <div className="font-space text-xs uppercase tracking-wider text-white/40 mb-3">Exchange Rates</div>
-                  {asset.rates.slice(-1).map((rate, i) => {
-                    const perUnit = rate.rate > 0 ? (1 / rate.rate).toFixed(4) : "0";
-                    return (
-                      <div key={i} className="mb-3">
-                        <div className="font-ibm-plex text-sm">
-                          <span className="text-white/50">1 </span>
-                          <span className="font-bold text-[#2DD4BF]">{rate.from_asset}</span>
-                          <span className="text-white/50"> = </span>
-                          <span className="font-bold text-[#2DD4BF]">{rate.rate} {rate.to_asset}</span>
+                  <div className="border-t border-white/10 mt-6 pt-6">
+                    <div className="font-space text-xs uppercase tracking-wider text-white/40 mb-3">Exchange Rates</div>
+                    {asset.rates.slice(-1).map((rate, i) => {
+                      const perUnit = rate.rate > 0 ? (1 / rate.rate).toFixed(4) : "0";
+                      return (
+                        <div key={i} className="mb-3">
+                          <div className="font-ibm-plex text-sm">
+                            <span className="text-white/40">1 USD = </span>
+                            <span className="font-bold text-[#2DD4BF]">{rate.rate} {rate.to_asset}</span>
+                          </div>
+                          <div className="font-ibm-plex text-xs text-white/40 mt-0.5">
+                            ${perUnit} per {rate.to_asset}
+                          </div>
                         </div>
-                        <div className="font-ibm-plex text-xs text-white/40 mt-0.5">
-                          (${perUnit} per {rate.to_asset})
-                        </div>
-                      </div>
-                    );
-                  })}
-                  <div className="mt-4 bg-white/5 p-4 font-ibm-plex text-sm text-white/50">
-                    Customers top up in {asset.rates[0]?.from_asset} → receive {asset.code} at configured rate. Used in product pricing as a billing unit.
+                      );
+                    })}
+                    <button
+                      onClick={() => setRateModalAsset(asset)}
+                      className="mt-4 border border-white/30 bg-transparent px-4 py-2 font-space text-xs uppercase tracking-wide text-white hover:bg-white/5"
+                    >
+                      + Add Rate
+                    </button>
                   </div>
-                  <button
-                    onClick={() => setRateModalAsset(asset)}
-                    className="mt-4 border border-white/30 bg-transparent px-4 py-2 font-space text-xs uppercase tracking-wide text-white hover:bg-white/5"
-                  >
-                    + Add Rate
-                  </button>
                 </>
               )}
 
-              {asset.rates.length === 0 && (
-                <>
-                  <div className="border-t border-white/10 my-6" />
-                  <div className="bg-white/5 p-4 font-ibm-plex text-sm text-white/50">
-                    Base fiat asset — used as the settlement currency for customer wallets and billing.
-                  </div>
-                </>
+              {/* Custom asset with no rates */}
+              {!isFiat && asset.rates.length === 0 && (
+                <div className="border-t border-white/10 mt-6 pt-6">
+                  <button
+                    onClick={() => setRateModalAsset(asset)}
+                    className="border border-white/30 bg-transparent px-4 py-2 font-space text-xs uppercase tracking-wide text-white hover:bg-white/5"
+                  >
+                    + Add Rate
+                  </button>
+                </div>
               )}
+
+              {/* Fiat cards: no explanation block, end after rows */}
             </div>
           );
         })}

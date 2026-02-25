@@ -23,8 +23,14 @@ export function CreateCustomerModal({ open, onClose, onCreated }: CreateCustomer
   const [autoTopup, setAutoTopup] = useState(false);
   const [threshold, setThreshold] = useState("");
   const [topupAmount, setTopupAmount] = useState("");
-  const [selectedProductId, setSelectedProductId] = useState("");
+  const [selectedProductIds, setSelectedProductIds] = useState<string[]>([]);
   const [errors, setErrors] = useState<Record<string, string>>({});
+
+  const toggleProduct = (id: string) => {
+    setSelectedProductIds(prev =>
+      prev.includes(id) ? prev.filter(p => p !== id) : [...prev, id]
+    );
+  };
 
   const validate = () => {
     const errs: Record<string, string> = {};
@@ -43,14 +49,16 @@ export function CreateCustomerModal({ open, onClose, onCreated }: CreateCustomer
   const handleCreate = () => {
     if (!validate()) return;
 
-    const selectedProduct = activeProducts.find(p => p.id === selectedProductId);
-    const subscriptions = selectedProduct ? [{
-      id: `sub_${Date.now().toString(36)}`,
-      product_id: selectedProduct.id,
-      product_name: selectedProduct.name,
-      status: "active" as const,
-      start_date: new Date().toISOString(),
-    }] : [];
+    const subscriptions = selectedProductIds.map(pid => {
+      const prod = activeProducts.find(p => p.id === pid)!;
+      return {
+        id: `sub_${Date.now().toString(36)}_${pid}`,
+        product_id: prod.id,
+        product_name: prod.name,
+        status: "active" as const,
+        start_date: new Date().toISOString(),
+      };
+    });
 
     const customer: Customer = {
       id: `cust_${Date.now().toString(36)}`,
@@ -73,7 +81,7 @@ export function CreateCustomerModal({ open, onClose, onCreated }: CreateCustomer
     };
     onCreated(customer);
     toast({ title: "done: Customer created", description: `${customer.name} has been added.` });
-    setExternalId(""); setName(""); setEmail(""); setCurrency("USD"); setInitialBalance(""); setAutoTopup(false); setThreshold(""); setTopupAmount(""); setSelectedProductId(""); setErrors({});
+    setExternalId(""); setName(""); setEmail(""); setCurrency("USD"); setInitialBalance(""); setAutoTopup(false); setThreshold(""); setTopupAmount(""); setSelectedProductIds([]); setErrors({});
   };
 
   const inputCls = "w-full border border-white/20 bg-transparent px-3 py-2 font-ibm-plex text-sm placeholder:text-white/30 focus:outline-none focus:border-white/60";
@@ -147,17 +155,37 @@ export function CreateCustomerModal({ open, onClose, onCreated }: CreateCustomer
             )}
           </div>
 
-          {/* Subscription */}
+          {/* Subscription — multi-select product list */}
           <div className="border-t border-white/[0.08] pt-5">
             <div className="font-space text-xs uppercase tracking-wider text-white/40 mb-3">Subscription</div>
             <div>
-              <label className="block font-space text-xs uppercase tracking-wider text-white/40 mb-2">Subscribe to Product</label>
-              <select value={selectedProductId} onChange={(e) => setSelectedProductId(e.target.value)} className={selectCls} style={{ backgroundColor: "#111111" }}>
-                <option value="">— None (skip)</option>
-                {activeProducts.map(p => (
-                  <option key={p.id} value={p.id}>{p.name} ({p.code})</option>
-                ))}
-              </select>
+              {activeProducts.length === 0 ? (
+                <div className="font-ibm-plex text-sm text-white/30">No active products available</div>
+              ) : (
+                <div>
+                  {activeProducts.map(p => {
+                    const selected = selectedProductIds.includes(p.id);
+                    return (
+                      <div
+                        key={p.id}
+                        onClick={() => toggleProduct(p.id)}
+                        className={`flex items-center justify-between py-3 border-b border-white/[0.08] cursor-pointer transition-colors ${selected ? "bg-white/[0.03]" : "hover:bg-white/[0.02]"}`}
+                      >
+                        <div className="flex items-center gap-2">
+                          <span className="font-ibm-plex text-sm font-medium">{p.name}</span>
+                          <span className="border border-white/20 px-1.5 font-ibm-plex text-xs text-white/60">{p.code}</span>
+                        </div>
+                        <span className={`font-mono text-sm ${selected ? "text-[#4ADE80]" : "text-white/20"}`}>
+                          {selected ? "✓" : "○"}
+                        </span>
+                      </div>
+                    );
+                  })}
+                  <p className="mt-2 font-ibm-plex text-xs text-white/30">
+                    {selectedProductIds.length} product{selectedProductIds.length !== 1 ? "s" : ""} selected
+                  </p>
+                </div>
+              )}
               <p className="mt-1 font-ibm-plex text-xs text-white/30">Subscribing provisions wallet accounts automatically</p>
             </div>
           </div>
