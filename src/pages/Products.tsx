@@ -1,10 +1,14 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
 import { StatusBadge } from "@/components/terminal/StatusBadge";
-import { CopyableId } from "@/components/terminal/CopyableId";
 import { useProductStore } from "@/stores/productStore";
 import { CreateProductWizard } from "@/components/products/CreateProductWizard";
 import { Input } from "@/components/ui/input";
+
+function formatDate(iso: string) {
+  const d = new Date(iso);
+  return d.toLocaleString("en-US", { month: "short", day: "numeric", year: "numeric" });
+}
 
 export default function Products() {
   const { products } = useProductStore();
@@ -41,43 +45,43 @@ export default function Products() {
         className="border-white/[0.08] bg-transparent pl-4 font-ibm-plex text-sm"
       />
 
-      <table className="w-full table-fixed">
-        <thead>
-          <tr className="border-b border-dashed border-white/15">
-            <th className="w-[35%] px-4 pb-3 text-left font-space text-xs uppercase tracking-wider text-white/40 whitespace-nowrap">Product Name</th>
-            <th className="w-[25%] px-4 pb-3 text-left font-space text-xs uppercase tracking-wider text-white/40 whitespace-nowrap">Product ID</th>
-            <th className="w-[10%] px-4 pb-3 text-left font-space text-xs uppercase tracking-wider text-white/40 whitespace-nowrap">Status</th>
-            <th className="w-[10%] px-4 pb-3 text-center font-space text-xs uppercase tracking-wider text-white/40 whitespace-nowrap">Prices</th>
-            <th className="w-[10%] px-4 pb-3 text-center font-space text-xs uppercase tracking-wider text-white/40 whitespace-nowrap">Subs</th>
-            <th className="w-[10%] px-4 pb-3"></th>
-          </tr>
-        </thead>
-        <tbody>
-          {filtered.map((product) => (
-            <tr key={product.id} className="border-b border-white/[0.06] hover:bg-white/[0.02] transition-colors">
-              <td className="px-4 py-4">
-                <div className="font-ibm-plex text-sm font-medium">{product.name}
-                  <span className="ml-2 border border-white/20 text-white/60 text-xs px-1.5 py-0.5 font-ibm-plex">v{product.versions[0]?.version || 1}</span>
+      <div className="space-y-0">
+        {filtered.map((product) => {
+          const version = product.versions[0]?.version || 1;
+          const model = product.pricing_model || "USAGE_BASED";
+
+          return (
+            <Link
+              key={product.id}
+              to={`/products/${product.id}`}
+              className="block border-b border-white/[0.06] hover:bg-white/[0.02] transition-colors px-4 py-4"
+            >
+              {/* Line 1 */}
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <span className="font-ibm-plex text-sm font-bold">{product.name}</span>
+                  <StatusBadge status={product.status} />
                 </div>
-              </td>
-              <td className="px-4 py-4"><CopyableId value={product.id} /></td>
-              <td className="px-4 py-4"><StatusBadge status={product.status} /></td>
-              <td className="px-4 py-4 text-center font-ibm-plex text-sm font-light">{product.prices.length}</td>
-              <td className="px-4 py-4 text-center font-ibm-plex text-sm font-light">{product.subscriber_count}</td>
-              <td className="px-4 py-4 text-right">
-                <Link to={`/products/${product.id}`} className="text-white/40 hover:text-white text-sm">→</Link>
-              </td>
-            </tr>
-          ))}
-          {filtered.length === 0 && (
-            <tr>
-              <td colSpan={6} className="px-4 py-12 text-center font-ibm-plex text-sm text-white/40">
-                <span className="terminal-cursor">$ no products found </span>
-              </td>
-            </tr>
-          )}
-        </tbody>
-      </table>
+                <div className="flex items-center gap-3">
+                  <span className="border border-white/20 text-white/40 text-xs px-2 py-0.5 font-ibm-plex">
+                    {model}
+                  </span>
+                  <span className="text-white/40 text-sm">→</span>
+                </div>
+              </div>
+              {/* Line 2 */}
+              <div className="text-xs text-white/30 font-ibm-plex mt-1">
+                {product.code} · v{version} · {product.prices.length} price{product.prices.length !== 1 ? "s" : ""} · {formatDate(product.created_at)}
+              </div>
+            </Link>
+          );
+        })}
+        {filtered.length === 0 && (
+          <div className="px-4 py-12 text-center font-ibm-plex text-sm text-white/40">
+            <span className="terminal-cursor">$ no products found </span>
+          </div>
+        )}
+      </div>
     </div>
   );
 }

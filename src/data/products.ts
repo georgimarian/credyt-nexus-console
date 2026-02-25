@@ -8,6 +8,7 @@ export const products: Product[] = [
     status: "active",
     created_at: "2024-11-15T10:00:00Z",
     subscriber_count: 5,
+    pricing_model: "USAGE_BASED",
     versions: [
       { version: 1, status: "archived", created_at: "2024-11-15T10:00:00Z", published_at: "2024-11-15T12:00:00Z" },
       { version: 2, status: "published", created_at: "2024-12-01T09:00:00Z", published_at: "2024-12-01T10:00:00Z" },
@@ -44,6 +45,7 @@ export const products: Product[] = [
     status: "active",
     created_at: "2024-10-01T08:00:00Z",
     subscriber_count: 3,
+    pricing_model: "USAGE_BASED",
     versions: [
       { version: 1, status: "published", created_at: "2024-10-01T08:00:00Z", published_at: "2024-10-01T09:00:00Z" },
     ],
@@ -80,6 +82,7 @@ export const products: Product[] = [
     status: "active",
     created_at: "2024-09-01T08:00:00Z",
     subscriber_count: 1,
+    pricing_model: "HYBRID",
     versions: [
       { version: 1, status: "archived", created_at: "2024-09-01T08:00:00Z", published_at: "2024-09-01T10:00:00Z" },
       { version: 2, status: "published", created_at: "2024-11-01T08:00:00Z", published_at: "2024-11-01T10:00:00Z" },

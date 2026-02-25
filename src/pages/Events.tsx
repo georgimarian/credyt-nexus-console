@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { StatusBadge } from "@/components/terminal/StatusBadge";
 import { CopyableId } from "@/components/terminal/CopyableId";
 import { EventDetailSheet } from "@/components/events/EventDetailSheet";
@@ -34,7 +34,14 @@ export default function Events() {
   const paged = filtered.slice(page * perPage, (page + 1) * perPage);
   const totalPages = Math.ceil(filtered.length / perPage);
 
-  const totalBilled = events.reduce((s, e) => s + (e.fees?.reduce((fs, f) => fs + (f.asset_code === "USD" ? f.amount : 0), 0) || 0), 0);
+  // Summary calculations based on filtered events
+  const summary = useMemo(() => {
+    const revenue = filtered.reduce((s, e) => s + (e.fees?.reduce((fs, f) => fs + (f.asset_code === "USD" ? f.amount : 0), 0) || 0), 0);
+    const cost = filtered.reduce((s, e) => s + (e.costs?.reduce((cs, c) => cs + (c.asset_code === "USD" ? c.amount : 0), 0) || 0), 0);
+    const margin = revenue > 0 ? ((revenue - cost) / revenue) * 100 : 0;
+    return { revenue, cost, margin };
+  }, [filtered]);
+
   const todayCount = 12;
 
   const customerMap = new Map(customers.map(c => [c.id, c]));
@@ -42,34 +49,53 @@ export default function Events() {
   const selectedCust = selectedEvent ? customerMap.get(selectedEvent.customer_id) : null;
 
   return (
-    <div className="space-y-10">
+    <div className="space-y-6">
       <div>
         <h1 className="font-space text-2xl font-bold uppercase tracking-wider mb-2">Events</h1>
         <p className="font-space text-xs uppercase tracking-widest text-white/40">
-          {events.length} Events · ${totalBilled.toFixed(2)} Billed · Today: {todayCount}
+          {events.length} Events · Today: {todayCount}
         </p>
       </div>
 
-      <div className="flex flex-wrap gap-3">
-        <div className="flex-1">
-          <Input
-            placeholder="Search by customer or event ID..."
-            value={search}
-            onChange={(e) => { setSearch(e.target.value); setPage(0); }}
-            className="border-white/[0.08] bg-transparent pl-4 font-ibm-plex text-sm"
-          />
-        </div>
-        <select
-          value={typeFilter}
-          onChange={(e) => { setTypeFilter(e.target.value); setPage(0); }}
-          className="border border-white/[0.08] bg-transparent px-4 py-2 font-ibm-plex text-sm text-white focus:outline-none"
-          style={{ backgroundColor: "#0C0D10" }}
+      {/* Filter bar */}
+      <div className="flex items-center gap-3">
+        <Input
+          placeholder="Search by customer or event ID..."
+          value={search}
+          onChange={(e) => { setSearch(e.target.value); setPage(0); }}
+          className="w-64 shrink-0 border-white/[0.08] bg-transparent pl-4 font-ibm-plex text-sm"
+        />
+        <button
+          onClick={() => { setTypeFilter(""); setPage(0); }}
+          className={`border text-xs px-3 py-1 font-ibm-plex cursor-pointer ${
+            typeFilter === "" ? "border-[#4ADE80] text-[#4ADE80] bg-[#4ADE80]/5" : "border-white/20 text-white/50 hover:border-white/40"
+          }`}
         >
-          <option value="">All event types</option>
-          {eventTypes.map((t) => (
-            <option key={t} value={t}>{t}</option>
-          ))}
-        </select>
+          ALL
+        </button>
+        {eventTypes.map((t) => (
+          <button
+            key={t}
+            onClick={() => { setTypeFilter(typeFilter === t ? "" : t); setPage(0); }}
+            className={`border text-xs px-3 py-1 font-ibm-plex cursor-pointer whitespace-nowrap ${
+              typeFilter === t ? "border-[#4ADE80] text-[#4ADE80] bg-[#4ADE80]/5" : "border-white/20 text-white/50 hover:border-white/40"
+            }`}
+          >
+            {t}
+          </button>
+        ))}
+      </div>
+
+      {/* Summary bar */}
+      <div className="flex items-center justify-end gap-1 text-xs font-ibm-plex">
+        <span className="text-white/40">revenue:</span>
+        <span className="text-[#4ADE80]">${summary.revenue.toFixed(2)}</span>
+        <span className="text-white/20 mx-1">·</span>
+        <span className="text-white/40">cost:</span>
+        <span className="text-[#F87171]">${summary.cost.toFixed(2)}</span>
+        <span className="text-white/20 mx-1">·</span>
+        <span className="text-white/40">margin:</span>
+        <span className="text-white/60">{summary.margin.toFixed(0)}%</span>
       </div>
 
       {/* Card-feed layout */}
@@ -78,6 +104,7 @@ export default function Events() {
           const cust = customerMap.get(event.customer_id);
           const isSelected = selectedId === event.id;
           const fee = event.fees?.[0];
+          const cost = event.costs?.[0];
           const dims = event.properties ? Object.entries(event.properties) : [];
 
           return (
@@ -95,8 +122,18 @@ export default function Events() {
                 </div>
                 <div className="flex items-center gap-4">
                   <StatusBadge status={event.status} />
-                  <span className="font-ibm-plex text-sm text-[#4ADE80] w-20 text-right">
-                    {fee ? `$${fee.amount.toFixed(2)}` : "—"}
+                  <span className="font-ibm-plex text-sm w-28 text-right">
+                    {fee ? (
+                      <>
+                        <span className="text-[#4ADE80]">${fee.amount.toFixed(fee.amount < 0.01 ? 4 : 2)}</span>
+                        {cost && (
+                          <>
+                            <span className="text-white/20 mx-1">·</span>
+                            <span className="text-[#F87171] text-xs">cost ${cost.amount.toFixed(cost.amount < 0.01 ? 4 : 2)}</span>
+                          </>
+                        )}
+                      </>
+                    ) : "—"}
                   </span>
                   <span className="text-white/40 text-sm">→</span>
                 </div>
