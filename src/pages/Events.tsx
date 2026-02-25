@@ -1,5 +1,4 @@
 import { useState, useMemo } from "react";
-import { StatusBadge } from "@/components/terminal/StatusBadge";
 import { CopyableId } from "@/components/terminal/CopyableId";
 import { EventDetailSheet } from "@/components/events/EventDetailSheet";
 import { events } from "@/data/events";
@@ -15,6 +14,8 @@ function formatTimeParts(ts: string) {
   const s = String(d.getSeconds()).padStart(2, "0");
   return `${mo} ${day} ${h}:${m}:${s}`;
 }
+
+const MAX_TAGS = 4;
 
 export default function Events() {
   const [search, setSearch] = useState("");
@@ -34,7 +35,6 @@ export default function Events() {
   const paged = filtered.slice(page * perPage, (page + 1) * perPage);
   const totalPages = Math.ceil(filtered.length / perPage);
 
-  // Summary calculations based on filtered events
   const summary = useMemo(() => {
     const revenue = filtered.reduce((s, e) => s + (e.fees?.reduce((fs, f) => fs + (f.asset_code === "USD" ? f.amount : 0), 0) || 0), 0);
     const cost = filtered.reduce((s, e) => s + (e.costs?.reduce((cs, c) => cs + (c.asset_code === "USD" ? c.amount : 0), 0) || 0), 0);
@@ -43,7 +43,6 @@ export default function Events() {
   }, [filtered]);
 
   const todayCount = 12;
-
   const customerMap = new Map(customers.map(c => [c.id, c]));
   const selectedEvent = selectedId ? events.find(e => e.id === selectedId) : null;
   const selectedCust = selectedEvent ? customerMap.get(selectedEvent.customer_id) : null;
@@ -98,7 +97,7 @@ export default function Events() {
         <span className="text-white/60">{summary.margin.toFixed(0)}%</span>
       </div>
 
-      {/* Card-feed layout */}
+      {/* Event feed */}
       <div>
         {paged.map((event) => {
           const cust = customerMap.get(event.customer_id);
@@ -106,62 +105,70 @@ export default function Events() {
           const fee = event.fees?.[0];
           const cost = event.costs?.[0];
           const dims = event.properties ? Object.entries(event.properties) : [];
+          const visibleDims = dims.slice(0, MAX_TAGS);
+          const hiddenCount = dims.length - MAX_TAGS;
+
+          const isUsdFee = fee && fee.asset_code === "USD";
 
           return (
             <div
               key={event.id}
               onClick={() => setSelectedId(isSelected ? null : event.id)}
-              className={`border-b border-white/[0.06] py-4 px-4 hover:bg-white/[0.02] cursor-pointer transition-colors ${isSelected ? "bg-white/[0.04] border-l-2 border-l-[#4ADE80]" : ""}`}
+              className={`grid grid-cols-[180px_1fr_200px] gap-4 items-start py-5 px-4 border-b border-white/[0.06] hover:bg-white/[0.02] cursor-pointer transition-colors ${isSelected ? "bg-white/[0.04] border-l-2 border-l-[#4ADE80]" : ""}`}
             >
-              {/* Line 1 */}
-              <div className="flex items-center justify-between">
-                <div className="flex items-center">
-                  <span className="font-ibm-plex text-xs text-white/40 w-36 shrink-0">{formatTimeParts(event.timestamp)}</span>
-                  <span className="font-ibm-plex text-sm font-medium ml-4 w-36 shrink-0">{event.event_type}</span>
-                  <span className="font-ibm-plex text-sm font-medium ml-4">{event.customer_name}</span>
-                </div>
-                <div className="flex items-center gap-4">
-                  <StatusBadge status={event.status} />
-                  <span className="font-ibm-plex text-sm w-28 text-right">
-                    {fee ? (
-                      <>
-                        <span className="text-[#4ADE80]">${fee.amount.toFixed(fee.amount < 0.01 ? 4 : 2)}</span>
-                        {cost && (
-                          <>
-                            <span className="text-white/20 mx-1">·</span>
-                            <span className="text-[#F87171] text-xs">cost ${cost.amount.toFixed(cost.amount < 0.01 ? 4 : 2)}</span>
-                          </>
-                        )}
-                      </>
-                    ) : "—"}
-                  </span>
-                  <span className="text-white/40 text-sm">→</span>
-                </div>
+              {/* Zone 1 — LEFT: timestamp + event ID */}
+              <div className="shrink-0">
+                <div className="font-ibm-plex text-xs text-white/40">{formatTimeParts(event.timestamp)}</div>
+                <div className="font-ibm-plex text-xs text-white/20 mt-0.5">{event.id}</div>
               </div>
 
-              {/* Line 2 */}
-              <div className="flex items-center mt-1 ml-0 sm:ml-36 text-xs text-white/30 font-ibm-plex gap-1">
-                <CopyableId value={event.id} />
-                <span>·</span>
-                <span>{event.customer_id}</span>
-                {cust?.external_id && (
-                  <>
-                    <span>·</span>
-                    <span>{cust.external_id}</span>
-                  </>
+              {/* Zone 2 — CENTER: event type, customer, dimensions */}
+              <div className="min-w-0">
+                <div className="flex items-center flex-wrap">
+                  <span className="font-ibm-plex text-sm font-bold text-white">{event.event_type}</span>
+                  <span className="font-ibm-plex text-sm font-medium text-white ml-3">{event.customer_name}</span>
+                  <span className="font-ibm-plex text-xs text-white/30 ml-2">
+                    · {event.customer_id}
+                    {cust?.external_id && ` · ${cust.external_id}`}
+                  </span>
+                </div>
+                {dims.length > 0 && (
+                  <div className="flex flex-wrap gap-1.5 mt-2">
+                    {visibleDims.map(([k, v]) => (
+                      <span key={k} className="bg-white/5 px-2 py-0.5 text-xs font-ibm-plex text-white/50">
+                        {k}:{String(v)}
+                      </span>
+                    ))}
+                    {hiddenCount > 0 && (
+                      <span className="text-white/20 text-xs font-ibm-plex self-center">+{hiddenCount} more</span>
+                    )}
+                  </div>
                 )}
               </div>
 
-              {/* Line 3 — dimensions */}
-              {dims.length > 0 && (
-                <div className="flex flex-wrap gap-2 mt-1.5 ml-0 sm:ml-36">
-                  {dims.map(([k, v]) => (
-                    <span key={k} className="bg-white/5 px-2 py-0.5 text-xs font-ibm-plex text-white/50">
-                      {k}:{String(v)}
-                    </span>
-                  ))}
+              {/* Zone 3 — RIGHT: status, revenue, cost */}
+              <div className="flex items-start justify-end gap-3">
+                <div className="text-right">
+                  <div className="mb-1">
+                    <span className={`${event.status === "processed" ? "text-[#4ADE80]" : "text-[#F87171]"}`}>●</span>
+                  </div>
+                  {fee ? (
+                    isUsdFee ? (
+                      <>
+                        <div className="text-[#4ADE80] font-ibm-plex font-bold text-base">${fee.amount.toFixed(fee.amount < 0.01 ? 4 : 2)}</div>
+                        {cost && (
+                          <div className="text-[#F87171] font-ibm-plex text-xs mt-0.5">${cost.amount.toFixed(cost.amount < 0.01 ? 4 : 2)}</div>
+                        )}
+                      </>
+                    ) : (
+                      <div className="text-white/60 font-ibm-plex font-bold text-base">{fee.amount.toLocaleString()} {fee.asset_code}</div>
+                    )
+                  ) : (
+                    <div className="text-white/30 font-ibm-plex text-sm">—</div>
+                  )}
                 </div>
-              )}
+                <span className="text-white/20 hover:text-white text-sm self-center">→</span>
+              </div>
             </div>
           );
         })}
@@ -177,7 +184,6 @@ export default function Events() {
         </div>
       )}
 
-      {/* Detail sheet */}
       {selectedEvent && (
         <EventDetailSheet
           event={selectedEvent}
