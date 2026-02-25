@@ -1,25 +1,35 @@
 import { useState } from "react";
-import { assets } from "@/data/assets";
+import { assets as initialAssets } from "@/data/assets";
+import { CreateAssetModal } from "@/components/assets/CreateAssetModal";
+import type { Asset } from "@/data/types";
 
 export default function Assets() {
+  const [assetList, setAssetList] = useState<Asset[]>(initialAssets);
   const [quoteInput, setQuoteInput] = useState("10");
+  const [modalOpen, setModalOpen] = useState(false);
 
-  const creditsAsset = assets.find((a) => a.code === "CREDITS");
+  const creditsAsset = assetList.find((a) => a.type === "custom");
   const currentRate = creditsAsset?.rates[creditsAsset.rates.length - 1]?.rate || 100;
   const quoteResult = parseFloat(quoteInput || "0") * currentRate;
 
   return (
     <div className="space-y-10">
       <div className="flex items-center justify-between">
-        <h1 className="font-space text-2xl font-bold uppercase tracking-wider">Asset Registry</h1>
-        <button className="border border-[#2DD4BF] px-4 py-2 font-space text-xs uppercase tracking-wide text-[#2DD4BF] hover:bg-[#2DD4BF]/10">
+        <div>
+          <h1 className="font-space text-2xl font-bold uppercase tracking-wider">Assets</h1>
+          <p className="font-ibm-plex text-sm text-white/40 mt-1">{assetList.length} assets configured</p>
+        </div>
+        <button
+          onClick={() => setModalOpen(true)}
+          className="border border-white/30 bg-transparent px-4 py-2 font-space text-xs uppercase tracking-wide text-white hover:bg-white/5"
+        >
           + New Asset
         </button>
       </div>
 
       {/* Asset Cards Grid */}
       <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
-        {assets.map((asset) => {
+        {assetList.map((asset) => {
           const isFiat = asset.type === "fiat";
           const icon = isFiat ? "$" : "★";
 
@@ -123,6 +133,15 @@ export default function Assets() {
           </div>
         </div>
       </div>
+
+      <CreateAssetModal
+        open={modalOpen}
+        onClose={() => setModalOpen(false)}
+        onCreated={(asset) => {
+          setAssetList((prev) => [...prev, asset]);
+          setModalOpen(false);
+        }}
+      />
     </div>
   );
 }
