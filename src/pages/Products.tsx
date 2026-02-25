@@ -1,15 +1,10 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
-import { TerminalCard } from "@/components/terminal/TerminalCard";
 import { StatusBadge } from "@/components/terminal/StatusBadge";
-import { EmptyState } from "@/components/terminal/EmptyState";
+import { CopyableId } from "@/components/terminal/CopyableId";
 import { useProductStore } from "@/stores/productStore";
 import { CreateProductWizard } from "@/components/products/CreateProductWizard";
 import { Input } from "@/components/ui/input";
-import { ArrowRight } from "lucide-react";
-import {
-  Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
-} from "@/components/ui/table";
 
 export default function Products() {
   const { products } = useProductStore();
@@ -27,11 +22,11 @@ export default function Products() {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="font-space text-2xl font-bold uppercase tracking-wider mb-1">Products</h1>
-          <p className="font-ibm-plex text-sm text-muted-foreground">{products.length} products configured</p>
+          <p className="font-ibm-plex text-sm text-white/40">{products.length} products configured</p>
         </div>
         <button
           onClick={() => setShowCreate(true)}
-          className="rounded-none bg-foreground px-4 py-2.5 font-space text-xs uppercase tracking-wide text-background transition-all duration-150 hover:bg-foreground/80"
+          className="border border-white/30 bg-transparent px-4 py-2 font-space text-xs uppercase tracking-wide text-white hover:bg-white/5"
         >
           + New Product
         </button>
@@ -39,75 +34,50 @@ export default function Products() {
 
       {showCreate && <CreateProductWizard onClose={() => setShowCreate(false)} />}
 
-      <div className="relative">
-        <Input
-          placeholder="Search by code or name..."
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
-          className="rounded-none border-foreground/[0.12] bg-transparent pl-4 font-ibm-plex text-sm"
-        />
-      </div>
+      <Input
+        placeholder="Search by code or name..."
+        value={search}
+        onChange={(e) => setSearch(e.target.value)}
+        className="border-white/[0.08] bg-transparent pl-4 font-ibm-plex text-sm"
+      />
 
-      <TerminalCard title="PRODUCT CATALOG">
-        {filtered.length > 0 ? (
-          <Table>
-            <TableHeader>
-              <TableRow className="border-foreground/[0.06] hover:bg-transparent">
-                <TableHead className="h-10 px-4 font-space text-[10px] uppercase tracking-widest">Product</TableHead>
-                <TableHead className="h-10 px-4 font-space text-[10px] uppercase tracking-widest">Code</TableHead>
-                <TableHead className="h-10 px-4 font-space text-[10px] uppercase tracking-widest">Status</TableHead>
-                <TableHead className="h-10 px-4 font-space text-[10px] uppercase tracking-widest text-center">Prices</TableHead>
-                <TableHead className="h-10 px-4 font-space text-[10px] uppercase tracking-widest text-center">Subs</TableHead>
-                <TableHead className="h-10 w-12 px-4"></TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {filtered.map((product) => (
-                <TableRow key={product.id} className="border-foreground/[0.04] transition-all duration-150 hover:bg-accent/20">
-                  <TableCell className="px-4 py-4">
-                    <div className="space-y-1">
-                      <div className="font-ibm-plex text-sm font-medium">{product.name}</div>
-                      <div className="font-ibm-plex text-[10px] text-muted-foreground"># {product.id}</div>
-                    </div>
-                  </TableCell>
-                  <TableCell className="px-4 py-4 font-ibm-plex text-sm text-muted-foreground">{product.code}</TableCell>
-                  <TableCell className="px-4 py-4"><StatusBadge status={product.status} /></TableCell>
-                  <TableCell className="px-4 py-4 text-center font-ibm-plex text-sm">{product.prices.length}</TableCell>
-                  <TableCell className="px-4 py-4 text-center font-ibm-plex text-sm">{product.subscriber_count}</TableCell>
-                  <TableCell className="px-4 py-4">
-                    <Link
-                      to={`/products/${product.id}`}
-                      className="inline-flex text-muted-foreground transition-all duration-150 hover:text-foreground"
-                    >
-                      <ArrowRight className="h-3.5 w-3.5" />
-                    </Link>
-                  </TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-        ) : (
-          <EmptyState
-            icon={<span className="font-space text-2xl">◇</span>}
-            title={search ? `No products matching "${search}"` : "No products yet"}
-            description={
-              search
-                ? "Try a different search term or create a new product."
-                : "Products define how you charge your customers. Create your first product to get started."
-            }
-            action={
-              !search ? (
-                <button
-                  onClick={() => setShowCreate(true)}
-                  className="rounded-none bg-foreground px-4 py-2.5 font-space text-xs uppercase tracking-wide text-background transition-all duration-150 hover:bg-foreground/80"
-                >
-                  + Create First Product
-                </button>
-              ) : undefined
-            }
-          />
-        )}
-      </TerminalCard>
+      <table className="w-full table-fixed">
+        <thead>
+          <tr className="border-b border-dashed border-white/15">
+            <th className="w-[35%] px-4 pb-3 text-left font-space text-xs uppercase tracking-wider text-white/40 whitespace-nowrap">Product Name</th>
+            <th className="w-[25%] px-4 pb-3 text-left font-space text-xs uppercase tracking-wider text-white/40 whitespace-nowrap">Product ID</th>
+            <th className="w-[10%] px-4 pb-3 text-left font-space text-xs uppercase tracking-wider text-white/40 whitespace-nowrap">Status</th>
+            <th className="w-[10%] px-4 pb-3 text-center font-space text-xs uppercase tracking-wider text-white/40 whitespace-nowrap">Prices</th>
+            <th className="w-[10%] px-4 pb-3 text-center font-space text-xs uppercase tracking-wider text-white/40 whitespace-nowrap">Subs</th>
+            <th className="w-[10%] px-4 pb-3"></th>
+          </tr>
+        </thead>
+        <tbody>
+          {filtered.map((product) => (
+            <tr key={product.id} className="border-b border-white/[0.06] hover:bg-white/[0.02] transition-colors">
+              <td className="px-4 py-4">
+                <div className="font-ibm-plex text-sm font-medium">{product.name}
+                  <span className="ml-2 border border-white/20 text-white/60 text-xs px-1.5 py-0.5 font-ibm-plex">v{product.versions[0]?.version || 1}</span>
+                </div>
+              </td>
+              <td className="px-4 py-4"><CopyableId value={product.id} /></td>
+              <td className="px-4 py-4"><StatusBadge status={product.status} /></td>
+              <td className="px-4 py-4 text-center font-ibm-plex text-sm font-light">{product.prices.length}</td>
+              <td className="px-4 py-4 text-center font-ibm-plex text-sm font-light">{product.subscriber_count}</td>
+              <td className="px-4 py-4 text-right">
+                <Link to={`/products/${product.id}`} className="text-white/40 hover:text-white text-sm">→</Link>
+              </td>
+            </tr>
+          ))}
+          {filtered.length === 0 && (
+            <tr>
+              <td colSpan={6} className="px-4 py-12 text-center font-ibm-plex text-sm text-white/40">
+                <span className="terminal-cursor">$ no products found </span>
+              </td>
+            </tr>
+          )}
+        </tbody>
+      </table>
     </div>
   );
 }

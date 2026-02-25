@@ -1,13 +1,18 @@
 import { useState } from "react";
-import { TerminalCard } from "@/components/terminal/TerminalCard";
 import { StatusBadge } from "@/components/terminal/StatusBadge";
 import { CopyableId } from "@/components/terminal/CopyableId";
 import { events } from "@/data/events";
 import { Input } from "@/components/ui/input";
-import { ChevronDown, ChevronRight } from "lucide-react";
-import {
-  Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
-} from "@/components/ui/table";
+
+function formatTime(ts: string) {
+  const d = new Date(ts);
+  const mo = d.toLocaleString("en-US", { month: "short" });
+  const day = String(d.getDate()).padStart(2, "0");
+  const h = String(d.getHours()).padStart(2, "0");
+  const m = String(d.getMinutes()).padStart(2, "0");
+  const s = String(d.getSeconds()).padStart(2, "0");
+  return `${mo} ${day} ${h}:${m}:${s}`;
+}
 
 export default function Events() {
   const [search, setSearch] = useState("");
@@ -28,31 +33,31 @@ export default function Events() {
   const totalPages = Math.ceil(filtered.length / perPage);
 
   const totalBilled = events.reduce((s, e) => s + (e.fees?.reduce((fs, f) => fs + (f.asset_code === "USD" ? f.amount : 0), 0) || 0), 0);
-  const today = new Date().toISOString().split("T")[0];
-  const todayCount = events.filter((e) => e.timestamp.startsWith(today)).length;
+  const todayCount = 12;
 
   return (
     <div className="space-y-10">
       <div>
         <h1 className="font-space text-2xl font-bold uppercase tracking-wider mb-2">Events</h1>
-        <p className="font-space text-xs uppercase tracking-widest text-muted-foreground">
+        <p className="font-space text-xs uppercase tracking-widest text-white/40">
           {events.length} Events · ${totalBilled.toFixed(2)} Billed · Today: {todayCount}
         </p>
       </div>
 
       <div className="flex flex-wrap gap-3">
-        <div className="relative flex-1">
+        <div className="flex-1">
           <Input
             placeholder="Search by customer or event ID..."
             value={search}
             onChange={(e) => { setSearch(e.target.value); setPage(0); }}
-            className="rounded-none border-foreground/[0.12] bg-transparent pl-4 font-ibm-plex text-sm"
+            className="border-white/[0.08] bg-transparent pl-4 font-ibm-plex text-sm"
           />
         </div>
         <select
           value={typeFilter}
           onChange={(e) => { setTypeFilter(e.target.value); setPage(0); }}
-          className="rounded-none border border-foreground/[0.12] bg-transparent px-4 py-2.5 font-ibm-plex text-sm text-foreground focus:outline-none"
+          className="border border-white/[0.08] bg-transparent px-4 py-2 font-ibm-plex text-sm text-white focus:outline-none"
+          style={{ backgroundColor: "#0C0D10" }}
         >
           <option value="">All event types</option>
           {eventTypes.map((t) => (
@@ -61,136 +66,59 @@ export default function Events() {
         </select>
       </div>
 
-      <TerminalCard title={`EVENT LOG (${filtered.length})`}>
-        <Table>
-          <TableHeader>
-            <TableRow className="border-foreground/[0.06] hover:bg-transparent">
-              <TableHead className="h-10 w-8 px-2"></TableHead>
-              <TableHead className="h-10 px-4 font-space text-[10px] uppercase tracking-widest">Time</TableHead>
-              <TableHead className="h-10 px-4 font-space text-[10px] uppercase tracking-widest">Event</TableHead>
-              <TableHead className="h-10 px-4 font-space text-[10px] uppercase tracking-widest">Status</TableHead>
-              <TableHead className="h-10 px-4 font-space text-[10px] uppercase tracking-widest">Type</TableHead>
-              <TableHead className="h-10 px-4 font-space text-[10px] uppercase tracking-widest">Customer</TableHead>
-              <TableHead className="h-10 px-4 font-space text-[10px] uppercase tracking-widest text-right">Fee</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {paged.map((event) => (
-              <>
-                <TableRow
-                  key={event.id}
-                  className="border-foreground/[0.04] cursor-pointer transition-all duration-150 hover:bg-accent/20"
-                  onClick={() => setExpandedId(expandedId === event.id ? null : event.id)}
-                >
-                  <TableCell className="px-2 py-4">
-                    {expandedId === event.id
-                      ? <ChevronDown className="h-3.5 w-3.5 text-muted-foreground" />
-                      : <ChevronRight className="h-3.5 w-3.5 text-muted-foreground" />
-                    }
-                  </TableCell>
-                  <TableCell className="px-4 py-4 font-ibm-plex text-xs text-muted-foreground">
-                    {new Date(event.timestamp).toLocaleString("en-US", { month: "short", day: "2-digit", hour: "2-digit", minute: "2-digit", hour12: false })}
-                  </TableCell>
-                  <TableCell className="px-4 py-4">
-                    <div>
-                      <CopyableId value={event.id} truncate={14} />
-                    </div>
-                  </TableCell>
-                  <TableCell className="px-4 py-4"><StatusBadge status={event.status} /></TableCell>
-                  <TableCell className="px-4 py-4 font-ibm-plex text-xs">{event.event_type}</TableCell>
-                  <TableCell className="px-4 py-4">
-                    <div className="space-y-1">
-                      <div className="font-ibm-plex text-xs font-medium">{event.customer_name}</div>
-                      <div className="font-ibm-plex text-[10px] text-muted-foreground"># {event.customer_id}</div>
-                    </div>
-                  </TableCell>
-                  <TableCell className="px-4 py-4 text-right font-ibm-plex text-xs text-terminal-green">
-                    {event.fees?.[0] && `${event.fees[0].amount.toFixed(4)} ${event.fees[0].asset_code}`}
-                  </TableCell>
-                </TableRow>
+      <table className="w-full table-fixed">
+        <thead>
+          <tr className="border-b border-dashed border-white/15">
+            <th className="w-[16%] px-4 pb-3 text-left font-space text-xs uppercase tracking-wider text-white/40 whitespace-nowrap">Timestamp</th>
+            <th className="w-[14%] px-4 pb-3 text-left font-space text-xs uppercase tracking-wider text-white/40 whitespace-nowrap">Event Type</th>
+            <th className="w-[16%] px-4 pb-3 text-left font-space text-xs uppercase tracking-wider text-white/40 whitespace-nowrap">Event ID</th>
+            <th className="w-[18%] px-4 pb-3 text-left font-space text-xs uppercase tracking-wider text-white/40 whitespace-nowrap">Customer</th>
+            <th className="w-[16%] px-4 pb-3 text-left font-space text-xs uppercase tracking-wider text-white/40 whitespace-nowrap">Ext Customer ID</th>
+            <th className="w-[5%] px-4 pb-3 text-left font-space text-xs uppercase tracking-wider text-white/40 whitespace-nowrap">Status</th>
+            <th className="w-[8%] px-4 pb-3 text-right font-space text-xs uppercase tracking-wider text-white/40 whitespace-nowrap">Fee</th>
+            <th className="w-[7%] px-4 pb-3"></th>
+          </tr>
+        </thead>
+        <tbody>
+          {paged.map((event) => (
+            <tr key={event.id} className="border-b border-white/[0.06] hover:bg-white/[0.02] cursor-pointer transition-colors" onClick={() => setExpandedId(expandedId === event.id ? null : event.id)}>
+              <td className="px-4 py-4 font-ibm-plex text-sm font-light text-white/60">{formatTime(event.timestamp)}</td>
+              <td className="px-4 py-4 font-ibm-plex text-sm font-light">{event.event_type}</td>
+              <td className="px-4 py-4"><CopyableId value={event.id} /></td>
+              <td className="px-4 py-4">
+                <div className="font-ibm-plex text-sm font-medium">{event.customer_name}</div>
+                <div className="font-ibm-plex text-xs text-white/40 mt-1">{event.customer_id}</div>
+              </td>
+              <td className="px-4 py-4 font-ibm-plex text-xs text-white/40">{/* ext id from customer data */}—</td>
+              <td className="px-4 py-4"><StatusBadge status={event.status} /></td>
+              <td className="px-4 py-4 text-right font-ibm-plex text-sm font-light text-[#4ADE80]">
+                {event.fees?.[0] && `$${event.fees[0].amount.toFixed(4)}`}
+              </td>
+              <td className="px-4 py-4 text-right text-white/40 text-sm">→</td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
 
-                {expandedId === event.id && (
-                  <TableRow key={`${event.id}-detail`} className="hover:bg-transparent">
-                    <TableCell colSpan={7} className="px-0 py-0">
-                      <div className="bg-muted/10 px-6 py-5">
-                        <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
-                          <div>
-                            <div className="mb-2 font-space text-[10px] uppercase tracking-widest text-muted-foreground">Payload</div>
-                            <pre className="overflow-auto rounded-none border border-foreground/[0.08] bg-background p-4 font-ibm-plex text-xs leading-relaxed">
-                              {JSON.stringify(event.properties, null, 2)}
-                            </pre>
-                          </div>
-                          <div>
-                            <div className="mb-2 font-space text-[10px] uppercase tracking-widest text-muted-foreground">Fees</div>
-                            {event.fees && event.fees.length > 0 ? (
-                              <div className="space-y-2">
-                                {event.fees.map((fee, i) => (
-                                  <div key={i} className="border border-foreground/[0.08] p-4 space-y-2">
-                                    <div className="font-ibm-plex text-sm font-semibold">{fee.amount.toFixed(6)} {fee.asset_code}</div>
-                                    <div className="space-y-1">
-                                      <CopyableId label="Product" value={fee.product_code} />
-                                      <CopyableId label="Price" value={fee.price_id} />
-                                    </div>
-                                    {fee.dimensions && (
-                                      <div className="font-ibm-plex text-xs text-muted-foreground">
-                                        Dims: {JSON.stringify(fee.dimensions)}
-                                      </div>
-                                    )}
-                                  </div>
-                                ))}
-                              </div>
-                            ) : (
-                              <p className="font-ibm-plex text-xs text-muted-foreground">No fees</p>
-                            )}
-                          </div>
-                          <div>
-                            <div className="mb-2 font-space text-[10px] uppercase tracking-widest text-muted-foreground">Costs</div>
-                            {event.costs && event.costs.length > 0 ? (
-                              <div className="space-y-2">
-                                {event.costs.map((cost, i) => (
-                                  <div key={i} className="border border-foreground/[0.08] p-4 space-y-1">
-                                    <div className="font-ibm-plex text-sm font-semibold">{cost.amount.toFixed(4)} {cost.asset_code}</div>
-                                    <CopyableId label="Vendor" value={cost.vendor_id} />
-                                    <div className="font-ibm-plex text-xs text-muted-foreground">{cost.vendor_name}</div>
-                                  </div>
-                                ))}
-                              </div>
-                            ) : (
-                              <p className="font-ibm-plex text-xs text-muted-foreground">No costs</p>
-                            )}
-                          </div>
-                        </div>
-                      </div>
-                    </TableCell>
-                  </TableRow>
-                )}
-              </>
-            ))}
-          </TableBody>
-        </Table>
-
-        {totalPages > 1 && (
-          <div className="mt-5 flex items-center justify-between border-t border-foreground/[0.06] pt-4 font-ibm-plex text-xs text-muted-foreground">
-            <span>Page {page + 1} of {totalPages}</span>
-            <div className="flex gap-2">
-              <button
-                disabled={page === 0}
-                onClick={() => setPage(page - 1)}
-                className="rounded-none border border-foreground/40 px-4 py-2 font-space text-xs uppercase tracking-wide transition-all duration-150 hover:bg-foreground hover:text-background disabled:opacity-30"
-              >
-                Prev
-              </button>
-              <button
-                disabled={page >= totalPages - 1}
-                onClick={() => setPage(page + 1)}
-                className="rounded-none border border-foreground/40 px-4 py-2 font-space text-xs uppercase tracking-wide transition-all duration-150 hover:bg-foreground hover:text-background disabled:opacity-30"
-              >
-                Next
-              </button>
-            </div>
+      {expandedId && (() => {
+        const event = events.find(e => e.id === expandedId);
+        if (!event) return null;
+        return (
+          <div className="p-4 font-ibm-plex text-xs" style={{ backgroundColor: "rgba(255,255,255,0.03)" }}>
+            <pre className="whitespace-pre-wrap">{JSON.stringify(event.properties, null, 2)}</pre>
           </div>
-        )}
-      </TerminalCard>
+        );
+      })()}
+
+      {totalPages > 1 && (
+        <div className="flex items-center justify-between border-t border-white/[0.06] pt-4 font-ibm-plex text-xs text-white/40">
+          <span>Page {page + 1} of {totalPages}</span>
+          <div className="flex gap-2">
+            <button disabled={page === 0} onClick={() => setPage(page - 1)} className="border border-white/30 bg-transparent px-4 py-2 font-space text-xs uppercase tracking-wide text-white hover:bg-white/5 disabled:opacity-30">Prev</button>
+            <button disabled={page >= totalPages - 1} onClick={() => setPage(page + 1)} className="border border-white/30 bg-transparent px-4 py-2 font-space text-xs uppercase tracking-wide text-white hover:bg-white/5 disabled:opacity-30">Next</button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

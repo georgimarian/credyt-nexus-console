@@ -1,15 +1,9 @@
 import { useParams, Link } from "react-router-dom";
-import { TerminalCard } from "@/components/terminal/TerminalCard";
 import { StatusBadge } from "@/components/terminal/StatusBadge";
-import { FieldLabel } from "@/components/terminal/FieldLabel";
 import { CopyableId } from "@/components/terminal/CopyableId";
 import { useProductStore } from "@/stores/productStore";
 import { customers } from "@/data/customers";
-import { ChevronRight } from "lucide-react";
 import { useState } from "react";
-import {
-  Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
-} from "@/components/ui/table";
 
 export default function ProductDetail() {
   const { id } = useParams<{ id: string }>();
@@ -21,7 +15,7 @@ export default function ProductDetail() {
   if (!product) {
     return (
       <div className="flex min-h-[50vh] items-center justify-center">
-        <p className="font-ibm-plex text-muted-foreground">product not found</p>
+        <p className="font-ibm-plex text-white/40">product not found</p>
       </div>
     );
   }
@@ -34,10 +28,7 @@ export default function ProductDetail() {
     try {
       const payload = JSON.parse(simPayload);
       const price = product.prices.find((p) => p.event_type === payload.event_type);
-      if (!price) {
-        setSimResult("⚠ No matching price for event_type: " + payload.event_type);
-        return;
-      }
+      if (!price) { setSimResult("⚠ No matching price for event_type: " + payload.event_type); return; }
       let fee = 0;
       if (price.usage_calculation === "volume" && price.volume_field && price.unit_price) {
         fee = (payload[price.volume_field] || 0) * price.unit_price;
@@ -45,215 +36,127 @@ export default function ProductDetail() {
         fee = price.unit_price;
       }
       setSimResult(`✓ Calculated fee: ${fee.toFixed(6)} ${price.asset_code}\n  Price: ${price.id}\n  Calculation: ${price.usage_calculation}`);
-    } catch {
-      setSimResult("✗ Invalid JSON payload");
-    }
+    } catch { setSimResult("✗ Invalid JSON payload"); }
   };
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-10">
       {/* Breadcrumb */}
-      <nav className="flex items-center gap-1.5 font-ibm-plex text-sm text-muted-foreground">
-        <Link to="/products" className="transition-colors hover:text-foreground">Products</Link>
-        <ChevronRight className="h-3 w-3" />
-        <span className="text-foreground">{product.name}</span>
+      <nav className="font-ibm-plex text-xs text-white/40">
+        <Link to="/products" className="hover:text-white">PRODUCTS</Link>
+        <span className="mx-2">{">"}</span>
+        <span className="text-white">{product.code}</span>
       </nav>
 
       {/* Header */}
-      <div className="flex items-center gap-4">
+      <div className="flex items-start justify-between">
         <div>
-          <h1 className="font-space text-2xl font-bold uppercase tracking-wide">{product.name}</h1>
-          <div className="mt-2 flex flex-wrap items-center gap-x-6 gap-y-2">
+          <div className="flex items-center gap-3">
+            <h1 className="font-space text-2xl font-bold uppercase tracking-wider">{product.name}</h1>
+            <span className="border border-white/20 text-white/60 text-xs px-1.5 py-0.5 font-ibm-plex">v{product.versions[0]?.version || 1}</span>
+            <StatusBadge status={product.status} />
+          </div>
+          <div className="mt-2 flex items-center gap-4">
             <CopyableId label="ID" value={product.id} size="sm" />
-            <span className="font-ibm-plex text-xs text-muted-foreground">code: {product.code}</span>
+            <span className="font-ibm-plex text-xs text-white/40">code: {product.code}</span>
           </div>
         </div>
-        <StatusBadge status={product.status} />
+        <button className="bg-white text-black px-4 py-2 font-space text-xs uppercase tracking-wide hover:bg-white/90">
+          Configure Pricing
+        </button>
       </div>
 
-      {/* Prices */}
-      <TerminalCard title="PRICES">
-        <div className="space-y-0">
-          {product.prices.map((price, idx) => (
-            <div key={price.id} className={idx < product.prices.length - 1 ? "border-b border-foreground/10 pb-6 mb-6" : ""}>
-              <div className="mb-4 flex items-center gap-3">
-                <CopyableId value={price.id} size="sm" />
-                <StatusBadge status={price.type === "usage" ? "active" : "published"} />
-                <span className="font-ibm-plex text-xs text-muted-foreground">
-                  {price.type} · {price.billing_model}{price.recurring_interval ? ` (${price.recurring_interval})` : ""}
-                </span>
-              </div>
-
-              <div className="grid grid-cols-2 gap-x-8 gap-y-2 font-ibm-plex text-xs sm:grid-cols-3">
-                {price.event_type && (
-                  <div>
-                    <span className="text-muted-foreground">event_type</span>
-                    <div className="mt-0.5 font-medium">{price.event_type}</div>
-                  </div>
-                )}
-                {price.usage_calculation && (
-                  <div>
-                    <span className="text-muted-foreground">calculation</span>
-                    <div className="mt-0.5 font-medium">{price.usage_calculation}</div>
-                  </div>
-                )}
-                {price.volume_field && (
-                  <div>
-                    <span className="text-muted-foreground">volume_field</span>
-                    <div className="mt-0.5 font-medium">{price.volume_field}</div>
-                  </div>
-                )}
-                {price.unit_price !== undefined && (
-                  <div>
-                    <span className="text-muted-foreground">unit_price</span>
-                    <div className="mt-0.5 font-medium">{price.unit_price} {price.asset_code}</div>
-                  </div>
-                )}
-                {price.amount !== undefined && (
-                  <div>
-                    <span className="text-muted-foreground">amount</span>
-                    <div className="mt-0.5 font-medium">{price.amount} {price.asset_code}</div>
-                  </div>
-                )}
-                {price.dimensions && price.dimensions.length > 0 && (
-                  <div>
-                    <span className="text-muted-foreground">dimensions</span>
-                    <div className="mt-0.5 font-medium">[{price.dimensions.join(", ")}]</div>
-                  </div>
-                )}
-              </div>
-
-              {/* Tiers */}
-              {price.tiers && price.tiers.length > 0 && (
-                <div className="mt-5">
-                  <div className="mb-2 font-space text-[10px] uppercase tracking-widest text-muted-foreground">Dimensional Tiers</div>
-                  <Table>
-                    <TableHeader>
-                      <TableRow className="border-foreground/10 hover:bg-transparent">
-                        <TableHead className="h-8 px-3 font-space text-[10px] uppercase tracking-wide">Dimensions</TableHead>
-                        <TableHead className="h-8 px-3 font-space text-[10px] uppercase tracking-wide">Unit Price</TableHead>
-                      </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                      {price.tiers.map((tier, i) => (
-                        <TableRow key={i} className="border-foreground/[0.06] hover:bg-accent/30">
-                          <TableCell className="px-3 py-4 font-ibm-plex text-xs">
-                            {tier.dimensions ? JSON.stringify(tier.dimensions) : "—"}
-                          </TableCell>
-                          <TableCell className="px-3 py-4 font-ibm-plex text-xs">
-                            {tier.unit_price} {price.asset_code}
-                          </TableCell>
-                        </TableRow>
-                      ))}
-                    </TableBody>
-                  </Table>
-                </div>
-              )}
-
-              {/* Entitlements */}
-              {price.entitlements && price.entitlements.length > 0 && (
-                <div className="mt-5">
-                  <div className="mb-2 font-space text-[10px] uppercase tracking-widest text-muted-foreground">Entitlements</div>
-                  <div className="space-y-1.5">
-                    {price.entitlements.map((ent, i) => (
-                      <div key={i} className="font-ibm-plex text-xs">
-                        <span className="font-bold">{ent.amount}</span> {ent.asset_code} · refresh: {ent.refresh_strategy}
-                        {ent.schedule ? ` (${ent.schedule})` : ""}
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              )}
-            </div>
-          ))}
+      {/* Prices — flat rows */}
+      <div>
+        <div className="font-space text-xs uppercase tracking-wider text-white/40 border-b border-dashed border-white/15 pb-3 mb-4">
+          -- PRICES ----------------------------------------
         </div>
-      </TerminalCard>
+        {product.prices.map((price, idx) => (
+          <div key={price.id} className={idx < product.prices.length - 1 ? "border-b border-white/[0.06] py-4" : "py-4"}>
+            <div className="flex items-center gap-6 font-ibm-plex text-sm">
+              <span className="font-medium">{price.event_type || "subscription"}</span>
+              <span className="text-white/40">{price.usage_calculation || "fixed"}</span>
+              <span className="text-white/40">{price.billing_model}</span>
+              <span className="text-[#4ADE80] ml-auto">
+                {price.unit_price !== undefined ? `${price.unit_price} ${price.asset_code}` : price.amount !== undefined ? `${price.amount} ${price.asset_code}` : ""}
+              </span>
+              {price.volume_field && <span className="text-white/40 text-xs">per {price.volume_field}</span>}
+            </div>
+            {price.tiers && price.tiers.length > 0 && (
+              <div className="mt-3 ml-6 space-y-1">
+                {price.tiers.map((tier, i) => (
+                  <div key={i} className="font-ibm-plex text-xs text-white/50">
+                    {tier.dimensions ? JSON.stringify(tier.dimensions) : `up to ${tier.up_to || "∞"}`}: {tier.unit_price} {price.asset_code}
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        ))}
+        <button className="mt-8 border border-white/30 bg-transparent px-4 py-2 font-space text-xs uppercase tracking-wide text-white hover:bg-white/5">
+          + Add Price
+        </button>
+      </div>
 
       {/* Usage Simulator */}
-      <TerminalCard title="USAGE SIMULATOR" actions={
-        <button
-          onClick={runSimulation}
-          className="rounded-none border border-foreground/40 bg-transparent px-3 py-1.5 font-space text-xs uppercase tracking-wide text-foreground transition-colors hover:bg-foreground hover:text-background"
-        >
-          ▶ Run
-        </button>
-      }>
-        <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
+      <div>
+        <div className="font-space text-xs uppercase tracking-wider text-white/40 border-b border-dashed border-white/15 pb-3 mb-4">
+          -- USAGE SIMULATOR ----------------------------------------
+        </div>
+        <div className="grid grid-cols-2 gap-6">
           <div>
-            <FieldLabel label="Event Payload" tooltip="Paste a sample event JSON to simulate fee calculation against this product's prices." />
+            <label className="block font-space text-xs uppercase tracking-wider text-white/40 mb-2">Event Payload</label>
             <textarea
               value={simPayload}
               onChange={(e) => setSimPayload(e.target.value)}
-              className="h-36 w-full rounded-none border border-foreground/[0.12] bg-transparent p-4 font-ibm-plex text-xs leading-relaxed focus:outline-none focus:ring-1 focus:ring-foreground"
+              className="h-36 w-full border border-white/10 bg-white/5 p-4 font-ibm-plex text-xs leading-relaxed focus:outline-none focus:border-white/30"
               spellCheck={false}
             />
           </div>
           <div>
-            <FieldLabel label="Result" tooltip="Shows the calculated fee based on matching price rules." />
-            <pre className="h-36 overflow-auto rounded-none border border-foreground/[0.08] bg-muted/50 p-4 font-ibm-plex text-xs leading-relaxed">
+            <label className="block font-space text-xs uppercase tracking-wider text-white/40 mb-2">Result</label>
+            <pre className="h-36 overflow-auto border border-white/[0.06] bg-white/5 p-4 font-ibm-plex text-xs leading-relaxed text-white/60">
               {simResult || "$ run simulation to see calculated fees..."}
             </pre>
           </div>
         </div>
-      </TerminalCard>
-
-      {/* Version History */}
-      <TerminalCard title="VERSION HISTORY">
-        <Table>
-          <TableHeader>
-            <TableRow className="border-foreground/10 hover:bg-transparent">
-              <TableHead className="h-9 px-3 font-space text-[10px] uppercase tracking-wide">Version</TableHead>
-              <TableHead className="h-9 px-3 font-space text-[10px] uppercase tracking-wide">Status</TableHead>
-              <TableHead className="h-9 px-3 font-space text-[10px] uppercase tracking-wide">Created</TableHead>
-              <TableHead className="h-9 px-3 font-space text-[10px] uppercase tracking-wide">Published</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {product.versions.map((v) => (
-              <TableRow key={v.version} className="border-foreground/[0.06] hover:bg-accent/30">
-                <TableCell className="px-3 py-4 font-ibm-plex text-xs font-bold">v{v.version}</TableCell>
-                <TableCell className="px-3 py-4"><StatusBadge status={v.status} /></TableCell>
-                <TableCell className="px-3 py-4 font-ibm-plex text-xs text-muted-foreground">
-                  {new Date(v.created_at).toLocaleDateString()}
-                </TableCell>
-                <TableCell className="px-3 py-4 font-ibm-plex text-xs text-muted-foreground">
-                  {v.published_at ? new Date(v.published_at).toLocaleDateString() : "—"}
-                </TableCell>
-              </TableRow>
-            ))}
-          </TableBody>
-        </Table>
-      </TerminalCard>
+        <button onClick={runSimulation} className="mt-4 bg-white text-black px-4 py-2 font-space text-xs uppercase tracking-wide hover:bg-white/90">
+          ▶ Run
+        </button>
+      </div>
 
       {/* Subscribers */}
-      <TerminalCard title={`SUBSCRIBERS (${subscribers.length})`}>
+      <div>
+        <div className="font-space text-xs uppercase tracking-wider text-white/40 border-b border-dashed border-white/15 pb-3 mb-4">
+          -- SUBSCRIBERS ({subscribers.length}) ----------------------------------------
+        </div>
         {subscribers.length === 0 ? (
-          <p className="font-ibm-plex text-xs text-muted-foreground">No subscribers</p>
+          <p className="font-ibm-plex text-sm text-white/40 py-4">
+            <span className="terminal-cursor">$ no subscribers </span>
+          </p>
         ) : (
-          <Table>
-            <TableHeader>
-              <TableRow className="border-foreground/10 hover:bg-transparent">
-                <TableHead className="h-9 px-3 font-space text-[10px] uppercase tracking-wide">Name</TableHead>
-                <TableHead className="h-9 px-3 font-space text-[10px] uppercase tracking-wide">Email</TableHead>
-                <TableHead className="h-9 px-3 text-right font-space text-[10px] uppercase tracking-wide">External ID</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
+          <table className="w-full table-fixed">
+            <thead>
+              <tr className="border-b border-dashed border-white/15">
+                <th className="px-4 pb-3 text-left font-space text-xs uppercase tracking-wider text-white/40 whitespace-nowrap">Name</th>
+                <th className="px-4 pb-3 text-left font-space text-xs uppercase tracking-wider text-white/40 whitespace-nowrap">Email</th>
+                <th className="px-4 pb-3 text-right font-space text-xs uppercase tracking-wider text-white/40 whitespace-nowrap">External ID</th>
+              </tr>
+            </thead>
+            <tbody>
               {subscribers.map((c) => (
-                <TableRow key={c.id} className="border-foreground/[0.06] hover:bg-accent/30">
-                  <TableCell className="px-3 py-4">
-                    <Link to={`/customers/${c.id}`} className="font-ibm-plex text-xs font-bold transition-colors hover:text-terminal-green">
-                      {c.name}
-                    </Link>
-                  </TableCell>
-                  <TableCell className="px-3 py-4 font-ibm-plex text-xs text-muted-foreground">{c.email}</TableCell>
-                  <TableCell className="px-3 py-4 text-right font-ibm-plex text-xs text-muted-foreground">{c.external_id}</TableCell>
-                </TableRow>
+                <tr key={c.id} className="border-b border-white/[0.06] hover:bg-white/[0.02]">
+                  <td className="px-4 py-4">
+                    <Link to={`/customers/${c.id}`} className="font-ibm-plex text-sm font-medium hover:text-[#4ADE80]">{c.name}</Link>
+                  </td>
+                  <td className="px-4 py-4 font-ibm-plex text-sm font-light text-white/60">{c.email}</td>
+                  <td className="px-4 py-4 text-right font-ibm-plex text-xs text-white/40">{c.external_id}</td>
+                </tr>
               ))}
-            </TableBody>
-          </Table>
+            </tbody>
+          </table>
         )}
-      </TerminalCard>
+      </div>
     </div>
   );
 }
