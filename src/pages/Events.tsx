@@ -5,14 +5,14 @@ import { events } from "@/data/events";
 import { customers } from "@/data/customers";
 import { Input } from "@/components/ui/input";
 
-function formatTime(ts: string) {
+function formatTimeParts(ts: string) {
   const d = new Date(ts);
   const mo = d.toLocaleString("en-US", { month: "short" });
   const day = String(d.getDate()).padStart(2, "0");
   const h = String(d.getHours()).padStart(2, "0");
   const m = String(d.getMinutes()).padStart(2, "0");
   const s = String(d.getSeconds()).padStart(2, "0");
-  return `${mo} ${day} ${h}:${m}:${s}`;
+  return { date: `${mo} ${day}`, time: `${h}:${m}:${s}` };
 }
 
 export default function Events() {
@@ -87,7 +87,9 @@ export default function Events() {
             const cust = customerMap.get(event.customer_id);
             return (
               <tr key={event.id} className="border-b border-white/[0.06] hover:bg-white/[0.02] cursor-pointer transition-colors" onClick={() => setExpandedId(expandedId === event.id ? null : event.id)}>
-                <td className="px-4 py-4 font-ibm-plex text-sm font-light text-white/60 whitespace-nowrap">{formatTime(event.timestamp)}</td>
+                <td className="px-4 py-4 font-ibm-plex text-sm font-light text-white/60 whitespace-nowrap">
+                  {(() => { const t = formatTimeParts(event.timestamp); return <><div>{t.date}</div><div className="text-xs text-white/40">{t.time}</div></>; })()}
+                </td>
                 <td className="px-4 py-4 font-ibm-plex text-sm font-light whitespace-nowrap">{event.event_type}</td>
                 <td className="px-4 py-4 whitespace-nowrap"><CopyableId value={event.id} /></td>
                 <td className="px-4 py-4">
@@ -97,7 +99,7 @@ export default function Events() {
                 <td className="px-4 py-4 font-ibm-plex text-xs text-white/40 whitespace-nowrap">{cust?.external_id || "—"}</td>
                 <td className="px-4 py-4 whitespace-nowrap"><StatusBadge status={event.status} /></td>
                 <td className="px-4 py-4 text-right font-ibm-plex text-sm font-light text-[#4ADE80] whitespace-nowrap">
-                  {event.fees?.[0] && `$${event.fees[0].amount.toFixed(4)}`}
+                  {event.fees?.[0] && `$${event.fees[0].amount.toFixed(2)}`}
                 </td>
                 <td className="px-2 py-4 text-right text-white/40 text-sm">→</td>
               </tr>

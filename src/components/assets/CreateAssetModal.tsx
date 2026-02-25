@@ -138,115 +138,113 @@ export function CreateAssetModal({ open, onClose, onCreated }: CreateAssetModalP
             </button>
           </div>
 
-          {/* Fields revealed after type selection */}
-          {assetType && (
-            <div className="space-y-5 animate-in fade-in slide-in-from-top-2 duration-200">
+          {/* Common fields — always visible */}
+          <div className="space-y-5">
+            <div>
+              <label className="block font-space text-xs uppercase tracking-wider text-white/40 mb-2">Asset Code</label>
+              <input
+                value={code}
+                onChange={(e) => setCode(e.target.value.toUpperCase().replace(/\s/g, ""))}
+                placeholder={assetType === "custom" ? "e.g. CREDITS" : "e.g. EUR"}
+                className={inputCls}
+              />
+              <p className="mt-1 font-ibm-plex text-xs text-white/30">
+                {assetType === "custom" ? "Uppercase, no spaces" : "3-letter ISO currency code, uppercase"}
+              </p>
+              {errors.code && <p className="mt-1 font-ibm-plex text-xs text-[#F87171]">{errors.code}</p>}
+            </div>
+
+            <div>
+              <label className="block font-space text-xs uppercase tracking-wider text-white/40 mb-2">Display Name</label>
+              <input
+                value={displayName}
+                onChange={(e) => setDisplayName(e.target.value)}
+                placeholder={assetType === "custom" ? "e.g. Credits" : "e.g. Euro"}
+                className={inputCls}
+              />
+              {errors.displayName && <p className="mt-1 font-ibm-plex text-xs text-[#F87171]">{errors.displayName}</p>}
+            </div>
+
+            <div className="grid grid-cols-2 gap-4">
               <div>
-                <label className="block font-space text-xs uppercase tracking-wider text-white/40 mb-2">Asset Code</label>
+                <label className="block font-space text-xs uppercase tracking-wider text-white/40 mb-2">Symbol</label>
                 <input
-                  value={code}
-                  onChange={(e) => setCode(e.target.value.toUpperCase().replace(/\s/g, ""))}
-                  placeholder={assetType === "fiat" ? "e.g. EUR" : "e.g. CREDITS"}
+                  value={symbol}
+                  onChange={(e) => setSymbol(e.target.value.slice(0, 3))}
+                  placeholder={assetType === "custom" ? "e.g. CR" : "e.g. €"}
+                  className={inputCls}
+                  maxLength={3}
+                />
+              </div>
+              <div>
+                <label className="block font-space text-xs uppercase tracking-wider text-white/40 mb-2">Scale</label>
+                <input
+                  type="number"
+                  value={scale}
+                  onChange={(e) => setScale(e.target.value)}
                   className={inputCls}
                 />
                 <p className="mt-1 font-ibm-plex text-xs text-white/30">
-                  {assetType === "fiat" ? "3-letter ISO currency code, uppercase" : "Uppercase, no spaces"}
+                  {assetType === "custom" ? "Decimal places, usually 0 for custom units" : "Decimal places, usually 2 for fiat"}
                 </p>
-                {errors.code && <p className="mt-1 font-ibm-plex text-xs text-[#F87171]">{errors.code}</p>}
               </div>
-
-              <div>
-                <label className="block font-space text-xs uppercase tracking-wider text-white/40 mb-2">Display Name</label>
-                <input
-                  value={displayName}
-                  onChange={(e) => setDisplayName(e.target.value)}
-                  placeholder={assetType === "fiat" ? "e.g. Euro" : "e.g. Credits"}
-                  className={inputCls}
-                />
-                {errors.displayName && <p className="mt-1 font-ibm-plex text-xs text-[#F87171]">{errors.displayName}</p>}
-              </div>
-
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="block font-space text-xs uppercase tracking-wider text-white/40 mb-2">Symbol</label>
-                  <input
-                    value={symbol}
-                    onChange={(e) => setSymbol(e.target.value.slice(0, 3))}
-                    placeholder={assetType === "fiat" ? "e.g. €" : "e.g. CR"}
-                    className={inputCls}
-                    maxLength={3}
-                  />
-                </div>
-                <div>
-                  <label className="block font-space text-xs uppercase tracking-wider text-white/40 mb-2">Scale</label>
-                  <input
-                    type="number"
-                    value={scale}
-                    onChange={(e) => setScale(e.target.value)}
-                    className={inputCls}
-                  />
-                  <p className="mt-1 font-ibm-plex text-xs text-white/30">
-                    {assetType === "fiat" ? "Decimal places, usually 2 for fiat" : "Decimal places, usually 0 for custom units"}
-                  </p>
-                </div>
-              </div>
-
-              {/* Exchange Rate section for CUSTOM only */}
-              {assetType === "custom" && (
-                <>
-                  <div className="border-t border-white/[0.08] my-5" />
-                  <div className="font-space text-xs uppercase tracking-wider text-white/40 mb-3">Exchange Rate</div>
-
-                  <div className="grid grid-cols-2 gap-4">
-                    <div>
-                      <label className="block font-space text-xs uppercase tracking-wider text-white/40 mb-2">From</label>
-                      <input value="USD" readOnly className={`${inputCls} text-white/50 cursor-not-allowed`} />
-                    </div>
-                    <div>
-                      <label className="block font-space text-xs uppercase tracking-wider text-white/40 mb-2">To</label>
-                      <input value={code || "—"} readOnly className={`${inputCls} text-white/50 cursor-not-allowed`} />
-                    </div>
-                  </div>
-
-                  <div className="grid grid-cols-2 gap-4">
-                    <div>
-                      <label className="block font-space text-xs uppercase tracking-wider text-white/40 mb-2">Rate</label>
-                      <input
-                        type="number"
-                        value={rate}
-                        onChange={(e) => setRate(e.target.value)}
-                        placeholder="e.g. 100"
-                        className={inputCls}
-                      />
-                      <p className="mt-1 font-ibm-plex text-xs text-white/30">
-                        How many {code || "[CODE]"} does 1 USD buy?
-                      </p>
-                      {errors.rate && <p className="mt-1 font-ibm-plex text-xs text-[#F87171]">{errors.rate}</p>}
-                    </div>
-                    <div>
-                      <label className="block font-space text-xs uppercase tracking-wider text-white/40 mb-2">Effective Date</label>
-                      <input
-                        type="date"
-                        value={effectiveDate}
-                        onChange={(e) => setEffectiveDate(e.target.value)}
-                        className={`${inputCls} [color-scheme:dark]`}
-                      />
-                      <p className="mt-1 font-ibm-plex text-xs text-white/30">Rate applies from this date</p>
-                    </div>
-                  </div>
-
-                  {/* Live preview */}
-                  {rate && parseFloat(rate) > 0 && (
-                    <div className="bg-white/5 px-4 py-3 font-ibm-plex text-xs text-[#2DD4BF] mt-2">
-                      1 USD = {rate} {code || "[CODE]"} · ${perUnit} per {code || "[CODE]"}
-                      <br />
-                      <span className="text-white/30">Effective: {effectiveDate}</span>
-                    </div>
-                  )}
-                </>
-              )}
             </div>
-          )}
+
+            {/* Exchange Rate section for CUSTOM only */}
+            {assetType === "custom" && (
+              <>
+                <div className="border-t border-white/[0.08] my-5" />
+                <div className="font-space text-xs uppercase tracking-wider text-white/40 mb-3">Exchange Rate</div>
+
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label className="block font-space text-xs uppercase tracking-wider text-white/40 mb-2">From</label>
+                    <input value="USD" readOnly className={`${inputCls} text-white/50 cursor-not-allowed`} />
+                  </div>
+                  <div>
+                    <label className="block font-space text-xs uppercase tracking-wider text-white/40 mb-2">To</label>
+                    <input value={code || "—"} readOnly className={`${inputCls} text-white/50 cursor-not-allowed`} />
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label className="block font-space text-xs uppercase tracking-wider text-white/40 mb-2">Rate</label>
+                    <input
+                      type="number"
+                      value={rate}
+                      onChange={(e) => setRate(e.target.value)}
+                      placeholder="e.g. 100"
+                      className={inputCls}
+                    />
+                    <p className="mt-1 font-ibm-plex text-xs text-white/30">
+                      How many {code || "[CODE]"} does 1 USD buy?
+                    </p>
+                    {errors.rate && <p className="mt-1 font-ibm-plex text-xs text-[#F87171]">{errors.rate}</p>}
+                  </div>
+                  <div>
+                    <label className="block font-space text-xs uppercase tracking-wider text-white/40 mb-2">Effective Date</label>
+                    <input
+                      type="date"
+                      value={effectiveDate}
+                      onChange={(e) => setEffectiveDate(e.target.value)}
+                      className={`${inputCls} [color-scheme:dark]`}
+                    />
+                    <p className="mt-1 font-ibm-plex text-xs text-white/30">Rate applies from this date</p>
+                  </div>
+                </div>
+
+                {/* Live preview */}
+                {rate && parseFloat(rate) > 0 && (
+                  <div className="bg-white/5 px-4 py-3 font-ibm-plex text-xs text-[#2DD4BF] mt-2">
+                    1 USD = {rate} {code || "[CODE]"} · ${perUnit} per {code || "[CODE]"}
+                    <br />
+                    <span className="text-white/30">Effective: {effectiveDate}</span>
+                  </div>
+                )}
+              </>
+            )}
+          </div>
         </div>
 
         {/* Footer */}
