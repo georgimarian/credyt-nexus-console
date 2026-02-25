@@ -12,7 +12,7 @@ function formatTimeParts(ts: string) {
   const h = String(d.getHours()).padStart(2, "0");
   const m = String(d.getMinutes()).padStart(2, "0");
   const s = String(d.getSeconds()).padStart(2, "0");
-  return { date: `${mo} ${day}`, time: `${h}:${m}:${s}` };
+  return `${mo} ${day} ${h}:${m}:${s}`;
 }
 
 export default function Events() {
@@ -69,54 +69,79 @@ export default function Events() {
         </select>
       </div>
 
-      <table className="w-full table-fixed">
-        <thead>
-          <tr className="border-b border-dashed border-white/15">
-            <th className="w-[15%] px-4 pb-3 text-left font-space text-xs uppercase tracking-wider text-white/40 whitespace-nowrap">Timestamp</th>
-            <th className="w-[14%] px-4 pb-3 text-left font-space text-xs uppercase tracking-wider text-white/40 whitespace-nowrap">Event Type</th>
-            <th className="w-[14%] px-4 pb-3 text-left font-space text-xs uppercase tracking-wider text-white/40 whitespace-nowrap">Event ID</th>
-            <th className="w-[18%] px-4 pb-3 text-left font-space text-xs uppercase tracking-wider text-white/40 whitespace-nowrap">Customer</th>
-            <th className="w-[14%] px-4 pb-3 text-left font-space text-xs uppercase tracking-wider text-white/40 whitespace-nowrap">Ext ID</th>
-            <th className="w-[10%] px-4 pb-3 text-left font-space text-xs uppercase tracking-wider text-white/40 whitespace-nowrap">Status</th>
-            <th className="w-[11%] px-4 pb-3 text-right font-space text-xs uppercase tracking-wider text-white/40 whitespace-nowrap">Fee</th>
-            <th className="w-[4%] px-2 pb-3"></th>
-          </tr>
-        </thead>
-        <tbody>
-          {paged.map((event) => {
-            const cust = customerMap.get(event.customer_id);
-            return (
-              <tr key={event.id} className="border-b border-white/[0.06] hover:bg-white/[0.02] cursor-pointer transition-colors" onClick={() => setExpandedId(expandedId === event.id ? null : event.id)}>
-                <td className="px-4 py-4 font-ibm-plex text-sm font-light text-white/60 whitespace-nowrap">
-                  {(() => { const t = formatTimeParts(event.timestamp); return <><div>{t.date}</div><div className="text-xs text-white/40">{t.time}</div></>; })()}
-                </td>
-                <td className="px-4 py-4 font-ibm-plex text-sm font-light whitespace-nowrap">{event.event_type}</td>
-                <td className="px-4 py-4 whitespace-nowrap"><CopyableId value={event.id} /></td>
-                <td className="px-4 py-4">
-                  <div className="font-ibm-plex text-sm font-medium">{event.customer_name}</div>
-                  <div className="font-ibm-plex text-xs text-white/40 mt-1">{event.customer_id}</div>
-                </td>
-                <td className="px-4 py-4 font-ibm-plex text-xs text-white/40 whitespace-nowrap">{cust?.external_id || "—"}</td>
-                <td className="px-4 py-4 whitespace-nowrap"><StatusBadge status={event.status} /></td>
-                <td className="px-4 py-4 text-right font-ibm-plex text-sm font-light text-[#4ADE80] whitespace-nowrap">
-                  {event.fees?.[0] && `$${event.fees[0].amount.toFixed(2)}`}
-                </td>
-                <td className="px-2 py-4 text-right text-white/40 text-sm">→</td>
-              </tr>
-            );
-          })}
-        </tbody>
-      </table>
+      {/* Card-feed layout */}
+      <div>
+        {paged.map((event) => {
+          const cust = customerMap.get(event.customer_id);
+          const isExpanded = expandedId === event.id;
+          const fee = event.fees?.[0];
+          const dims = event.properties ? Object.entries(event.properties) : [];
 
-      {expandedId && (() => {
-        const event = events.find(e => e.id === expandedId);
-        if (!event) return null;
-        return (
-          <div className="p-4 font-ibm-plex text-xs" style={{ backgroundColor: "rgba(255,255,255,0.03)" }}>
-            <pre className="whitespace-pre-wrap">{JSON.stringify(event.properties, null, 2)}</pre>
-          </div>
-        );
-      })()}
+          return (
+            <div key={event.id}>
+              <div
+                onClick={() => setExpandedId(isExpanded ? null : event.id)}
+                className={`border-b border-white/[0.06] py-4 px-4 hover:bg-white/[0.02] cursor-pointer transition-colors ${isExpanded ? "border-l-2 border-l-white/20" : ""}`}
+              >
+                {/* Line 1 */}
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center">
+                    <span className="font-ibm-plex text-xs text-white/40 w-36 shrink-0">{formatTimeParts(event.timestamp)}</span>
+                    <span className="font-ibm-plex text-sm font-medium ml-4 w-36 shrink-0">{event.event_type}</span>
+                    <span className="font-ibm-plex text-sm font-medium ml-4">{event.customer_name}</span>
+                  </div>
+                  <div className="flex items-center gap-4">
+                    <StatusBadge status={event.status} />
+                    <span className="font-ibm-plex text-sm text-[#4ADE80] w-20 text-right">
+                      {fee ? `$${fee.amount.toFixed(2)}` : "—"}
+                    </span>
+                    <span className="text-white/40 text-sm">→</span>
+                  </div>
+                </div>
+
+                {/* Line 2 */}
+                <div className="flex items-center mt-1 ml-0 sm:ml-36 text-xs text-white/30 font-ibm-plex gap-1">
+                  <CopyableId value={event.id} />
+                  <span>·</span>
+                  <span>{event.customer_id}</span>
+                  {cust?.external_id && (
+                    <>
+                      <span>·</span>
+                      <span>{cust.external_id}</span>
+                    </>
+                  )}
+                </div>
+
+                {/* Line 3 — dimensions */}
+                {dims.length > 0 && (
+                  <div className="flex flex-wrap gap-2 mt-1.5 ml-0 sm:ml-36">
+                    {dims.map(([k, v]) => (
+                      <span key={k} className="bg-white/5 px-2 py-0.5 text-xs font-ibm-plex text-white/50">
+                        {k}:{String(v)}
+                      </span>
+                    ))}
+                  </div>
+                )}
+              </div>
+
+              {/* Expanded JSON */}
+              {isExpanded && (
+                <div className="bg-white/5 mx-4 mb-3 p-4 font-ibm-plex text-xs text-white/50">
+                  <pre className="whitespace-pre-wrap">{JSON.stringify({
+                    id: event.id,
+                    event_type: event.event_type,
+                    customer_id: event.customer_id,
+                    timestamp: formatTimeParts(event.timestamp),
+                    dimensions: event.properties,
+                    fee: fee ? { amount: fee.amount, asset: fee.asset_code } : null,
+                    status: event.status,
+                  }, null, 2)}</pre>
+                </div>
+              )}
+            </div>
+          );
+        })}
+      </div>
 
       {totalPages > 1 && (
         <div className="flex items-center justify-between border-t border-white/[0.06] pt-4 font-ibm-plex text-xs text-white/40">
