@@ -59,7 +59,7 @@ export default function Vendors() {
       </table>
 
       <div>
-        <div className="font-space text-xs uppercase tracking-wider text-white/40 border-b border-dashed border-white/15 pb-3 mb-4">-- COSTS BY VENDOR ----------------------------------------</div>
+        <div className="font-space text-xs uppercase tracking-wider text-white/40 border-b border-dashed border-white/15 pb-3 mb-4">┌─ COSTS BY VENDOR ────────────────────┐</div>
         <ResponsiveContainer width="100%" height={200}>
           <BarChart data={costByVendor} layout="vertical">
             <XAxis type="number" tick={{ fontSize: 10, fontFamily: "IBM Plex Mono", fill: "rgba(255,255,255,0.3)" }} />
@@ -71,7 +71,7 @@ export default function Vendors() {
       </div>
 
       <div>
-        <div className="font-space text-xs uppercase tracking-wider text-white/40 border-b border-dashed border-white/15 pb-3 mb-4">-- RECENT COSTS ----------------------------------------</div>
+        <div className="font-space text-xs uppercase tracking-wider text-white/40 border-b border-dashed border-white/15 pb-3 mb-4">┌─ RECENT COSTS ───────────────────────┐</div>
         <table className="w-full table-fixed">
           <thead>
             <tr className="border-b border-dashed border-white/15">

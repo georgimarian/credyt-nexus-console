@@ -2,6 +2,7 @@ import { useState } from "react";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { Switch } from "@/components/ui/switch";
 import { toast } from "@/hooks/use-toast";
+import { useProductStore } from "@/stores/productStore";
 import type { Customer } from "@/data/types";
 
 interface CreateCustomerModalProps {
@@ -11,6 +12,9 @@ interface CreateCustomerModalProps {
 }
 
 export function CreateCustomerModal({ open, onClose, onCreated }: CreateCustomerModalProps) {
+  const { products } = useProductStore();
+  const activeProducts = products.filter(p => p.status === "active");
+
   const [externalId, setExternalId] = useState("");
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
@@ -19,6 +23,7 @@ export function CreateCustomerModal({ open, onClose, onCreated }: CreateCustomer
   const [autoTopup, setAutoTopup] = useState(false);
   const [threshold, setThreshold] = useState("");
   const [topupAmount, setTopupAmount] = useState("");
+  const [selectedProductId, setSelectedProductId] = useState("");
   const [errors, setErrors] = useState<Record<string, string>>({});
 
   const validate = () => {
@@ -37,6 +42,16 @@ export function CreateCustomerModal({ open, onClose, onCreated }: CreateCustomer
 
   const handleCreate = () => {
     if (!validate()) return;
+
+    const selectedProduct = activeProducts.find(p => p.id === selectedProductId);
+    const subscriptions = selectedProduct ? [{
+      id: `sub_${Date.now().toString(36)}`,
+      product_id: selectedProduct.id,
+      product_name: selectedProduct.name,
+      status: "active" as const,
+      start_date: new Date().toISOString(),
+    }] : [];
+
     const customer: Customer = {
       id: `cust_${Date.now().toString(36)}`,
       name: name.trim(),
@@ -47,7 +62,7 @@ export function CreateCustomerModal({ open, onClose, onCreated }: CreateCustomer
       auto_topup: autoTopup
         ? { enabled: true, threshold: parseFloat(threshold) || 0, amount: parseFloat(topupAmount) || 0 }
         : undefined,
-      subscriptions: [],
+      subscriptions,
       wallet: {
         accounts: [{ asset_code: currency, available: parseFloat(initialBalance) || 0, pending_in: 0, pending_out: 0 }],
         credit_grants: [],
@@ -58,7 +73,7 @@ export function CreateCustomerModal({ open, onClose, onCreated }: CreateCustomer
     };
     onCreated(customer);
     toast({ title: "done: Customer created", description: `${customer.name} has been added.` });
-    setExternalId(""); setName(""); setEmail(""); setCurrency("USD"); setInitialBalance(""); setAutoTopup(false); setThreshold(""); setTopupAmount(""); setErrors({});
+    setExternalId(""); setName(""); setEmail(""); setCurrency("USD"); setInitialBalance(""); setAutoTopup(false); setThreshold(""); setTopupAmount(""); setSelectedProductId(""); setErrors({});
   };
 
   const inputCls = "w-full border border-white/20 bg-transparent px-3 py-2 font-ibm-plex text-sm placeholder:text-white/30 focus:outline-none focus:border-white/60";
@@ -68,10 +83,10 @@ export function CreateCustomerModal({ open, onClose, onCreated }: CreateCustomer
     <Dialog open={open} onOpenChange={(v) => !v && onClose()}>
       <DialogContent className="sm:max-w-lg p-0 gap-0">
         <div className="border-b border-white/[0.08] px-8 py-4">
-          <span className="font-space text-xs text-white/50">-- CREATE CUSTOMER ---------------------------------</span>
+          <span className="font-space text-xs text-white/50">┌─ CREATE CUSTOMER ────────────────────┐</span>
         </div>
 
-        <div className="space-y-5 px-8 py-6">
+        <div className="space-y-5 px-8 py-6 max-h-[65vh] overflow-y-auto">
           <div>
             <label className="block font-space text-xs uppercase tracking-wider text-white/40 mb-2">Display Name</label>
             <input value={name} onChange={(e) => setName(e.target.value)} placeholder="e.g. Acme Corp" className={inputCls} />
@@ -130,6 +145,21 @@ export function CreateCustomerModal({ open, onClose, onCreated }: CreateCustomer
                 </div>
               </div>
             )}
+          </div>
+
+          {/* Subscription */}
+          <div className="border-t border-white/[0.08] pt-5">
+            <div className="font-space text-xs uppercase tracking-wider text-white/40 mb-3">Subscription</div>
+            <div>
+              <label className="block font-space text-xs uppercase tracking-wider text-white/40 mb-2">Subscribe to Product</label>
+              <select value={selectedProductId} onChange={(e) => setSelectedProductId(e.target.value)} className={selectCls} style={{ backgroundColor: "#111111" }}>
+                <option value="">— None (skip)</option>
+                {activeProducts.map(p => (
+                  <option key={p.id} value={p.id}>{p.name} ({p.code})</option>
+                ))}
+              </select>
+              <p className="mt-1 font-ibm-plex text-xs text-white/30">Subscribing provisions wallet accounts automatically</p>
+            </div>
           </div>
         </div>
 

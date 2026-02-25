@@ -17,7 +17,7 @@ export default function Settings() {
 
       {/* API KEY */}
       <div>
-        <div className="font-space text-xs uppercase tracking-wider text-white/40 border-b border-dashed border-white/15 pb-3 mb-4">-- API KEY ----------------------------------------</div>
+        <div className="font-space text-xs uppercase tracking-wider text-white/40 border-b border-dashed border-white/15 pb-3 mb-4">┌─ API KEY ────────────────────────────┐</div>
         <div className="flex items-center gap-3">
           <div className="flex-1 border border-white/[0.08] bg-white/5 px-3 py-2 font-ibm-plex text-sm">
             {showKey ? apiKey : "sk_live_crdyt_" + "•".repeat(32)}
@@ -30,7 +30,7 @@ export default function Settings() {
 
       {/* Connected Accounts */}
       <div>
-        <div className="font-space text-xs uppercase tracking-wider text-white/40 border-b border-dashed border-white/15 pb-3 mb-4">-- CONNECTED ACCOUNTS ----------------------------------------</div>
+        <div className="font-space text-xs uppercase tracking-wider text-white/40 border-b border-dashed border-white/15 pb-3 mb-4">┌─ CONNECTED ACCOUNTS ─────────────────┐</div>
         {[
           { name: "Stripe", id: "acct_1NqOXXXXXXXX" },
           { name: "OpenAI", id: "org-XXXXXXXX" },
@@ -47,7 +47,7 @@ export default function Settings() {
 
       {/* Billing Portal */}
       <div>
-        <div className="font-space text-xs uppercase tracking-wider text-white/40 border-b border-dashed border-white/15 pb-3 mb-4">-- BILLING PORTAL ----------------------------------------</div>
+        <div className="font-space text-xs uppercase tracking-wider text-white/40 border-b border-dashed border-white/15 pb-3 mb-4">┌─ BILLING PORTAL ─────────────────────┐</div>
         {[
           { label: "Portal URL", value: "https://billing.credyt.ai/portal/your-org" },
           { label: "Customization", value: "Default theme" },
@@ -62,7 +62,7 @@ export default function Settings() {
 
       {/* System Info */}
       <div>
-        <div className="font-space text-xs uppercase tracking-wider text-white/40 border-b border-dashed border-white/15 pb-3 mb-4">-- SYSTEM INFO ----------------------------------------</div>
+        <div className="font-space text-xs uppercase tracking-wider text-white/40 border-b border-dashed border-white/15 pb-3 mb-4">┌─ SYSTEM INFO ────────────────────────┐</div>
         <pre className="font-ibm-plex text-xs text-white/40">
 {`$ credyt version
 credyt-admin v1.0.0
