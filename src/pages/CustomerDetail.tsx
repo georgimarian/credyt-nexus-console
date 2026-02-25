@@ -2,9 +2,10 @@ import { useParams, Link } from "react-router-dom";
 import { useState } from "react";
 import { StatusBadge } from "@/components/terminal/StatusBadge";
 import { CopyableId } from "@/components/terminal/CopyableId";
-import { customers } from "@/data/customers";
+import { customers as initialCustomers } from "@/data/customers";
 import { events } from "@/data/events";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
+import { EditCustomerModal } from "@/components/customers/EditCustomerModal";
 import {
   AreaChart, Area, XAxis, Tooltip, ResponsiveContainer,
 } from "recharts";
@@ -22,11 +23,13 @@ function formatTime(ts: string) {
 
 export default function CustomerDetail() {
   const { id } = useParams<{ id: string }>();
-  const customer = customers.find((c) => c.id === id);
+  const [customerData, setCustomerData] = useState(initialCustomers);
+  const customer = customerData.find((c) => c.id === id);
   const [chartRange, setChartRange] = useState<"7" | "30" | "90">("30");
   const [expandedEventId, setExpandedEventId] = useState<string | null>(null);
   const [showTopups, setShowTopups] = useState(false);
   const [showTopupModal, setShowTopupModal] = useState(false);
+  const [showEditModal, setShowEditModal] = useState(false);
   const [topupAmount, setTopupAmount] = useState("");
   const [visibleEvents, setVisibleEvents] = useState(10);
 
@@ -67,7 +70,7 @@ export default function CustomerDetail() {
   const handleTopup = () => {
     const amount = parseFloat(topupAmount);
     if (!amount || amount <= 0) return;
-    toast({ title: "✓ Top-up processed", description: `$${amount.toFixed(2)} added to wallet.` });
+    toast({ title: "done: Top-up processed", description: `$${amount.toFixed(2)} added to wallet.` });
     setShowTopupModal(false);
     setTopupAmount("");
   };
@@ -91,7 +94,7 @@ export default function CustomerDetail() {
           <div className="mt-1 font-ibm-plex text-xs text-white/40">{customer.id}</div>
         </div>
         <div className="flex items-center gap-2">
-          <button className="border border-white/30 bg-transparent px-4 py-2 font-space text-xs uppercase tracking-wide text-white hover:bg-white/5">Edit</button>
+          <button onClick={() => setShowEditModal(true)} className="border border-white/30 bg-transparent px-4 py-2 font-space text-xs uppercase tracking-wide text-white hover:bg-white/5">Edit</button>
           <button onClick={() => setShowTopupModal(true)} className="bg-white text-black px-4 py-2 font-space text-xs uppercase tracking-wide hover:bg-white/90">Top Up Wallet</button>
           <button className="border border-[#F87171]/30 text-[#F87171] bg-transparent px-4 py-2 font-space text-xs uppercase tracking-wide hover:bg-[#F87171]/5">Suspend</button>
         </div>
@@ -102,7 +105,7 @@ export default function CustomerDetail() {
         {/* Left 40% */}
         <div className="col-span-2 space-y-0">
           {/* WALLET */}
-          <div className="font-space text-xs uppercase tracking-wider text-white/40 mb-3">WALLET</div>
+          <div className="font-space text-xs uppercase tracking-widest text-white/40 mb-2">WALLET</div>
           {[
             { label: "Balance", value: `$${balance.toFixed(2)}` },
             { label: "Available", value: `$${(primaryAccount?.available || 0).toFixed(2)}` },
@@ -134,7 +137,7 @@ export default function CustomerDetail() {
           </div>
 
           {/* DETAILS */}
-          <div className="font-space text-xs uppercase tracking-wider text-white/40 mt-8 mb-3">DETAILS</div>
+          <div className="font-space text-xs uppercase tracking-widest text-white/40 mt-8 mb-2">DETAILS</div>
           {[
             { label: "External ID", value: customer.external_id },
             { label: "Email", value: customer.email },
@@ -154,7 +157,7 @@ export default function CustomerDetail() {
           ))}
 
           {/* THIS MONTH */}
-          <div className="font-space text-xs uppercase tracking-wider text-white/40 mt-8 mb-3">THIS MONTH</div>
+          <div className="font-space text-xs uppercase tracking-widest text-white/40 mt-8 mb-2">THIS MONTH</div>
           {[
             { label: "Total Spend", value: `$${totalSpend.toFixed(2)}` },
             { label: "Top-ups", value: monthTopups.length > 0 ? `${monthTopups.length} × $${(monthTopups.reduce((s, t) => s + t.amount, 0) / monthTopups.length).toFixed(2)}` : "None" },
@@ -190,22 +193,23 @@ export default function CustomerDetail() {
           </ResponsiveContainer>
 
           {/* Usage Events */}
-          <div className="font-space text-xs uppercase tracking-wider text-white/40 mb-4">USAGE EVENTS</div>
+          <div className="font-space text-xs uppercase tracking-widest text-white/40 mb-4">┌─ USAGE EVENTS ───────────────────────┐</div>
           <table className="w-full table-fixed">
             <thead>
               <tr className="border-b border-dashed border-white/15">
-                <th className="w-[15%] px-4 pb-3 text-left font-space text-xs uppercase tracking-wider text-white/40 whitespace-nowrap">Timestamp</th>
+                <th className="w-[18%] px-4 pb-3 text-left font-space text-xs uppercase tracking-wider text-white/40 whitespace-nowrap">Timestamp</th>
                 <th className="w-[18%] px-4 pb-3 text-left font-space text-xs uppercase tracking-wider text-white/40 whitespace-nowrap">Event Type</th>
                 <th className="w-[30%] px-4 pb-3 text-left font-space text-xs uppercase tracking-wider text-white/40 whitespace-nowrap">Dimensions</th>
-                <th className="w-[16%] px-4 pb-3 text-left font-space text-xs uppercase tracking-wider text-white/40 whitespace-nowrap">Status</th>
-                <th className="w-[21%] px-4 pb-3 text-right font-space text-xs uppercase tracking-wider text-white/40 whitespace-nowrap">Cost</th>
+                <th className="w-[14%] px-4 pb-3 text-left font-space text-xs uppercase tracking-wider text-white/40 whitespace-nowrap">Status</th>
+                <th className="w-[16%] px-4 pb-3 text-right font-space text-xs uppercase tracking-wider text-white/40 whitespace-nowrap">Cost</th>
+                <th className="w-[4%] px-2 pb-3"></th>
               </tr>
             </thead>
             <tbody>
               {customerEvents.slice(0, visibleEvents).map((event) => (
                 <tr key={event.id} className="border-b border-white/[0.06] hover:bg-white/[0.02] cursor-pointer" onClick={() => setExpandedEventId(expandedEventId === event.id ? null : event.id)}>
-                  <td className="px-4 py-4 font-ibm-plex text-xs text-white/60">{formatTime(event.timestamp)}</td>
-                  <td className="px-4 py-4 font-ibm-plex text-sm font-light">{event.event_type}</td>
+                  <td className="px-4 py-4 font-ibm-plex text-xs text-white/60 whitespace-nowrap">{formatTime(event.timestamp)}</td>
+                  <td className="px-4 py-4 font-ibm-plex text-sm font-light whitespace-nowrap">{event.event_type}</td>
                   <td className="px-4 py-4">
                     <div className="flex flex-wrap gap-1">
                       {Object.entries(event.properties).filter(([k]) => k !== "event_type").slice(0, 3).map(([k, v]) => (
@@ -213,14 +217,26 @@ export default function CustomerDetail() {
                       ))}
                     </div>
                   </td>
-                  <td className="px-4 py-4"><StatusBadge status={event.status} /></td>
-                  <td className="px-4 py-4 text-right font-ibm-plex text-sm text-[#4ADE80]">
+                  <td className="px-4 py-4 whitespace-nowrap"><StatusBadge status={event.status} /></td>
+                  <td className="px-4 py-4 text-right font-ibm-plex text-sm text-[#4ADE80] whitespace-nowrap">
                     {event.fees?.[0] && `$${event.fees[0].amount.toFixed(4)}`}
                   </td>
+                  <td className="px-2 py-4 text-right text-white/40 text-sm">→</td>
                 </tr>
               ))}
             </tbody>
           </table>
+
+          {expandedEventId && (() => {
+            const ev = customerEvents.find(e => e.id === expandedEventId);
+            if (!ev) return null;
+            return (
+              <div className="bg-white/5 p-4 font-ibm-plex text-xs">
+                <pre className="whitespace-pre-wrap">{JSON.stringify(ev.properties, null, 2)}</pre>
+              </div>
+            );
+          })()}
+
           {visibleEvents < customerEvents.length && (
             <button onClick={() => setVisibleEvents((v) => v + 10)} className="mt-4 w-full border border-white/30 bg-transparent py-2 font-space text-xs uppercase tracking-wide text-white/40 hover:text-white hover:bg-white/5">
               Load More
@@ -236,10 +252,10 @@ export default function CustomerDetail() {
               <table className="w-full table-fixed mt-4">
                 <thead>
                   <tr className="border-b border-dashed border-white/15">
-                    <th className="px-4 pb-3 text-left font-space text-xs uppercase tracking-wider text-white/40">Date</th>
-                    <th className="px-4 pb-3 text-right font-space text-xs uppercase tracking-wider text-white/40">Amount</th>
-                    <th className="px-4 pb-3 text-left font-space text-xs uppercase tracking-wider text-white/40">Description</th>
-                    <th className="px-4 pb-3 text-left font-space text-xs uppercase tracking-wider text-white/40">Status</th>
+                    <th className="px-4 pb-3 text-left font-space text-xs uppercase tracking-wider text-white/40 whitespace-nowrap">Date</th>
+                    <th className="px-4 pb-3 text-right font-space text-xs uppercase tracking-wider text-white/40 whitespace-nowrap">Amount</th>
+                    <th className="px-4 pb-3 text-left font-space text-xs uppercase tracking-wider text-white/40 whitespace-nowrap">Description</th>
+                    <th className="px-4 pb-3 text-left font-space text-xs uppercase tracking-wider text-white/40 whitespace-nowrap">Status</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -262,7 +278,7 @@ export default function CustomerDetail() {
       <Dialog open={showTopupModal} onOpenChange={setShowTopupModal}>
         <DialogContent className="border-white/10 sm:max-w-sm p-0 gap-0" style={{ backgroundColor: "#111111" }}>
           <div className="border-b border-white/[0.08] px-8 py-4">
-            <span className="font-space text-xs text-white/50">-- TOP UP WALLET ---------------------------------</span>
+            <span className="font-space text-xs text-white/50">┌─ TOP UP WALLET ──────────────────────┐</span>
           </div>
           <div className="space-y-4 px-8 py-6">
             <div>
@@ -280,6 +296,17 @@ export default function CustomerDetail() {
           </div>
         </DialogContent>
       </Dialog>
+
+      {/* Edit Customer Modal */}
+      <EditCustomerModal
+        open={showEditModal}
+        onClose={() => setShowEditModal(false)}
+        customer={customer}
+        onSaved={(updated) => {
+          setCustomerData(prev => prev.map(c => c.id === updated.id ? updated : c));
+          setShowEditModal(false);
+        }}
+      />
     </div>
   );
 }

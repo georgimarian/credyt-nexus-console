@@ -2,6 +2,7 @@ import { useState } from "react";
 import { StatusBadge } from "@/components/terminal/StatusBadge";
 import { CopyableId } from "@/components/terminal/CopyableId";
 import { events } from "@/data/events";
+import { customers } from "@/data/customers";
 import { Input } from "@/components/ui/input";
 
 function formatTime(ts: string) {
@@ -34,6 +35,8 @@ export default function Events() {
 
   const totalBilled = events.reduce((s, e) => s + (e.fees?.reduce((fs, f) => fs + (f.asset_code === "USD" ? f.amount : 0), 0) || 0), 0);
   const todayCount = 12;
+
+  const customerMap = new Map(customers.map(c => [c.id, c]));
 
   return (
     <div className="space-y-10">
@@ -69,34 +72,37 @@ export default function Events() {
       <table className="w-full table-fixed">
         <thead>
           <tr className="border-b border-dashed border-white/15">
-            <th className="w-[16%] px-4 pb-3 text-left font-space text-xs uppercase tracking-wider text-white/40 whitespace-nowrap">Timestamp</th>
+            <th className="w-[15%] px-4 pb-3 text-left font-space text-xs uppercase tracking-wider text-white/40 whitespace-nowrap">Timestamp</th>
             <th className="w-[14%] px-4 pb-3 text-left font-space text-xs uppercase tracking-wider text-white/40 whitespace-nowrap">Event Type</th>
-            <th className="w-[16%] px-4 pb-3 text-left font-space text-xs uppercase tracking-wider text-white/40 whitespace-nowrap">Event ID</th>
+            <th className="w-[14%] px-4 pb-3 text-left font-space text-xs uppercase tracking-wider text-white/40 whitespace-nowrap">Event ID</th>
             <th className="w-[18%] px-4 pb-3 text-left font-space text-xs uppercase tracking-wider text-white/40 whitespace-nowrap">Customer</th>
-            <th className="w-[16%] px-4 pb-3 text-left font-space text-xs uppercase tracking-wider text-white/40 whitespace-nowrap">Ext Customer ID</th>
-            <th className="w-[5%] px-4 pb-3 text-left font-space text-xs uppercase tracking-wider text-white/40 whitespace-nowrap">Status</th>
-            <th className="w-[8%] px-4 pb-3 text-right font-space text-xs uppercase tracking-wider text-white/40 whitespace-nowrap">Fee</th>
-            <th className="w-[7%] px-4 pb-3"></th>
+            <th className="w-[14%] px-4 pb-3 text-left font-space text-xs uppercase tracking-wider text-white/40 whitespace-nowrap">Ext ID</th>
+            <th className="w-[10%] px-4 pb-3 text-left font-space text-xs uppercase tracking-wider text-white/40 whitespace-nowrap">Status</th>
+            <th className="w-[11%] px-4 pb-3 text-right font-space text-xs uppercase tracking-wider text-white/40 whitespace-nowrap">Fee</th>
+            <th className="w-[4%] px-2 pb-3"></th>
           </tr>
         </thead>
         <tbody>
-          {paged.map((event) => (
-            <tr key={event.id} className="border-b border-white/[0.06] hover:bg-white/[0.02] cursor-pointer transition-colors" onClick={() => setExpandedId(expandedId === event.id ? null : event.id)}>
-              <td className="px-4 py-4 font-ibm-plex text-sm font-light text-white/60">{formatTime(event.timestamp)}</td>
-              <td className="px-4 py-4 font-ibm-plex text-sm font-light">{event.event_type}</td>
-              <td className="px-4 py-4"><CopyableId value={event.id} /></td>
-              <td className="px-4 py-4">
-                <div className="font-ibm-plex text-sm font-medium">{event.customer_name}</div>
-                <div className="font-ibm-plex text-xs text-white/40 mt-1">{event.customer_id}</div>
-              </td>
-              <td className="px-4 py-4 font-ibm-plex text-xs text-white/40">{/* ext id from customer data */}—</td>
-              <td className="px-4 py-4"><StatusBadge status={event.status} /></td>
-              <td className="px-4 py-4 text-right font-ibm-plex text-sm font-light text-[#4ADE80]">
-                {event.fees?.[0] && `$${event.fees[0].amount.toFixed(4)}`}
-              </td>
-              <td className="px-4 py-4 text-right text-white/40 text-sm">→</td>
-            </tr>
-          ))}
+          {paged.map((event) => {
+            const cust = customerMap.get(event.customer_id);
+            return (
+              <tr key={event.id} className="border-b border-white/[0.06] hover:bg-white/[0.02] cursor-pointer transition-colors" onClick={() => setExpandedId(expandedId === event.id ? null : event.id)}>
+                <td className="px-4 py-4 font-ibm-plex text-sm font-light text-white/60 whitespace-nowrap">{formatTime(event.timestamp)}</td>
+                <td className="px-4 py-4 font-ibm-plex text-sm font-light whitespace-nowrap">{event.event_type}</td>
+                <td className="px-4 py-4 whitespace-nowrap"><CopyableId value={event.id} /></td>
+                <td className="px-4 py-4">
+                  <div className="font-ibm-plex text-sm font-medium">{event.customer_name}</div>
+                  <div className="font-ibm-plex text-xs text-white/40 mt-1">{event.customer_id}</div>
+                </td>
+                <td className="px-4 py-4 font-ibm-plex text-xs text-white/40 whitespace-nowrap">{cust?.external_id || "—"}</td>
+                <td className="px-4 py-4 whitespace-nowrap"><StatusBadge status={event.status} /></td>
+                <td className="px-4 py-4 text-right font-ibm-plex text-sm font-light text-[#4ADE80] whitespace-nowrap">
+                  {event.fees?.[0] && `$${event.fees[0].amount.toFixed(4)}`}
+                </td>
+                <td className="px-2 py-4 text-right text-white/40 text-sm">→</td>
+              </tr>
+            );
+          })}
         </tbody>
       </table>
 

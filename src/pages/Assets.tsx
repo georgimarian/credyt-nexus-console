@@ -123,7 +123,7 @@ export default function Assets() {
       {/* Quote Calculator */}
       <div>
         <div className="font-space text-xs uppercase tracking-wider text-white/40 border-b border-dashed border-white/15 pb-3 mb-4">
-          -- QUOTE CALCULATOR ----------------------------------------
+          ┌─ QUOTE CALCULATOR ────────────────────┐
         </div>
         <div className="flex flex-wrap items-end gap-6 font-ibm-plex text-sm">
           <div>

@@ -4,13 +4,15 @@ import { CopyableId } from "@/components/terminal/CopyableId";
 import { useProductStore } from "@/stores/productStore";
 import { customers } from "@/data/customers";
 import { useState } from "react";
+import { AddPriceWizard } from "@/components/products/AddPriceWizard";
 
 export default function ProductDetail() {
   const { id } = useParams<{ id: string }>();
-  const { products } = useProductStore();
+  const { products, addPriceToProduct } = useProductStore();
   const product = products.find((p) => p.id === id);
   const [simPayload, setSimPayload] = useState('{\n  "event_type": "chat_completion",\n  "total_tokens": 1500\n}');
   const [simResult, setSimResult] = useState<string | null>(null);
+  const [showAddPrice, setShowAddPrice] = useState(false);
 
   if (!product) {
     return (
@@ -61,15 +63,18 @@ export default function ProductDetail() {
             <span className="font-ibm-plex text-xs text-white/40">code: {product.code}</span>
           </div>
         </div>
-        <button className="bg-white text-black px-4 py-2 font-space text-xs uppercase tracking-wide hover:bg-white/90">
-          Configure Pricing
+        <button
+          onClick={() => setShowAddPrice(true)}
+          className="bg-white text-black px-4 py-2 font-space text-xs uppercase tracking-wide hover:bg-white/90"
+        >
+          Configure Pricing →
         </button>
       </div>
 
       {/* Prices — flat rows */}
       <div>
         <div className="font-space text-xs uppercase tracking-wider text-white/40 border-b border-dashed border-white/15 pb-3 mb-4">
-          -- PRICES ----------------------------------------
+          ┌─ PRICES ─────────────────────────────┐
         </div>
         {product.prices.map((price, idx) => (
           <div key={price.id} className={idx < product.prices.length - 1 ? "border-b border-white/[0.06] py-4" : "py-4"}>
@@ -93,7 +98,10 @@ export default function ProductDetail() {
             )}
           </div>
         ))}
-        <button className="mt-8 border border-white/30 bg-transparent px-4 py-2 font-space text-xs uppercase tracking-wide text-white hover:bg-white/5">
+        <button
+          onClick={() => setShowAddPrice(true)}
+          className="mt-8 border border-white/30 bg-transparent px-4 py-2 font-space text-xs uppercase tracking-wide text-white hover:bg-white/5"
+        >
           + Add Price
         </button>
       </div>
@@ -101,7 +109,7 @@ export default function ProductDetail() {
       {/* Usage Simulator */}
       <div>
         <div className="font-space text-xs uppercase tracking-wider text-white/40 border-b border-dashed border-white/15 pb-3 mb-4">
-          -- USAGE SIMULATOR ----------------------------------------
+          ┌─ USAGE SIMULATOR ────────────────────┐
         </div>
         <div className="grid grid-cols-2 gap-6">
           <div>
@@ -128,7 +136,7 @@ export default function ProductDetail() {
       {/* Subscribers */}
       <div>
         <div className="font-space text-xs uppercase tracking-wider text-white/40 border-b border-dashed border-white/15 pb-3 mb-4">
-          -- SUBSCRIBERS ({subscribers.length}) ----------------------------------------
+          ┌─ SUBSCRIBERS ({subscribers.length}) ──────────────────┐
         </div>
         {subscribers.length === 0 ? (
           <p className="font-ibm-plex text-sm text-white/40 py-4">
@@ -157,6 +165,17 @@ export default function ProductDetail() {
           </table>
         )}
       </div>
+
+      {showAddPrice && (
+        <AddPriceWizard
+          product={product}
+          onClose={() => setShowAddPrice(false)}
+          onPriceAdded={(price) => {
+            addPriceToProduct(product.id, price);
+            setShowAddPrice(false);
+          }}
+        />
+      )}
     </div>
   );
 }
