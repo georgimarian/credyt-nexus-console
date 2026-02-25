@@ -15,14 +15,17 @@ function formatTimeParts(ts: string) {
   return `${mo} ${day} ${h}:${m}:${s}`;
 }
 
-function EventDetailPanel({ event, cust }: { event: typeof events[0]; cust: any }) {
+function EventDetailPanel({ event, cust, onClose }: { event: typeof events[0]; cust: any; onClose: () => void }) {
   const [showRaw, setShowRaw] = useState(false);
   const fee = event.fees?.[0];
   const dims = event.properties ? Object.entries(event.properties) : [];
 
   return (
-    <div className="bg-[#0F0F0F] border-l-2 border-white/20 mx-4 mb-2 p-5">
-      <div className="font-space text-xs text-white/40 mb-4">┌─ EVENT DETAILS ──────────────────────────────────────┐</div>
+    <div className="bg-[#111318] border border-white/10 border-l-2 border-l-[#4ADE80] mx-4 mt-2 mb-4 p-5 rounded-none">
+      <div className="flex items-center justify-between mb-4">
+        <span className="font-space text-xs text-white/40">┌─ EVENT DETAILS ──────────────────────────────────────┐</span>
+        <button onClick={(e) => { e.stopPropagation(); onClose(); }} className="font-space text-xs text-white/30 hover:text-white cursor-pointer transition-colors">× CLOSE</button>
+      </div>
 
       {/* Header row */}
       <div className="flex items-center gap-4 mb-4">
@@ -198,7 +201,7 @@ export default function Events() {
               </div>
 
               {/* Expanded detail panel */}
-              {isExpanded && <EventDetailPanel event={event} cust={cust} />}
+              {isExpanded && <EventDetailPanel event={event} cust={cust} onClose={() => setExpandedId(null)} />}
             </div>
           );
         })}
