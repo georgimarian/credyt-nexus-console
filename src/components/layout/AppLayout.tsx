@@ -1,18 +1,49 @@
-import { useState } from "react";
-import { Outlet } from "react-router-dom";
+import { Outlet, useLocation } from "react-router-dom";
 import { AppSidebar } from "./AppSidebar";
 
+const pageTitles: Record<string, string> = {
+  "/": "Overview",
+  "/products": "Products",
+  "/customers": "Customers",
+  "/events": "Events",
+  "/assets": "Assets",
+  "/vendors": "Vendors",
+  "/webhooks": "Webhooks",
+  "/settings": "Settings",
+};
+
 export function AppLayout() {
-  const [collapsed, setCollapsed] = useState(false);
+  const location = useLocation();
+  const pageTitle = Object.entries(pageTitles).find(([path]) =>
+    path === "/" ? location.pathname === "/" : location.pathname.startsWith(path)
+  )?.[1] || "Dashboard";
 
   return (
     <div className="flex min-h-screen w-full">
-      <AppSidebar collapsed={collapsed} onToggle={() => setCollapsed(!collapsed)} />
-      <main className="flex-1 overflow-auto">
-        <div className="mx-auto max-w-7xl px-10 py-10">
-          <Outlet />
+      <AppSidebar collapsed={false} onToggle={() => {}} />
+      <div className="flex-1 ml-60 flex flex-col">
+        {/* Top Bar */}
+        <header className="h-12 border-b border-white/[0.08] flex items-center justify-between px-10 shrink-0" style={{ backgroundColor: "#0C0D10" }}>
+          <span className="font-space text-xs uppercase tracking-widest text-white/40">{pageTitle}</span>
+          <div className="flex items-center gap-3">
+            <span className="text-white/30 cursor-pointer">☽</span>
+            <span className="font-space text-sm text-white/60">John Doe</span>
+            <div className="flex h-7 w-7 items-center justify-center bg-white/10 font-space text-xs text-white">
+              JD
+            </div>
+          </div>
+        </header>
+
+        {/* Sandbox Banner */}
+        <div className="flex items-center gap-2 px-10 py-2 font-space text-xs" style={{ backgroundColor: "#FACC15", color: "#000" }}>
+          ⚠ YOU'RE VIEWING DEMO DATA — Changes made here will not affect any live account
         </div>
-      </main>
+
+        {/* Main Content */}
+        <main className="flex-1 overflow-auto px-10 py-10">
+          <Outlet />
+        </main>
+      </div>
     </div>
   );
 }
