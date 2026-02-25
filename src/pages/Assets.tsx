@@ -1,16 +1,27 @@
 import { useState } from "react";
 import { assets as initialAssets } from "@/data/assets";
 import { CreateAssetModal } from "@/components/assets/CreateAssetModal";
-import type { Asset } from "@/data/types";
+import { AddExchangeRateModal } from "@/components/assets/AddExchangeRateModal";
+import type { Asset, ExchangeRate } from "@/data/types";
 
 export default function Assets() {
   const [assetList, setAssetList] = useState<Asset[]>(initialAssets);
   const [quoteInput, setQuoteInput] = useState("10");
   const [modalOpen, setModalOpen] = useState(false);
+  const [rateModalAsset, setRateModalAsset] = useState<Asset | null>(null);
 
   const creditsAsset = assetList.find((a) => a.type === "custom");
   const currentRate = creditsAsset?.rates[creditsAsset.rates.length - 1]?.rate || 100;
   const quoteResult = parseFloat(quoteInput || "0") * currentRate;
+
+  const handleRateAdded = (assetId: string, newRate: ExchangeRate) => {
+    setAssetList((prev) =>
+      prev.map((a) =>
+        a.id === assetId ? { ...a, rates: [...a.rates, newRate] } : a
+      )
+    );
+    setRateModalAsset(null);
+  };
 
   return (
     <div className="space-y-10">
@@ -87,7 +98,10 @@ export default function Assets() {
                   <div className="mt-4 bg-white/5 p-4 font-ibm-plex text-sm text-white/50">
                     Customers top up in {asset.rates[0]?.from_asset} → receive {asset.code} at configured rate. Used in product pricing as a billing unit.
                   </div>
-                  <button className="mt-4 border border-white/30 bg-transparent px-4 py-2 font-space text-xs uppercase tracking-wide text-white hover:bg-white/5">
+                  <button
+                    onClick={() => setRateModalAsset(asset)}
+                    className="mt-4 border border-white/30 bg-transparent px-4 py-2 font-space text-xs uppercase tracking-wide text-white hover:bg-white/5"
+                  >
                     + Add Rate
                   </button>
                 </>
@@ -142,6 +156,15 @@ export default function Assets() {
           setModalOpen(false);
         }}
       />
+
+      {rateModalAsset && (
+        <AddExchangeRateModal
+          open={!!rateModalAsset}
+          onClose={() => setRateModalAsset(null)}
+          asset={rateModalAsset}
+          onRateAdded={(newRate) => handleRateAdded(rateModalAsset.id, newRate)}
+        />
+      )}
     </div>
   );
 }
