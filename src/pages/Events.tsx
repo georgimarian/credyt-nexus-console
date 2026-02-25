@@ -15,6 +15,79 @@ function formatTimeParts(ts: string) {
   return `${mo} ${day} ${h}:${m}:${s}`;
 }
 
+function EventDetailPanel({ event, cust }: { event: typeof events[0]; cust: any }) {
+  const [showRaw, setShowRaw] = useState(false);
+  const fee = event.fees?.[0];
+  const dims = event.properties ? Object.entries(event.properties) : [];
+
+  return (
+    <div className="bg-[#0F0F0F] border-l-2 border-white/20 mx-4 mb-2 p-5">
+      <div className="font-space text-xs text-white/40 mb-4">┌─ EVENT DETAILS ──────────────────────────────────────┐</div>
+
+      {/* Header row */}
+      <div className="flex items-center gap-4 mb-4">
+        <span className="font-ibm-plex text-sm font-medium">{event.id}</span>
+        <span className="font-ibm-plex text-xs text-white/40">{formatTimeParts(event.timestamp)}</span>
+        <StatusBadge status={event.status} />
+      </div>
+
+      {/* Field rows */}
+      <div className="space-y-0">
+        <div className="flex gap-4 py-1.5">
+          <span className="font-space text-xs text-white/40 w-28 shrink-0 uppercase tracking-wider">Customer</span>
+          <span className="font-ibm-plex text-sm text-white">{event.customer_name} · {event.customer_id}{cust?.external_id ? ` · ${cust.external_id}` : ""}</span>
+        </div>
+        <div className="flex gap-4 py-1.5">
+          <span className="font-space text-xs text-white/40 w-28 shrink-0 uppercase tracking-wider">Event Type</span>
+          <span className="font-ibm-plex text-sm text-white">{event.event_type}</span>
+        </div>
+        <div className="flex gap-4 py-1.5">
+          <span className="font-space text-xs text-white/40 w-28 shrink-0 uppercase tracking-wider">Fee</span>
+          <span className="font-ibm-plex text-sm text-[#4ADE80]">{fee ? `$${fee.amount.toFixed(4)} ${fee.asset_code}` : "—"}</span>
+        </div>
+      </div>
+
+      {/* Dimensions */}
+      {dims.length > 0 && (
+        <div className="mt-4">
+          <span className="font-space text-xs text-white/40 uppercase tracking-wider">Dimensions</span>
+          <div className="flex flex-wrap gap-2 mt-2">
+            {dims.map(([k, v]) => (
+              <span key={k} className="bg-white/5 px-2 py-0.5 text-xs font-ibm-plex text-white/60">
+                {k}:{String(v)}
+              </span>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* Raw Payload */}
+      <div className="mt-4">
+        <span className="font-space text-xs text-white/40 uppercase tracking-wider">Raw Payload</span>
+        <button
+          onClick={(e) => { e.stopPropagation(); setShowRaw(!showRaw); }}
+          className="ml-3 font-ibm-plex text-xs text-white/30 hover:text-white/60 transition-colors"
+        >
+          {showRaw ? "− hide raw" : "+ show raw"}
+        </button>
+        {showRaw && (
+          <div className="bg-white/5 p-4 mt-2 font-ibm-plex text-xs text-white/50">
+            <pre className="whitespace-pre-wrap">{JSON.stringify({
+              id: event.id,
+              event_type: event.event_type,
+              customer_id: event.customer_id,
+              timestamp: formatTimeParts(event.timestamp),
+              dimensions: event.properties,
+              fee: fee ? { amount: fee.amount, asset: fee.asset_code } : null,
+              status: event.status,
+            }, null, 2)}</pre>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
 export default function Events() {
   const [search, setSearch] = useState("");
   const [typeFilter, setTypeFilter] = useState("");
@@ -124,20 +197,8 @@ export default function Events() {
                 )}
               </div>
 
-              {/* Expanded JSON */}
-              {isExpanded && (
-                <div className="bg-white/5 mx-4 mb-3 p-4 font-ibm-plex text-xs text-white/50">
-                  <pre className="whitespace-pre-wrap">{JSON.stringify({
-                    id: event.id,
-                    event_type: event.event_type,
-                    customer_id: event.customer_id,
-                    timestamp: formatTimeParts(event.timestamp),
-                    dimensions: event.properties,
-                    fee: fee ? { amount: fee.amount, asset: fee.asset_code } : null,
-                    status: event.status,
-                  }, null, 2)}</pre>
-                </div>
-              )}
+              {/* Expanded detail panel */}
+              {isExpanded && <EventDetailPanel event={event} cust={cust} />}
             </div>
           );
         })}

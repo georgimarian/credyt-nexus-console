@@ -12,7 +12,7 @@ interface CreateAssetModalProps {
 type AssetType = "fiat" | "custom" | null;
 
 export function CreateAssetModal({ open, onClose, onCreated }: CreateAssetModalProps) {
-  const [assetType, setAssetType] = useState<AssetType>(null);
+  const [assetType, setAssetType] = useState<AssetType>("fiat");
   const [code, setCode] = useState("");
   const [displayName, setDisplayName] = useState("");
   const [symbol, setSymbol] = useState("");
@@ -22,7 +22,7 @@ export function CreateAssetModal({ open, onClose, onCreated }: CreateAssetModalP
   const [errors, setErrors] = useState<Record<string, string>>({});
 
   const resetForm = () => {
-    setAssetType(null);
+    setAssetType("fiat");
     setCode("");
     setDisplayName("");
     setSymbol("");
