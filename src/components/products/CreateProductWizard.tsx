@@ -2,7 +2,7 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { FieldLabel } from "@/components/terminal/FieldLabel";
 import { useProductStore } from "@/stores/productStore";
-import { X, ArrowRight, ArrowLeft, Check, Plus, Trash2, Zap, CreditCard, Layers } from "lucide-react";
+import { X, ArrowRight, ArrowLeft, Check, Plus, Trash2 } from "lucide-react";
 import type { Product, Price, Entitlement, PriceTier } from "@/data/types";
 import {
   Dialog,
@@ -32,27 +32,42 @@ const STEP_HELP: Record<Step, string> = {
   review: "Review your product configuration before creating it.",
 };
 
-const MODEL_INFO: Record<PricingModel, { icon: typeof Zap; title: string; desc: string; detail: string; examples: string }> = {
+const MODEL_INFO: Record<PricingModel, { icon: string; title: string; tagline: string; desc: string; examples: string[]; reasons: string[] }> = {
   realtime: {
-    icon: Zap,
+    icon: "⚡",
     title: "Real-time Usage-Based",
-    desc: "Customers prepay. Usage deducts from balance instantly.",
-    detail: "Best for API-style products where each event has a measurable cost. Charges are deducted from the customer's wallet in real-time as events occur.",
-    examples: "e.g. OpenAI API, Twilio, AWS Lambda",
+    tagline: "LLM APIs, image generators, video tools",
+    desc: "Real-time usage deducted from prepaid wallet balance",
+    examples: ["$0.005 per 1K tokens", "$0.04 per image", "$2.50 per video"],
+    reasons: [
+      "Infrastructure costs are variable & unpredictable",
+      "Can't afford to front costs for customers",
+      "Customers expect pay-as-you-go (devs / prosumers)",
+    ],
   },
   fixed: {
-    icon: CreditCard,
+    icon: "↻",
     title: "Fixed Recurring",
-    desc: "Flat monthly or yearly fee. No usage metering.",
-    detail: "Simple subscription pricing. Customers pay a fixed amount on a recurring schedule regardless of usage.",
-    examples: "e.g. Netflix, Notion, Linear",
+    tagline: "Early-stage SaaS, enterprise contracts",
+    desc: "Fixed recurring fee per billing cycle",
+    examples: ["$29/month flat", "€99/year access fee"],
+    reasons: [
+      "Need predictable baseline revenue",
+      "Still figuring out cost structure",
+      "Enterprise buyers want invoice cycles",
+    ],
   },
   hybrid: {
-    icon: Layers,
+    icon: "◈",
     title: "Hybrid (Subscription + Usage)",
+    tagline: "Clay, Cursor, GitHub Copilot-style products",
     desc: "Subscription fee with included credits. Overage charged on usage.",
-    detail: "Combines a recurring base fee with included credit entitlements. When credits are exhausted, overage is charged per event.",
-    examples: "e.g. Cursor Pro, Vercel, Clay",
+    examples: ["$20/month + 10 credits/image", "$49/month, top-up beyond quota"],
+    reasons: [
+      "Want baseline revenue + usage-based growth",
+      "Some features seat-based, others consumption-based",
+      "Customers want predictability + flexibility",
+    ],
   },
 };
 
@@ -234,35 +249,16 @@ export function CreateProductWizard({ onClose }: CreateProductWizardProps) {
           <DialogDescription className="sr-only">Create a new product</DialogDescription>
         </DialogHeader>
 
-        <ScrollArea className="max-h-[70vh]">
+        <ScrollArea className="max-h-[85vh]">
           <div className="px-6 py-6">
             {/* ── Step indicator ── */}
             <div className="mb-8 space-y-3">
-              <div className="flex items-center gap-2 sm:gap-4 font-ibm-plex text-xs">
-                {activeSteps.map((s, i) => (
-                  <button
-                    key={s.key}
-                    onClick={() => { if (i <= stepIndex || canNext()) setStep(s.key); }}
-                    className={`flex items-center gap-1.5 transition-all duration-150 ${
-                      s.key === step
-                        ? "text-foreground font-bold"
-                        : i < stepIndex
-                        ? "text-terminal-green"
-                        : "text-muted-foreground"
-                    }`}
-                  >
-                    <span className={`inline-flex h-6 w-6 items-center justify-center border border-foreground/[0.12] text-[10px] rounded-sm ${
-                      i < stepIndex ? "border-terminal-green" : "border-current"
-                    }`}>
-                      {i < stepIndex ? "✓" : i + 1}
-                    </span>
-                    <span className="hidden sm:inline uppercase">{s.label}</span>
-                    {i < activeSteps.length - 1 && <span className="text-muted-foreground/40 ml-1">→</span>}
-                  </button>
-                ))}
+              <div className="flex items-center justify-between">
+                <span className="font-space text-xs text-white/40">STEP {stepIndex + 1} OF {activeSteps.length}</span>
+                <span className="font-space text-xs text-white/60 uppercase">{activeSteps[stepIndex].label}</span>
               </div>
-              <div className="font-ibm-plex text-[11px] text-muted-foreground tracking-wider">
-                {progressBar} {progressPct.toFixed(0)}%
+              <div className="w-full h-0.5 bg-white/10">
+                <div className="h-full bg-[#4ADE80] transition-all duration-300" style={{ width: `${progressPct}%` }} />
               </div>
             </div>
 
@@ -276,33 +272,35 @@ export function CreateProductWizard({ onClose }: CreateProductWizardProps) {
               <div className="space-y-4">
                 {(Object.keys(MODEL_INFO) as PricingModel[]).map((key) => {
                   const m = MODEL_INFO[key];
-                  const Icon = m.icon;
                   const selected = pricingModel === key;
                   return (
                     <button
                       key={key}
                       onClick={() => setPricingModel(key)}
-                      className={`w-full text-left border border-dashed p-5 transition-all ${
+                      className={`w-full text-left p-6 transition-all ${
                         selected
-                          ? "border-foreground bg-foreground/5"
-                          : "border-foreground/15 hover:border-foreground/40 hover:bg-accent/30"
+                          ? "border border-[#4ADE80]/40 bg-[#4ADE80]/5"
+                          : "border border-white/10 bg-[#0F0F0F] hover:border-white/25"
                       }`}
                     >
-                      <div className="flex items-start gap-4">
-                        <div className={`mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center border border-dashed ${
-                          selected ? "border-terminal-green text-terminal-green" : "border-foreground/20 text-muted-foreground"
-                        }`}>
-                          <Icon className="h-4 w-4" />
+                      <div className="flex items-center justify-between mb-2">
+                        <div className="flex items-center gap-2">
+                          <span className="text-[#2DD4BF] text-lg">{m.icon}</span>
+                          <span className="font-space text-sm font-bold uppercase tracking-wide">{m.title}</span>
+                          <span className="text-xs text-white/30 font-ibm-plex ml-1">{m.tagline}</span>
                         </div>
-                        <div className="space-y-1.5">
-                          <div className="flex items-center gap-2">
-                            <span className="font-space text-sm font-bold uppercase tracking-wide">{m.title}</span>
-                            {selected && <span className="text-terminal-green text-[10px] font-ibm-plex">✓ selected</span>}
-                          </div>
-                          <p className="font-ibm-plex text-xs leading-relaxed">{m.desc}</p>
-                          <p className="font-ibm-plex text-[11px] text-muted-foreground leading-relaxed">{m.detail}</p>
-                          <p className="font-ibm-plex text-[10px] text-muted-foreground/60 italic">{m.examples}</p>
-                        </div>
+                        {selected && <span className="text-[#4ADE80] text-sm font-space">✓</span>}
+                      </div>
+                      <p className="font-ibm-plex text-xs text-white/60 mb-3">{m.desc}</p>
+                      <div className="flex flex-wrap gap-2 mb-3">
+                        {m.examples.map((ex, i) => (
+                          <span key={i} className="bg-white/5 text-[#2DD4BF] text-xs px-2 py-0.5 font-ibm-plex">{ex}</span>
+                        ))}
+                      </div>
+                      <div className="space-y-1">
+                        {m.reasons.map((r, i) => (
+                          <div key={i} className="text-xs text-white/40 font-ibm-plex">✓ {r}</div>
+                        ))}
                       </div>
                     </button>
                   );

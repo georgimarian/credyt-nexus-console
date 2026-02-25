@@ -7,6 +7,7 @@ export interface Product {
   prices: Price[];
   versions: ProductVersion[];
   subscriber_count: number;
+  pricing_model?: "USAGE_BASED" | "RECURRING" | "HYBRID";
 }
 
 export interface Price {
