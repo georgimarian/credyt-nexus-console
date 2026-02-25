@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { StatusBadge } from "@/components/terminal/StatusBadge";
 import { CopyableId } from "@/components/terminal/CopyableId";
+import { EventDetailSheet } from "@/components/events/EventDetailSheet";
 import { events } from "@/data/events";
 import { customers } from "@/data/customers";
 import { Input } from "@/components/ui/input";
@@ -15,86 +16,10 @@ function formatTimeParts(ts: string) {
   return `${mo} ${day} ${h}:${m}:${s}`;
 }
 
-function EventDetailPanel({ event, cust, onClose }: { event: typeof events[0]; cust: any; onClose: () => void }) {
-  const [showRaw, setShowRaw] = useState(false);
-  const fee = event.fees?.[0];
-  const dims = event.properties ? Object.entries(event.properties) : [];
-
-  return (
-    <div className="bg-[#111318] border border-white/10 border-l-2 border-l-[#4ADE80] mx-4 mt-2 mb-4 p-5 rounded-none">
-      <div className="flex items-center justify-between mb-4">
-        <span className="font-space text-xs text-white/40">┌─ EVENT DETAILS ──────────────────────────────────────┐</span>
-        <button onClick={(e) => { e.stopPropagation(); onClose(); }} className="font-space text-xs text-white/30 hover:text-white cursor-pointer transition-colors">× CLOSE</button>
-      </div>
-
-      {/* Header row */}
-      <div className="flex items-center gap-4 mb-4">
-        <span className="font-ibm-plex text-sm font-medium">{event.id}</span>
-        <span className="font-ibm-plex text-xs text-white/40">{formatTimeParts(event.timestamp)}</span>
-        <StatusBadge status={event.status} />
-      </div>
-
-      {/* Field rows */}
-      <div className="space-y-0">
-        <div className="flex gap-4 py-1.5">
-          <span className="font-space text-xs text-white/40 w-28 shrink-0 uppercase tracking-wider">Customer</span>
-          <span className="font-ibm-plex text-sm text-white">{event.customer_name} · {event.customer_id}{cust?.external_id ? ` · ${cust.external_id}` : ""}</span>
-        </div>
-        <div className="flex gap-4 py-1.5">
-          <span className="font-space text-xs text-white/40 w-28 shrink-0 uppercase tracking-wider">Event Type</span>
-          <span className="font-ibm-plex text-sm text-white">{event.event_type}</span>
-        </div>
-        <div className="flex gap-4 py-1.5">
-          <span className="font-space text-xs text-white/40 w-28 shrink-0 uppercase tracking-wider">Fee</span>
-          <span className="font-ibm-plex text-sm text-[#4ADE80]">{fee ? `$${fee.amount.toFixed(4)} ${fee.asset_code}` : "—"}</span>
-        </div>
-      </div>
-
-      {/* Dimensions */}
-      {dims.length > 0 && (
-        <div className="mt-4">
-          <span className="font-space text-xs text-white/40 uppercase tracking-wider">Dimensions</span>
-          <div className="flex flex-wrap gap-2 mt-2">
-            {dims.map(([k, v]) => (
-              <span key={k} className="bg-white/5 px-2 py-0.5 text-xs font-ibm-plex text-white/60">
-                {k}:{String(v)}
-              </span>
-            ))}
-          </div>
-        </div>
-      )}
-
-      {/* Raw Payload */}
-      <div className="mt-4">
-        <span className="font-space text-xs text-white/40 uppercase tracking-wider">Raw Payload</span>
-        <button
-          onClick={(e) => { e.stopPropagation(); setShowRaw(!showRaw); }}
-          className="ml-3 font-ibm-plex text-xs text-white/30 hover:text-white/60 transition-colors"
-        >
-          {showRaw ? "− hide raw" : "+ show raw"}
-        </button>
-        {showRaw && (
-          <div className="bg-white/5 p-4 mt-2 font-ibm-plex text-xs text-white/50">
-            <pre className="whitespace-pre-wrap">{JSON.stringify({
-              id: event.id,
-              event_type: event.event_type,
-              customer_id: event.customer_id,
-              timestamp: formatTimeParts(event.timestamp),
-              dimensions: event.properties,
-              fee: fee ? { amount: fee.amount, asset: fee.asset_code } : null,
-              status: event.status,
-            }, null, 2)}</pre>
-          </div>
-        )}
-      </div>
-    </div>
-  );
-}
-
 export default function Events() {
   const [search, setSearch] = useState("");
   const [typeFilter, setTypeFilter] = useState("");
-  const [expandedId, setExpandedId] = useState<string | null>(null);
+  const [selectedId, setSelectedId] = useState<string | null>(null);
   const [page, setPage] = useState(0);
   const perPage = 20;
 
@@ -113,6 +38,8 @@ export default function Events() {
   const todayCount = 12;
 
   const customerMap = new Map(customers.map(c => [c.id, c]));
+  const selectedEvent = selectedId ? events.find(e => e.id === selectedId) : null;
+  const selectedCust = selectedEvent ? customerMap.get(selectedEvent.customer_id) : null;
 
   return (
     <div className="space-y-10">
@@ -149,59 +76,55 @@ export default function Events() {
       <div>
         {paged.map((event) => {
           const cust = customerMap.get(event.customer_id);
-          const isExpanded = expandedId === event.id;
+          const isSelected = selectedId === event.id;
           const fee = event.fees?.[0];
           const dims = event.properties ? Object.entries(event.properties) : [];
 
           return (
-            <div key={event.id}>
-              <div
-                onClick={() => setExpandedId(isExpanded ? null : event.id)}
-                className={`border-b border-white/[0.06] py-4 px-4 hover:bg-white/[0.02] cursor-pointer transition-colors ${isExpanded ? "border-l-2 border-l-white/20" : ""}`}
-              >
-                {/* Line 1 */}
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center">
-                    <span className="font-ibm-plex text-xs text-white/40 w-36 shrink-0">{formatTimeParts(event.timestamp)}</span>
-                    <span className="font-ibm-plex text-sm font-medium ml-4 w-36 shrink-0">{event.event_type}</span>
-                    <span className="font-ibm-plex text-sm font-medium ml-4">{event.customer_name}</span>
-                  </div>
-                  <div className="flex items-center gap-4">
-                    <StatusBadge status={event.status} />
-                    <span className="font-ibm-plex text-sm text-[#4ADE80] w-20 text-right">
-                      {fee ? `$${fee.amount.toFixed(2)}` : "—"}
-                    </span>
-                    <span className="text-white/40 text-sm">→</span>
-                  </div>
+            <div
+              key={event.id}
+              onClick={() => setSelectedId(isSelected ? null : event.id)}
+              className={`border-b border-white/[0.06] py-4 px-4 hover:bg-white/[0.02] cursor-pointer transition-colors ${isSelected ? "bg-white/[0.04] border-l-2 border-l-[#4ADE80]" : ""}`}
+            >
+              {/* Line 1 */}
+              <div className="flex items-center justify-between">
+                <div className="flex items-center">
+                  <span className="font-ibm-plex text-xs text-white/40 w-36 shrink-0">{formatTimeParts(event.timestamp)}</span>
+                  <span className="font-ibm-plex text-sm font-medium ml-4 w-36 shrink-0">{event.event_type}</span>
+                  <span className="font-ibm-plex text-sm font-medium ml-4">{event.customer_name}</span>
                 </div>
-
-                {/* Line 2 */}
-                <div className="flex items-center mt-1 ml-0 sm:ml-36 text-xs text-white/30 font-ibm-plex gap-1">
-                  <CopyableId value={event.id} />
-                  <span>·</span>
-                  <span>{event.customer_id}</span>
-                  {cust?.external_id && (
-                    <>
-                      <span>·</span>
-                      <span>{cust.external_id}</span>
-                    </>
-                  )}
+                <div className="flex items-center gap-4">
+                  <StatusBadge status={event.status} />
+                  <span className="font-ibm-plex text-sm text-[#4ADE80] w-20 text-right">
+                    {fee ? `$${fee.amount.toFixed(2)}` : "—"}
+                  </span>
+                  <span className="text-white/40 text-sm">→</span>
                 </div>
+              </div>
 
-                {/* Line 3 — dimensions */}
-                {dims.length > 0 && (
-                  <div className="flex flex-wrap gap-2 mt-1.5 ml-0 sm:ml-36">
-                    {dims.map(([k, v]) => (
-                      <span key={k} className="bg-white/5 px-2 py-0.5 text-xs font-ibm-plex text-white/50">
-                        {k}:{String(v)}
-                      </span>
-                    ))}
-                  </div>
+              {/* Line 2 */}
+              <div className="flex items-center mt-1 ml-0 sm:ml-36 text-xs text-white/30 font-ibm-plex gap-1">
+                <CopyableId value={event.id} />
+                <span>·</span>
+                <span>{event.customer_id}</span>
+                {cust?.external_id && (
+                  <>
+                    <span>·</span>
+                    <span>{cust.external_id}</span>
+                  </>
                 )}
               </div>
 
-              {/* Expanded detail panel */}
-              {isExpanded && <EventDetailPanel event={event} cust={cust} onClose={() => setExpandedId(null)} />}
+              {/* Line 3 — dimensions */}
+              {dims.length > 0 && (
+                <div className="flex flex-wrap gap-2 mt-1.5 ml-0 sm:ml-36">
+                  {dims.map(([k, v]) => (
+                    <span key={k} className="bg-white/5 px-2 py-0.5 text-xs font-ibm-plex text-white/50">
+                      {k}:{String(v)}
+                    </span>
+                  ))}
+                </div>
+              )}
             </div>
           );
         })}
@@ -215,6 +138,15 @@ export default function Events() {
             <button disabled={page >= totalPages - 1} onClick={() => setPage(page + 1)} className="border border-white/30 bg-transparent px-4 py-2 font-space text-xs uppercase tracking-wide text-white hover:bg-white/5 disabled:opacity-30">Next</button>
           </div>
         </div>
+      )}
+
+      {/* Detail sheet */}
+      {selectedEvent && (
+        <EventDetailSheet
+          event={selectedEvent}
+          customerExternalId={selectedCust?.external_id}
+          onClose={() => setSelectedId(null)}
+        />
       )}
     </div>
   );
