@@ -1,3 +1,5 @@
+import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { customers } from "@/data/customers";
 import { events } from "@/data/events";
 import { useProductStore } from "@/stores/productStore";
@@ -5,6 +7,7 @@ import {
   AreaChart, Area, XAxis, Tooltip, ResponsiveContainer,
 } from "recharts";
 
+// ... keep existing code (totalCustomers through recentEvents)
 const totalCustomers = customers.length;
 const activeWallets = customers.filter(c => c.status === "active").length;
 const totalBalance = customers.reduce((sum, c) => {
@@ -42,7 +45,37 @@ function formatTime(ts: string) {
   return `${mo} ${day} ${h}:${m}:${s}`;
 }
 
+const profitabilityLeaders: Record<string, { name: string; id: string; amount: number; events: number }> = {
+  chat_completion: { name: "Acme Corp", id: "cust_01", amount: 1.64, events: 11 },
+  image_generation: { name: "DataFlow Inc", id: "cust_04", amount: 0.24, events: 6 },
+  api_call: { name: "TechStart AI", id: "cust_02", amount: 0.01, events: 5 },
+};
+
+const powerUserBreakdowns: Record<string, { type: string; events: number; amount: number; pct: number; isLeader: boolean }[]> = {
+  cust_01: [
+    { type: "chat_completion", events: 11, amount: 1.64, pct: 89, isLeader: true },
+    { type: "image_generation", events: 3, amount: 0.18, pct: 11, isLeader: false },
+  ],
+  cust_03: [
+    { type: "chat_completion", events: 8, amount: 0.63, pct: 100, isLeader: false },
+  ],
+  cust_02: [
+    { type: "chat_completion", events: 5, amount: 0.39, pct: 81, isLeader: false },
+    { type: "api_call", events: 4, amount: 0.09, pct: 19, isLeader: false },
+  ],
+  cust_06: [
+    { type: "image_generation", events: 4, amount: 0.16, pct: 76, isLeader: false },
+    { type: "chat_completion", events: 2, amount: 0.05, pct: 24, isLeader: false },
+  ],
+  cust_05: [
+    { type: "chat_completion", events: 5, amount: 0.18, pct: 100, isLeader: false },
+  ],
+};
+
 export default function Overview() {
+  const [expandedUser, setExpandedUser] = useState<string | null>(null);
+  const navigate = useNavigate();
+
   return (
     <div className="space-y-10">
       {/* Stat Row */}
@@ -93,7 +126,7 @@ export default function Overview() {
         </div>
       </div>
 
-      {/* Profitability + Wallet Health */}
+      {/* Profitability + Wallet Health + Power Users */}
       <div className="grid grid-cols-[3fr_2fr_2fr] gap-6 mt-8">
         {/* LEFT — Profitability */}
         <div className="bg-[#0F0F0F] border border-dotted border-white/10 p-6 rounded-none">
@@ -106,7 +139,9 @@ export default function Overview() {
               { type: "chat_completion", count: 38, customers: 6, revenue: 2.85, cost: 1.71, margin: 40 },
               { type: "image_generation", count: 12, customers: 4, revenue: 0.48, cost: 0.29, margin: 40 },
               { type: "api_call", count: 5, customers: 2, revenue: 0.01, cost: 0.00, margin: 100 },
-            ].map((row, i, arr) => (
+            ].map((row, i, arr) => {
+              const leader = profitabilityLeaders[row.type];
+              return (
               <div key={row.type} className={`pb-5 ${i < arr.length - 1 ? "border-b border-dotted border-white/10 mb-5" : ""}`}>
                 <div className="flex items-baseline justify-between">
                   <div>
@@ -134,8 +169,19 @@ export default function Overview() {
                   <div className="w-full h-1 bg-white/5"><div className="h-1 bg-red-400/60" style={{ width: `${row.cost / Math.max(row.revenue, 0.01) * 100}%` }} /></div>
                   <div className="w-full h-1 bg-white/5"><div className="h-1 bg-green-400/60 w-full" /></div>
                 </div>
+                {leader && (
+                  <div className="border-t border-dotted border-white/8 mt-2 pt-2">
+                    <span className="text-xs text-white/20 font-mono">↑ led by </span>
+                    <span
+                      className="text-xs text-white/60 font-mono font-medium cursor-pointer hover:text-white/80"
+                      onClick={() => navigate(`/customers/${leader.id}`)}
+                    >{leader.name}</span>
+                    <span className="text-xs text-white/30 font-mono"> ${leader.amount.toFixed(2)} · {leader.events} events</span>
+                  </div>
+                )}
               </div>
-            ))}
+            );
+            })}
           </div>
         </div>
 
@@ -193,21 +239,47 @@ export default function Overview() {
               { rank: 3, name: "TechStart AI", id: "cust_02", spend: 0.48, eventCount: 9 },
               { rank: 4, name: "Orbit AI", id: "cust_06", spend: 0.21, eventCount: 6 },
               { rank: 5, name: "CloudMind", id: "cust_05", spend: 0.18, eventCount: 5 },
-            ].map((user) => (
-              <div key={user.id} className={`flex items-center justify-between py-3 border-b border-dotted border-white/10 ${user.rank === 1 ? "bg-white/[0.02]" : ""}`}>
-                <div className="flex items-start">
-                  <span className="text-xs text-white/20 font-mono w-5 shrink-0">#{user.rank}</span>
-                  <div className="ml-3">
-                    <div className="font-medium text-sm text-white">{user.name}</div>
-                    <div className="text-xs text-white/30 font-mono mt-0.5">{user.id}</div>
+            ].map((user) => {
+              const isExpanded = expandedUser === user.id;
+              const breakdown = powerUserBreakdowns[user.id] || [];
+              return (
+                <div key={user.id} className={`border-b border-dotted border-white/10 ${user.rank === 1 && !isExpanded ? "bg-white/[0.02]" : ""} ${isExpanded ? "bg-white/[0.03]" : ""}`}>
+                  <div
+                    className="flex items-center justify-between py-3 cursor-pointer"
+                    onClick={() => setExpandedUser(isExpanded ? null : user.id)}
+                  >
+                    <div className="flex items-start">
+                      <span className={`text-white/20 text-xs mr-1 transition-transform duration-150 inline-block ${isExpanded ? "rotate-90" : ""}`}>›</span>
+                      <span className="text-xs text-white/20 font-mono w-5 shrink-0">#{user.rank}</span>
+                      <div className="ml-3">
+                        <div className="font-medium text-sm text-white">{user.name}</div>
+                        <div className="text-xs text-white/30 font-mono mt-0.5">{user.id}</div>
+                      </div>
+                    </div>
+                    <div className="text-right">
+                      <div className="font-mono font-bold text-white text-sm">${user.spend.toFixed(2)}</div>
+                      <div className="text-xs text-white/30 font-mono mt-0.5">{user.eventCount} events</div>
+                    </div>
                   </div>
+                  {isExpanded && breakdown.length > 0 && (
+                    <div className="border-t border-dotted border-white/8 mt-0 pt-3 ml-8 space-y-2 pb-3">
+                      {breakdown.map((b) => (
+                        <div key={b.type} className="flex items-center">
+                          <span className="text-xs font-mono text-white/70 w-36 shrink-0">{b.type}</span>
+                          <span className="text-xs text-white/30 font-mono w-16">{b.events} events</span>
+                          <span className="text-xs text-green-400 font-mono w-14">${b.amount.toFixed(2)}</span>
+                          <div className="h-0.5 bg-white/10 flex-1 mx-3">
+                            <div className="h-0.5 bg-green-400/60" style={{ width: `${b.pct}%` }} />
+                          </div>
+                          <span className="text-xs text-white/20 font-mono w-10 text-right">{b.pct}%</span>
+                          {b.isLeader && <span className="text-amber-400 text-xs font-mono ml-2">★ top spender</span>}
+                        </div>
+                      ))}
+                    </div>
+                  )}
                 </div>
-                <div className="text-right">
-                  <div className="font-mono font-bold text-white text-sm">${user.spend.toFixed(2)}</div>
-                  <div className="text-xs text-white/30 font-mono mt-0.5">{user.eventCount} events</div>
-                </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
           <div className="border-t border-dotted border-white/10 pt-3 mt-2 text-xs text-white/30 font-mono">
             Top 5 of 8 customers · based on billed events
