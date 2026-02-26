@@ -93,6 +93,94 @@ export default function Overview() {
           </div>
         </div>
       </div>
+
+      {/* Profitability + Wallet Health */}
+      <div className="grid grid-cols-[3fr_2fr] gap-6 mt-8">
+        {/* LEFT — Profitability */}
+        <div className="bg-[#0F0F0F] border border-white/10 p-6 rounded-none">
+          <div className="font-space text-xs uppercase tracking-wider text-white/40 mb-1">┌─ PROFITABILITY BY EVENT TYPE ─┐</div>
+          <div className="flex justify-end gap-6 text-xs text-white/40 font-mono uppercase mb-4">
+            <span>REVENUE</span><span>COST</span><span>MARGIN</span>
+          </div>
+          <div className="space-y-0">
+            {[
+              { type: "chat_completion", count: 38, revenue: 2.85, cost: 1.71, margin: 40 },
+              { type: "image_generation", count: 12, revenue: 0.48, cost: 0.29, margin: 40 },
+              { type: "api_call", count: 5, revenue: 0.01, cost: 0.00, margin: 100 },
+            ].map((row, i, arr) => (
+              <div key={row.type} className={`pb-5 ${i < arr.length - 1 ? "border-b border-white/[0.08] mb-5" : ""}`}>
+                <div className="flex items-baseline justify-between">
+                  <div>
+                    <span className="font-mono text-sm text-white">{row.type}</span>
+                    <span className="text-xs text-white/30 ml-2">{row.count.toLocaleString()} EVENTS</span>
+                  </div>
+                  <div className="flex items-baseline gap-4">
+                    <div className="text-right">
+                      <span className="text-green-400 font-mono font-bold">${row.revenue.toFixed(2)}</span>
+                      <div className="text-xs text-white/40 uppercase font-mono">REVENUE</div>
+                    </div>
+                    <div className="text-right">
+                      <span className="text-red-400 font-mono">${row.cost.toFixed(2)}</span>
+                      <div className="text-xs text-white/40 uppercase font-mono">COST</div>
+                    </div>
+                    <div className="text-right">
+                      <span className="text-green-400 font-mono text-lg font-bold">{row.margin}%</span>
+                      <div className="text-xs text-white/40 uppercase font-mono">MARGIN</div>
+                    </div>
+                  </div>
+                </div>
+                <div className="mt-3 space-y-1">
+                  <div className="w-full h-1 bg-white/5"><div className="h-1 bg-red-400/60" style={{ width: `${row.cost / Math.max(row.revenue, 0.01) * 100}%` }} /></div>
+                  <div className="w-full h-1 bg-white/5"><div className="h-1 bg-green-400/60 w-full" /></div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* RIGHT — Wallet Health */}
+        <div className="bg-[#0F0F0F] border border-white/10 p-6 rounded-none">
+          <div className="flex justify-between items-center mb-4">
+            <div className="font-space text-xs uppercase tracking-wider text-white/40">┌─ WALLET HEALTH ─┐</div>
+            {customers.some(c => {
+              const usd = c.wallet.accounts.find(a => a.asset_code === "USD");
+              const cr = c.wallet.accounts.find(a => a.asset_code === "CREDITS");
+              return (usd && usd.available < 10) || (cr && cr.available < 100);
+            }) && (
+              <span className="text-amber-400 text-xs font-mono">⚠ {customers.filter(c => {
+                const usd = c.wallet.accounts.find(a => a.asset_code === "USD");
+                const cr = c.wallet.accounts.find(a => a.asset_code === "CREDITS");
+                return (usd && usd.available < 10) || (cr && cr.available < 100);
+              }).length} low</span>
+            )}
+          </div>
+          <div className="max-h-[420px] overflow-y-auto">
+            {customers.map((c) => {
+              const usd = c.wallet.accounts.find(a => a.asset_code === "USD");
+              const cr = c.wallet.accounts.find(a => a.asset_code === "CREDITS");
+              const isLowUsd = usd && usd.available < 10;
+              const isLowCr = cr && cr.available > 0 && cr.available < 100;
+              const isLow = isLowUsd || isLowCr;
+              return (
+                <div key={c.id} className="flex items-center justify-between py-3 border-b border-white/[0.08]">
+                  <div>
+                    <div className="font-mono text-sm font-medium text-white">{c.name}</div>
+                    <div className="text-xs text-white/30 font-mono mt-0.5">{c.id}</div>
+                  </div>
+                  <div className="flex items-center">
+                    <div className="text-right">
+                      {usd && usd.available > 0 && <div className="font-mono text-sm text-white">${usd.available.toLocaleString("en-US", { minimumFractionDigits: 2 })}</div>}
+                      {cr && cr.available > 0 && <div className="font-mono text-sm text-teal-400">{cr.available.toLocaleString()} CR</div>}
+                      {(!usd || usd.available === 0) && (!cr || cr.available === 0) && <div className="font-mono text-sm text-white/30">$0.00</div>}
+                    </div>
+                    {isLow && <span className="border border-amber-400/60 text-amber-400 text-xs px-2 py-0.5 font-mono ml-2">LOW</span>}
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      </div>
     </div>
   );
 }
