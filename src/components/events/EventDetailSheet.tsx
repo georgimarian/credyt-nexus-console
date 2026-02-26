@@ -42,7 +42,7 @@ export function EventDetailSheet({ event, customerExternalId, onClose }: Props) 
   }, [onClose]);
 
   const fieldRow = (label: string, value: React.ReactNode, className?: string) => (
-    <div className="flex justify-between py-2 border-b border-white/[0.08]">
+    <div className="flex justify-between py-2 border-b border-dotted border-white/[0.08]">
       <span className="font-space text-xs uppercase text-white/40 w-32 shrink-0 tracking-wider">{label}</span>
       <span className={`text-sm font-ibm-plex text-right ${className || "text-white"}`}>{value}</span>
     </div>
@@ -54,9 +54,9 @@ export function EventDetailSheet({ event, customerExternalId, onClose }: Props) 
       <div className="fixed inset-0 bg-black/40 z-40" onClick={onClose} />
 
       {/* Sheet */}
-      <div className="fixed right-0 top-0 h-screen w-[420px] bg-[#0F0F0F] border-l border-white/10 z-50 flex flex-col animate-slide-in-right">
+      <div className="fixed right-0 top-0 h-screen w-[420px] bg-[#0F0F0F] border-l border-dotted border-white/10 z-50 flex flex-col animate-slide-in-right">
         {/* Header */}
-        <div className="flex items-center justify-between px-6 pt-6 pb-4 border-b border-white/[0.08] shrink-0">
+        <div className="flex items-center justify-between px-6 pt-6 pb-4 border-b border-dotted border-white/[0.08] shrink-0">
           <span className="font-space text-xs text-white/40">┌─ EVENT DETAILS ──────────────────────┐</span>
           <button onClick={onClose} className="text-white/40 hover:text-white text-lg cursor-pointer transition-colors font-mono">×</button>
         </div>
@@ -86,7 +86,7 @@ export function EventDetailSheet({ event, customerExternalId, onClose }: Props) 
             {fieldRow("Product", matchedProduct ? (
               <span className="flex items-center gap-2 justify-end">
                 {matchedProduct.name}
-                <span className="border border-white/20 text-white/60 text-xs px-1.5 py-0.5 font-ibm-plex">{matchedProduct.code}</span>
+                <span className="border border-dotted border-white/20 text-white/60 text-xs px-1.5 py-0.5 font-ibm-plex">{matchedProduct.code}</span>
               </span>
             ) : "—")}
             {fieldRow("Price", fee?.price_id || "—")}

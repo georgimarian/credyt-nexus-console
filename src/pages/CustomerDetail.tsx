@@ -82,7 +82,7 @@ export default function CustomerDetail() {
   );
 
   const fieldRow = (label: string, value: React.ReactNode) => (
-    <div className="flex items-center justify-between font-ibm-plex text-sm py-2.5 border-b border-white/10">
+    <div className="flex items-center justify-between font-ibm-plex text-sm py-2.5 border-b border-dotted border-white/10">
       <span className="text-white/40">{label}</span>
       <span>{value}</span>
     </div>
@@ -98,7 +98,7 @@ export default function CustomerDetail() {
       </nav>
 
       {/* 1. HEADER ROW */}
-      <div className="flex items-start justify-between border-b border-white/[0.08] pb-6 mb-6">
+      <div className="flex items-start justify-between border-b border-dotted border-white/[0.08] pb-6 mb-6">
         <div>
           <div className="flex items-center gap-3">
             <h1 className="font-space text-2xl font-bold tracking-wider">{customer.name}</h1>
@@ -114,14 +114,14 @@ export default function CustomerDetail() {
       </div>
 
       {/* 2. STATS BAR */}
-      <div className="grid grid-cols-4 border-b border-white/[0.08] pb-6 mb-8">
+      <div className="grid grid-cols-4 border-b border-dotted border-white/[0.08] pb-6 mb-8">
         {[
           { label: "Balance", value: `$${balance.toFixed(2)}` },
           { label: "Available", value: `$${(primaryAccount?.available || 0).toFixed(2)}` },
           { label: "This Month", value: `$${totalSpend.toFixed(2)} spent` },
           { label: "Runway", value: runway === Infinity ? "∞" : `${runway} days` },
         ].map((stat, i) => (
-          <div key={stat.label} className={`${i > 0 ? "border-l border-white/[0.08] pl-6" : ""} ${i < 3 ? "pr-6" : ""}`}>
+          <div key={stat.label} className={`${i > 0 ? "border-l border-dotted border-white/[0.08] pl-6" : ""} ${i < 3 ? "pr-6" : ""}`}>
             <div className="font-space text-xs uppercase text-white/40 tracking-wider mb-1">{stat.label}</div>
             <div className="font-ibm-plex text-xl font-bold text-white">{stat.value}</div>
           </div>
@@ -131,7 +131,7 @@ export default function CustomerDetail() {
       {/* 3. WALLET + DETAILS — two equal columns */}
       <div className="grid grid-cols-2 gap-8 mb-8">
         {/* WALLET */}
-        <div className="border border-white/10 p-5">
+        <div className="border border-dotted border-white/10 p-5">
           {asciiHeader("WALLET")}
           {fieldRow("Balance", `$${balance.toFixed(2)}`)}
           {fieldRow("Available", `$${(primaryAccount?.available || 0).toFixed(2)}`)}
@@ -152,7 +152,7 @@ export default function CustomerDetail() {
         </div>
 
         {/* DETAILS */}
-        <div className="border border-white/10 p-5">
+        <div className="border border-dotted border-white/10 p-5">
           {asciiHeader("DETAILS")}
           {fieldRow("External ID", customer.external_id)}
           {fieldRow("Email", customer.email)}
@@ -164,7 +164,7 @@ export default function CustomerDetail() {
       </div>
 
       {/* 4. USAGE CHART — full width */}
-      <div className="border border-white/10 p-5 mb-8">
+      <div className="border border-dotted border-white/10 p-5 mb-8">
         {asciiHeader("USAGE")}
         <div className="flex gap-6 mb-4">
           {(["30", "7", "90"] as const).map((r) => (
@@ -177,7 +177,7 @@ export default function CustomerDetail() {
           <ResponsiveContainer width="100%" height={192}>
             <AreaChart data={chartData}>
               <XAxis dataKey="day" tick={{ fontSize: 9, fontFamily: "IBM Plex Mono", fill: "rgba(255,255,255,0.3)" }} tickLine={false} axisLine={false} />
-              <Tooltip contentStyle={{ fontFamily: "IBM Plex Mono", fontSize: 11, background: "#0F0F0F", border: "1px solid rgba(255,255,255,0.08)", borderRadius: 0 }} formatter={(v: number) => [`$${v.toFixed(2)}`, "Spend"]} />
+              <Tooltip contentStyle={{ fontFamily: "IBM Plex Mono", fontSize: 11, background: "#0F0F0F", border: "1px dotted rgba(255,255,255,0.08)", borderRadius: 0 }} formatter={(v: number) => [`$${v.toFixed(2)}`, "Spend"]} />
               <Area type="monotone" dataKey="spend" stroke="#4ADE80" fill="rgba(74,222,128,0.08)" />
             </AreaChart>
           </ResponsiveContainer>
@@ -189,11 +189,11 @@ export default function CustomerDetail() {
       </div>
 
       {/* 5. USAGE EVENTS TABLE — full width */}
-      <div className="border border-white/10 p-5 mb-8">
+      <div className="border border-dotted border-white/10 p-5 mb-8">
         {asciiHeader(`USAGE EVENTS (${customerEvents.length})`)}
         <table className="w-full table-fixed">
           <thead>
-            <tr className="border-b border-white/15">
+            <tr className="border-b border-dotted border-white/20">
               <th className="w-[20%] px-4 py-3 text-left font-space text-xs uppercase tracking-wider text-white/40 whitespace-nowrap">Timestamp</th>
               <th className="w-[20%] px-4 py-3 text-left font-space text-xs uppercase tracking-wider text-white/40 whitespace-nowrap">Event Type</th>
               <th className="w-[35%] px-4 py-3 text-left font-space text-xs uppercase tracking-wider text-white/40 whitespace-nowrap">Dimensions</th>
@@ -212,7 +212,7 @@ export default function CustomerDetail() {
               return (
                 <tr
                   key={event.id}
-                  className="border-b border-white/10 hover:bg-white/[0.02] cursor-pointer"
+                  className="border-b border-dotted border-white/10 hover:bg-white/[0.02] cursor-pointer"
                   onClick={() => setSelectedEvent(selectedEvent === event.id ? null : event.id)}
                 >
                   <td className="px-4 py-4 font-ibm-plex text-xs text-white/60 whitespace-nowrap">{formatTime(event.timestamp)}</td>
@@ -240,7 +240,7 @@ export default function CustomerDetail() {
         </table>
 
         {visibleEvents < customerEvents.length && (
-          <button onClick={() => setVisibleEvents((v) => v + 10)} className="mt-4 w-full border border-white/10 bg-transparent py-3 font-space text-xs uppercase tracking-wide text-white/40 hover:text-white hover:bg-white/5">
+          <button onClick={() => setVisibleEvents((v) => v + 10)} className="mt-4 w-full border border-dotted border-white/10 bg-transparent py-3 font-space text-xs uppercase tracking-wide text-white/40 hover:text-white hover:bg-white/5">
             Load More
           </button>
         )}
@@ -252,10 +252,10 @@ export default function CustomerDetail() {
           {showTopups ? "▼" : "▶"} Top-up History ({topups.length})
         </button>
         {showTopups && topups.length > 0 && (
-          <div className="border border-white/10 mt-4">
+          <div className="border border-dotted border-white/10 mt-4">
             <table className="w-full table-fixed">
               <thead>
-                <tr className="border-b border-white/15">
+                <tr className="border-b border-dotted border-white/20">
                   <th className="w-[25%] px-4 py-3 text-left font-space text-xs uppercase tracking-wider text-white/40 whitespace-nowrap">Date</th>
                   <th className="w-[25%] px-4 py-3 text-right font-space text-xs uppercase tracking-wider text-white/40 whitespace-nowrap">Amount</th>
                   <th className="w-[30%] px-4 py-3 text-left font-space text-xs uppercase tracking-wider text-white/40 whitespace-nowrap">Description</th>
@@ -264,7 +264,7 @@ export default function CustomerDetail() {
               </thead>
               <tbody>
                 {topups.map((tx) => (
-                  <tr key={tx.id} className="border-b border-white/10 hover:bg-white/[0.02]">
+                  <tr key={tx.id} className="border-b border-dotted border-white/10 hover:bg-white/[0.02]">
                     <td className="px-4 py-4 font-ibm-plex text-xs text-white/60">{formatTime(tx.created_at)}</td>
                     <td className="px-4 py-4 text-right font-ibm-plex text-sm text-[#4ADE80]">+${tx.amount.toFixed(2)}</td>
                     <td className="px-4 py-4 font-ibm-plex text-xs text-white/60">{tx.description}</td>
@@ -288,8 +288,8 @@ export default function CustomerDetail() {
 
       {/* Top-up Modal */}
       <Dialog open={showTopupModal} onOpenChange={setShowTopupModal}>
-        <DialogContent className="border-white/10 sm:max-w-sm p-0 gap-0" style={{ backgroundColor: "#111111" }}>
-          <div className="border-b border-white/[0.08] px-8 py-4">
+        <DialogContent className="border-dotted border-white/10 sm:max-w-sm p-0 gap-0" style={{ backgroundColor: "#111111" }}>
+          <div className="border-b border-dotted border-white/[0.08] px-8 py-4">
             <span className="font-space text-xs text-white/50">┌─ TOP UP WALLET ──────────────────────┐</span>
           </div>
           <div className="space-y-4 px-8 py-6">
@@ -298,11 +298,11 @@ export default function CustomerDetail() {
               <div className="relative">
                 <span className="absolute left-3 top-1/2 -translate-y-1/2 font-ibm-plex text-sm text-white/40">$</span>
                 <input type="number" step="any" value={topupAmount} onChange={(e) => setTopupAmount(e.target.value)} placeholder="25.00" autoFocus
-                  className="w-full border border-white/20 bg-transparent py-2 pl-7 pr-3 font-ibm-plex text-sm focus:outline-none focus:border-white/60" />
+                  className="w-full border border-dotted border-white/20 bg-transparent py-2 pl-7 pr-3 font-ibm-plex text-sm focus:outline-none focus:border-white/60" />
               </div>
             </div>
           </div>
-          <div className="flex items-center justify-between border-t border-white/[0.08] px-8 py-4">
+          <div className="flex items-center justify-between border-t border-dotted border-white/[0.08] px-8 py-4">
             <button onClick={() => setShowTopupModal(false)} className="border border-white/30 bg-transparent px-4 py-2 font-space text-xs uppercase tracking-wide text-white hover:bg-white/5">Cancel</button>
             <button onClick={handleTopup} className="bg-white text-black px-4 py-2 font-space text-xs uppercase tracking-wide hover:bg-white/90">Confirm Top Up</button>
           </div>

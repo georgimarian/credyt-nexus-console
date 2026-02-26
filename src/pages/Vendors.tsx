@@ -35,10 +35,10 @@ export default function Vendors() {
         <button className="border border-white/30 bg-transparent px-4 py-2 font-space text-xs uppercase tracking-wide text-white hover:bg-white/5">+ New Vendor</button>
       </div>
 
-      <div className="border border-white/10">
+      <div className="border border-dotted border-white/10">
         <table className="w-full table-fixed">
           <thead>
-            <tr className="border-b border-white/15">
+            <tr className="border-b border-dotted border-white/20">
               <th className="w-[35%] px-4 py-3 text-left font-space text-xs uppercase tracking-wider text-white/40 whitespace-nowrap">Vendor</th>
               <th className="w-[25%] px-4 py-3 text-left font-space text-xs uppercase tracking-wider text-white/40 whitespace-nowrap">Code</th>
               <th className="w-[15%] px-4 py-3 text-left font-space text-xs uppercase tracking-wider text-white/40 whitespace-nowrap">Status</th>
@@ -48,7 +48,7 @@ export default function Vendors() {
           </thead>
           <tbody>
             {vendors.map((v) => (
-              <tr key={v.id} className="border-b border-white/10 hover:bg-white/[0.02]">
+              <tr key={v.id} className="border-b border-dotted border-white/10 hover:bg-white/[0.02]">
                 <td className="px-4 py-4">
                   <div className="font-ibm-plex text-sm font-medium">{v.name}</div>
                   <div className="font-ibm-plex text-xs text-white/40 mt-1">{v.id}</div>
@@ -71,23 +71,23 @@ export default function Vendors() {
       </div>
 
       <div>
-        <div className="font-space text-xs uppercase tracking-wider text-white/40 border-b border-white/15 pb-3 mb-4">┌─ COSTS BY VENDOR ────────────────────┐</div>
+        <div className="font-space text-xs uppercase tracking-wider text-white/40 border-b border-dotted border-white/20 pb-3 mb-4">┌─ COSTS BY VENDOR ────────────────────┐</div>
         <ResponsiveContainer width="100%" height={200}>
           <BarChart data={costByVendor} layout="vertical">
             <XAxis type="number" tick={{ fontSize: 10, fontFamily: "IBM Plex Mono", fill: "rgba(255,255,255,0.3)" }} />
             <YAxis type="category" dataKey="name" tick={{ fontSize: 11, fontFamily: "IBM Plex Mono", fill: "rgba(255,255,255,0.5)" }} width={80} />
-            <Tooltip contentStyle={{ fontFamily: "IBM Plex Mono", fontSize: 12, background: "#0F0F0F", border: "1px solid rgba(255,255,255,0.08)", borderRadius: 0 }} />
+            <Tooltip contentStyle={{ fontFamily: "IBM Plex Mono", fontSize: 12, background: "#0F0F0F", border: "1px dotted rgba(255,255,255,0.08)", borderRadius: 0 }} />
             <Bar dataKey="costs" fill="#F87171" opacity={0.7} />
           </BarChart>
         </ResponsiveContainer>
       </div>
 
       <div>
-        <div className="font-space text-xs uppercase tracking-wider text-white/40 border-b border-white/15 pb-3 mb-4">┌─ RECENT COSTS ───────────────────────┐</div>
-        <div className="border border-white/10">
+        <div className="font-space text-xs uppercase tracking-wider text-white/40 border-b border-dotted border-white/20 pb-3 mb-4">┌─ RECENT COSTS ───────────────────────┐</div>
+        <div className="border border-dotted border-white/10">
           <table className="w-full table-fixed">
             <thead>
-              <tr className="border-b border-white/15">
+              <tr className="border-b border-dotted border-white/20">
                 <th className="px-4 py-3 text-left font-space text-xs uppercase tracking-wider text-white/40 whitespace-nowrap">Time</th>
                 <th className="px-4 py-3 text-right font-space text-xs uppercase tracking-wider text-white/40 whitespace-nowrap">Amount</th>
                 <th className="px-4 py-3 text-left font-space text-xs uppercase tracking-wider text-white/40 whitespace-nowrap">Vendor</th>
@@ -97,7 +97,7 @@ export default function Vendors() {
             </thead>
             <tbody>
               {pagedCosts.map((c, i) => (
-                <tr key={i} className="border-b border-white/10 hover:bg-white/[0.02]">
+                <tr key={i} className="border-b border-dotted border-white/10 hover:bg-white/[0.02]">
                   <td className="px-4 py-4 font-ibm-plex text-xs text-white/60">{formatTime(c.timestamp)}</td>
                   <td className="px-4 py-4 text-right font-ibm-plex text-sm text-[#F87171]">${c.amount.toFixed(4)}</td>
                   <td className="px-4 py-4 font-ibm-plex text-xs">{c.vendor_name}</td>
@@ -109,7 +109,7 @@ export default function Vendors() {
           </table>
         </div>
         {totalPages > 1 && (
-          <div className="flex justify-end items-center gap-4 pt-4 mt-2 border-t border-white/10">
+          <div className="flex justify-end items-center gap-4 pt-4 mt-2 border-t border-dotted border-white/10">
             <button disabled={page === 0} onClick={() => setPage(page - 1)} className="text-xs font-mono uppercase tracking-wide text-white/40 hover:text-white cursor-pointer disabled:text-white/15 disabled:pointer-events-none">← Previous</button>
             <button disabled={page >= totalPages - 1} onClick={() => setPage(page + 1)} className="text-xs font-mono uppercase tracking-wide text-white/40 hover:text-white cursor-pointer disabled:text-white/15 disabled:pointer-events-none">Next →</button>
           </div>

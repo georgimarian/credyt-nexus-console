@@ -43,14 +43,14 @@ export default function Assets() {
           const latestRate = asset.rates.length > 0 ? asset.rates[asset.rates.length - 1] : null;
 
           return (
-            <div key={asset.id} className="border border-white/10 p-8 flex flex-col" style={{ backgroundColor: "#0D1117" }}>
+            <div key={asset.id} className="border border-dotted border-white/10 p-8 flex flex-col" style={{ backgroundColor: "#0D1117" }}>
               {/* Top */}
               <div className="flex items-start justify-between mb-1">
                 <div className="flex items-center gap-3">
                   <span className="text-2xl text-[#2DD4BF]">{icon}</span>
                   <span className="font-space text-2xl font-bold text-white">{asset.code}</span>
                 </div>
-                <span className={`border px-2 py-0.5 font-space text-xs uppercase tracking-widest ${isFiat ? "border-[#4ADE80]/40 text-[#4ADE80]" : "border-[#FACC15]/40 text-[#FACC15]"}`}>
+                <span className={`border border-dotted px-2 py-0.5 font-space text-xs uppercase tracking-widest ${isFiat ? "border-[#4ADE80]/40 text-[#4ADE80]" : "border-[#FACC15]/40 text-[#FACC15]"}`}>
                   {asset.type}
                 </span>
               </div>
@@ -74,7 +74,7 @@ export default function Assets() {
 
               {/* Exchange rates — custom assets only */}
               {!isFiat && latestRate && (
-                <div className="border-t border-white/10 mt-6 pt-6">
+                <div className="border-t border-dotted border-white/10 mt-6 pt-6">
                   <div className="font-space text-xs uppercase tracking-wider text-white/40 mb-3">Exchange Rates</div>
                   <div className="font-ibm-plex text-sm">
                     <span className="text-white/50">1 USD = </span>
@@ -100,8 +100,6 @@ export default function Assets() {
                   + Add Rate
                 </button>
               )}
-
-              {/* Fiat cards: end after grid fields, no explanation */}
             </div>
           );
         })}
@@ -109,7 +107,7 @@ export default function Assets() {
 
       {/* Quote Calculator */}
       <div>
-        <div className="font-space text-xs uppercase tracking-wider text-white/40 border-b border-dashed border-white/15 pb-3 mb-4">
+        <div className="font-space text-xs uppercase tracking-wider text-white/40 border-b border-dotted border-white/20 pb-3 mb-4">
           ┌─ QUOTE CALCULATOR ────────────────────┐
         </div>
         <div className="flex flex-wrap items-end gap-6 font-ibm-plex text-sm">
@@ -119,13 +117,13 @@ export default function Assets() {
               type="number"
               value={quoteInput}
               onChange={(e) => setQuoteInput(e.target.value)}
-              className="w-36 border border-white/[0.08] bg-transparent px-3 py-2 text-sm focus:outline-none focus:border-[#2DD4BF]"
+              className="w-36 border border-dotted border-white/[0.08] bg-transparent px-3 py-2 text-sm focus:outline-none focus:border-[#2DD4BF]"
             />
           </div>
           <div className="py-2 text-lg text-white/40">→</div>
           <div>
             <label className="block font-space text-xs uppercase tracking-wider text-white/40 mb-2">CREDITS</label>
-            <div className="w-36 border border-white/[0.06] bg-white/5 px-3 py-2 font-bold text-[#2DD4BF]">
+            <div className="w-36 border border-dotted border-white/[0.06] bg-white/5 px-3 py-2 font-bold text-[#2DD4BF]">
               {quoteResult.toFixed(0)}
             </div>
           </div>

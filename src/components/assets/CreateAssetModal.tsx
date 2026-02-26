@@ -77,12 +77,12 @@ export function CreateAssetModal({ open, onClose, onCreated }: CreateAssetModalP
     resetForm();
   };
 
-  const inputCls = "w-full border border-white/20 bg-transparent px-3 py-2 font-ibm-plex text-sm placeholder:text-white/30 focus:outline-none focus:border-white/60";
+  const inputCls = "w-full border border-dotted border-white/20 bg-transparent px-3 py-2 font-ibm-plex text-sm placeholder:text-white/30 focus:outline-none focus:border-white/60";
 
   return (
     <Dialog open={open} onOpenChange={(v) => !v && handleClose()}>
       <DialogContent className="sm:max-w-lg p-0 gap-0">
-        <div className="border-b border-white/[0.08] px-8 py-4">
+        <div className="border-b border-dotted border-white/[0.08] px-8 py-4">
           <span className="font-space text-xs text-white/50">┌─ CREATE ASSET ───────────────────────┐</span>
         </div>
 
@@ -92,7 +92,7 @@ export function CreateAssetModal({ open, onClose, onCreated }: CreateAssetModalP
             <button
               type="button"
               onClick={() => { setAssetType("fiat"); setScale("2"); }}
-              className={`relative min-h-[120px] flex flex-col justify-between text-left p-4 border transition-colors ${
+              className={`relative min-h-[120px] flex flex-col justify-between text-left p-4 border border-dotted transition-colors ${
                 assetType === "fiat"
                   ? "bg-white text-black border-white"
                   : "border-white/15 bg-transparent hover:bg-white/5 hover:border-white/30"
@@ -112,7 +112,7 @@ export function CreateAssetModal({ open, onClose, onCreated }: CreateAssetModalP
             <button
               type="button"
               onClick={() => { setAssetType("custom"); setScale("0"); }}
-              className={`relative min-h-[120px] flex flex-col justify-between text-left p-4 border transition-colors ${
+              className={`relative min-h-[120px] flex flex-col justify-between text-left p-4 border border-dotted transition-colors ${
                 assetType === "custom"
                   ? "bg-white text-black border-white"
                   : "border-white/15 bg-transparent hover:bg-white/5 hover:border-white/30"
@@ -130,7 +130,7 @@ export function CreateAssetModal({ open, onClose, onCreated }: CreateAssetModalP
             </button>
           </div>
 
-          {/* Common fields — always visible */}
+          {/* Common fields */}
           <div>
             <label className="block font-space text-xs uppercase tracking-wider text-white/40 mb-2">Asset Code</label>
             <input
@@ -183,7 +183,7 @@ export function CreateAssetModal({ open, onClose, onCreated }: CreateAssetModalP
 
           {/* Exchange Rate section for CUSTOM only */}
           {assetType === "custom" && (
-            <div className="border-t border-white/[0.08] pt-5 space-y-5">
+            <div className="border-t border-dotted border-white/[0.08] pt-5 space-y-5">
               <div className="font-space text-xs uppercase tracking-wider text-white/40">Exchange Rate</div>
 
               <div className="grid grid-cols-2 gap-4">
@@ -234,7 +234,7 @@ export function CreateAssetModal({ open, onClose, onCreated }: CreateAssetModalP
         </div>
 
         {/* Footer */}
-        <div className="flex items-center justify-between border-t border-white/[0.08] px-8 py-4">
+        <div className="flex items-center justify-between border-t border-dotted border-white/[0.08] px-8 py-4">
           <button onClick={handleClose} className="border border-white/30 bg-transparent px-4 py-2 font-space text-xs uppercase tracking-wide text-white hover:bg-white/5">
             Cancel
           </button>
