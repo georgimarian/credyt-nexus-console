@@ -49,10 +49,10 @@ export default function Products() {
         className="border-white/[0.08] bg-transparent pl-4 font-ibm-plex text-sm"
       />
 
-      <div className="border border-white/10">
+      <div className="border border-dotted border-white/10">
         <table className="w-full table-fixed">
           <thead>
-            <tr className="border-b border-white/15">
+            <tr className="border-b border-dotted border-white/20">
               <th className="w-[35%] px-4 py-3 text-left font-space text-xs uppercase tracking-wider text-white/40 whitespace-nowrap">Product Name</th>
               <th className="w-[18%] px-4 py-3 text-left font-space text-xs uppercase tracking-wider text-white/40 whitespace-nowrap">Product ID</th>
               <th className="w-[10%] px-4 py-3 text-left font-space text-xs uppercase tracking-wider text-white/40 whitespace-nowrap">Status</th>
@@ -67,12 +67,12 @@ export default function Products() {
               const version = product.versions[0]?.version || 1;
               const model = product.pricing_model || "USAGE_BASED";
               return (
-                <tr key={product.id} className="border-b border-white/10 hover:bg-white/[0.02] transition-colors cursor-pointer" onClick={() => {}}>
+                <tr key={product.id} className="border-b border-dotted border-white/10 hover:bg-white/[0.02] transition-colors cursor-pointer" onClick={() => {}}>
                   <td className="px-4 py-4">
                     <Link to={`/products/${product.id}`} className="block">
                       <div className="font-ibm-plex text-sm font-bold">
                         {product.name}
-                        <span className="ml-2 border border-white/20 text-white/60 text-xs px-1.5 py-0.5 font-ibm-plex font-normal">v{version}</span>
+                        <span className="ml-2 border border-dotted border-white/20 text-white/60 text-xs px-1.5 py-0.5 font-ibm-plex font-normal">v{version}</span>
                       </div>
                       <div className="text-xs text-white/30 font-ibm-plex mt-0.5">{product.code} · {formatDate(product.created_at)}</div>
                     </Link>
@@ -81,7 +81,7 @@ export default function Products() {
                   <td className="px-4 py-4"><StatusBadge status={product.status} /></td>
                   <td className="px-4 py-4 text-center font-ibm-plex text-sm font-light">{product.prices.length}</td>
                   <td className="px-4 py-4 text-center font-ibm-plex text-sm font-light">{product.subscriber_count}</td>
-                  <td className="px-4 py-4"><span className="border border-white/20 text-white/40 text-xs px-2 py-0.5 font-ibm-plex">{model}</span></td>
+                  <td className="px-4 py-4"><span className="border border-dotted border-white/20 text-white/40 text-xs px-2 py-0.5 font-ibm-plex">{model}</span></td>
                   <td className="px-4 py-4 text-right"><Link to={`/products/${product.id}`} className="text-white/40 hover:text-white text-sm">→</Link></td>
                 </tr>
               );
@@ -94,7 +94,7 @@ export default function Products() {
       </div>
 
       {totalPages > 1 && (
-        <div className="flex justify-end items-center gap-4 pt-4 mt-2 border-t border-white/10">
+        <div className="flex justify-end items-center gap-4 pt-4 mt-2 border-t border-dotted border-white/10">
           <button disabled={page === 0} onClick={() => setPage(page - 1)} className="text-xs font-mono uppercase tracking-wide text-white/40 hover:text-white cursor-pointer disabled:text-white/15 disabled:pointer-events-none">← Previous</button>
           <button disabled={page >= totalPages - 1} onClick={() => setPage(page + 1)} className="text-xs font-mono uppercase tracking-wide text-white/40 hover:text-white cursor-pointer disabled:text-white/15 disabled:pointer-events-none">Next →</button>
         </div>

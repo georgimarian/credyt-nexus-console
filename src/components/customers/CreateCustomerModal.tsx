@@ -84,13 +84,13 @@ export function CreateCustomerModal({ open, onClose, onCreated }: CreateCustomer
     setExternalId(""); setName(""); setEmail(""); setCurrency("USD"); setInitialBalance(""); setAutoTopup(false); setThreshold(""); setTopupAmount(""); setSelectedProductIds([]); setErrors({});
   };
 
-  const inputCls = "w-full border border-white/20 bg-transparent px-3 py-2 font-ibm-plex text-sm placeholder:text-white/30 focus:outline-none focus:border-white/60";
-  const selectCls = "w-full border border-white/20 bg-transparent px-3 py-2 font-ibm-plex text-sm text-white focus:outline-none";
+  const inputCls = "w-full border border-dotted border-white/20 bg-transparent px-3 py-2 font-ibm-plex text-sm placeholder:text-white/30 focus:outline-none focus:border-white/60";
+  const selectCls = "w-full border border-dotted border-white/20 bg-transparent px-3 py-2 font-ibm-plex text-sm text-white focus:outline-none";
 
   return (
     <Dialog open={open} onOpenChange={(v) => !v && onClose()}>
       <DialogContent className="sm:max-w-lg p-0 gap-0">
-        <div className="border-b border-white/[0.08] px-8 py-4">
+        <div className="border-b border-dotted border-white/[0.08] px-8 py-4">
           <span className="font-space text-xs text-white/50">┌─ CREATE CUSTOMER ────────────────────┐</span>
         </div>
 
@@ -128,7 +128,7 @@ export function CreateCustomerModal({ open, onClose, onCreated }: CreateCustomer
             </div>
           </div>
 
-          <div className="border-t border-white/[0.08] pt-5">
+          <div className="border-t border-dotted border-white/[0.08] pt-5">
             <div className="flex items-center justify-between">
               <label className="font-space text-xs uppercase tracking-wider text-white/40">Auto Top-up</label>
               <Switch checked={autoTopup} onCheckedChange={setAutoTopup} />
@@ -156,7 +156,7 @@ export function CreateCustomerModal({ open, onClose, onCreated }: CreateCustomer
           </div>
 
           {/* Subscription — multi-select product list */}
-          <div className="border-t border-white/[0.08] pt-5">
+          <div className="border-t border-dotted border-white/[0.08] pt-5">
             <div className="font-space text-xs uppercase tracking-wider text-white/40 mb-3">Subscription</div>
             <div>
               {activeProducts.length === 0 ? (
@@ -169,11 +169,11 @@ export function CreateCustomerModal({ open, onClose, onCreated }: CreateCustomer
                       <div
                         key={p.id}
                         onClick={() => toggleProduct(p.id)}
-                        className={`flex items-center justify-between py-3 border-b border-white/[0.08] cursor-pointer transition-colors ${selected ? "bg-white/[0.03]" : "hover:bg-white/[0.02]"}`}
+                        className={`flex items-center justify-between py-3 border-b border-dotted border-white/[0.08] cursor-pointer transition-colors ${selected ? "bg-white/[0.03]" : "hover:bg-white/[0.02]"}`}
                       >
                         <div className="flex items-center gap-2">
                           <span className="font-ibm-plex text-sm font-medium">{p.name}</span>
-                          <span className="border border-white/20 px-1.5 font-ibm-plex text-xs text-white/60">{p.code}</span>
+                          <span className="border border-dotted border-white/20 px-1.5 font-ibm-plex text-xs text-white/60">{p.code}</span>
                         </div>
                         <span className={`font-mono text-sm ${selected ? "text-[#4ADE80]" : "text-white/20"}`}>
                           {selected ? "✓" : "○"}
@@ -191,7 +191,7 @@ export function CreateCustomerModal({ open, onClose, onCreated }: CreateCustomer
           </div>
         </div>
 
-        <div className="flex items-center justify-between border-t border-white/[0.08] px-8 py-4">
+        <div className="flex items-center justify-between border-t border-dotted border-white/[0.08] px-8 py-4">
           <button onClick={onClose} className="border border-white/30 bg-transparent px-4 py-2 font-space text-xs uppercase tracking-wide text-white hover:bg-white/5">Cancel</button>
           <button onClick={handleCreate} className="bg-white text-black px-4 py-2 font-space text-xs uppercase tracking-wide hover:bg-white/90">Create Customer</button>
         </div>

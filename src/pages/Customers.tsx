@@ -59,10 +59,10 @@ export default function Customers() {
         className="border-white/[0.08] bg-transparent pl-4 font-ibm-plex text-sm"
       />
 
-      <div className="border border-white/10">
+      <div className="border border-dotted border-white/10">
         <table className="w-full table-fixed">
           <thead>
-            <tr className="border-b border-white/15">
+            <tr className="border-b border-dotted border-white/20">
               <th className="w-[30%] px-4 py-3 text-left font-space text-xs uppercase tracking-wider text-white/40 whitespace-nowrap">Customer</th>
               <th className="w-[25%] px-4 py-3 text-left font-space text-xs uppercase tracking-wider text-white/40 whitespace-nowrap">Email</th>
               <th className="w-[10%] px-4 py-3 text-left font-space text-xs uppercase tracking-wider text-white/40 whitespace-nowrap">Status</th>
@@ -73,7 +73,7 @@ export default function Customers() {
           </thead>
           <tbody>
             {paged.map((customer) => (
-              <tr key={customer.id} className="border-b border-white/10 hover:bg-white/[0.02] transition-colors">
+              <tr key={customer.id} className="border-b border-dotted border-white/10 hover:bg-white/[0.02] transition-colors">
                 <td className="px-4 py-4">
                   <Link to={`/customers/${customer.id}`} className="block hover:opacity-80">
                     <div className="font-ibm-plex text-sm font-medium">{customer.name}</div>
@@ -97,7 +97,7 @@ export default function Customers() {
       </div>
 
       {totalPages > 1 && (
-        <div className="flex justify-end items-center gap-4 pt-4 mt-2 border-t border-white/10">
+        <div className="flex justify-end items-center gap-4 pt-4 mt-2 border-t border-dotted border-white/10">
           <button disabled={page === 0} onClick={() => setPage(page - 1)} className="text-xs font-mono uppercase tracking-wide text-white/40 hover:text-white cursor-pointer disabled:text-white/15 disabled:pointer-events-none">← Previous</button>
           <button disabled={page >= totalPages - 1} onClick={() => setPage(page + 1)} className="text-xs font-mono uppercase tracking-wide text-white/40 hover:text-white cursor-pointer disabled:text-white/15 disabled:pointer-events-none">Next →</button>
         </div>

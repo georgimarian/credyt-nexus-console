@@ -96,7 +96,7 @@ export function AddPriceWizard({ product, onClose, onPriceAdded }: AddPriceWizar
     toast({ title: `done: Price added to ${product.name}` });
   };
 
-  const inputCls = "w-full border border-white/20 bg-transparent px-3 py-2 font-ibm-plex text-sm placeholder:text-white/30 focus:outline-none focus:border-white/60";
+  const inputCls = "w-full border border-dotted border-white/20 bg-transparent px-3 py-2 font-ibm-plex text-sm placeholder:text-white/30 focus:outline-none focus:border-white/60";
 
   return (
     <Dialog open onOpenChange={(open) => { if (!open) onClose(); }}>
@@ -142,7 +142,7 @@ export function AddPriceWizard({ product, onClose, onPriceAdded }: AddPriceWizar
                         key={m.key}
                         type="button"
                         onClick={() => setBillingModel(m.key)}
-                        className={`relative min-h-[140px] flex flex-col justify-between text-left p-4 border transition-colors ${
+                        className={`relative min-h-[140px] flex flex-col justify-between text-left p-4 border border-dotted transition-colors ${
                           billingModel === m.key ? "bg-white text-black border-white" : "border-white/15 bg-transparent hover:bg-white/5 hover:border-white/30"
                         }`}
                       >
@@ -171,7 +171,7 @@ export function AddPriceWizard({ product, onClose, onPriceAdded }: AddPriceWizar
                         key={c.key}
                         type="button"
                         onClick={() => setUsageCalc(c.key)}
-                        className={`relative min-h-[140px] flex flex-col justify-between text-left p-4 border transition-colors ${
+                        className={`relative min-h-[140px] flex flex-col justify-between text-left p-4 border border-dotted transition-colors ${
                           usageCalc === c.key ? "bg-white text-black border-white" : "border-white/15 bg-transparent hover:bg-white/5 hover:border-white/30"
                         }`}
                       >
@@ -215,7 +215,7 @@ export function AddPriceWizard({ product, onClose, onPriceAdded }: AddPriceWizar
                   </div>
                 )}
 
-                <div className="border-t border-white/[0.08] pt-5">
+                <div className="border-t border-dotted border-white/[0.08] pt-5">
                   <div className="grid grid-cols-2 gap-4">
                     <div>
                       <label className="block font-space text-xs uppercase tracking-wider text-white/40 mb-2">Unit Price</label>
@@ -279,7 +279,7 @@ export function AddPriceWizard({ product, onClose, onPriceAdded }: AddPriceWizar
         </ScrollArea>
 
         {/* Footer */}
-        <div className="flex items-center justify-between border-t border-white/[0.08] px-8 py-4">
+        <div className="flex items-center justify-between border-t border-dotted border-white/[0.08] px-8 py-4">
           {stepIndex > 0 ? (
             <button onClick={goBack} className="border border-white/30 bg-transparent px-4 py-2 font-space text-xs uppercase tracking-wide text-white hover:bg-white/5">Back</button>
           ) : (

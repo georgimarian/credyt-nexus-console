@@ -15,25 +15,25 @@ export default function Settings() {
     <div className="space-y-10">
       {/* API KEY */}
       <div>
-        <div className="font-space text-xs uppercase tracking-wider text-white/40 border-b border-white/15 pb-3 mb-4">┌─ API KEY ────────────────────────────┐</div>
+        <div className="font-space text-xs uppercase tracking-wider text-white/40 border-b border-dotted border-white/20 pb-3 mb-4">┌─ API KEY ────────────────────────────┐</div>
         <div className="flex items-center gap-3">
-          <div className="flex-1 border border-white/[0.08] bg-white/5 px-3 py-2 font-ibm-plex text-sm">
+          <div className="flex-1 border border-dotted border-white/[0.08] bg-white/5 px-3 py-2 font-ibm-plex text-sm">
             {showKey ? apiKey : "sk_live_crdyt_" + "•".repeat(32)}
           </div>
-          <button onClick={() => setShowKey(!showKey)} className="flex h-9 w-9 items-center justify-center border border-white/30 font-space text-xs text-white hover:bg-white/5">{showKey ? "⊘" : "⊙"}</button>
-          <button onClick={copyKey} className="flex h-9 w-9 items-center justify-center border border-white/30 font-space text-xs text-white hover:bg-white/5">{copied ? <span className="text-[#4ADE80]">✓</span> : "⎘"}</button>
+          <button onClick={() => setShowKey(!showKey)} className="flex h-9 w-9 items-center justify-center border border-dotted border-white/30 font-space text-xs text-white hover:bg-white/5">{showKey ? "⊘" : "⊙"}</button>
+          <button onClick={copyKey} className="flex h-9 w-9 items-center justify-center border border-dotted border-white/30 font-space text-xs text-white hover:bg-white/5">{copied ? <span className="text-[#4ADE80]">✓</span> : "⎘"}</button>
         </div>
         <p className="mt-2 font-ibm-plex text-xs text-white/40">⚠ Keep this key secret. Do not share it in client-side code.</p>
       </div>
 
       {/* Connected Accounts */}
       <div>
-        <div className="font-space text-xs uppercase tracking-wider text-white/40 border-b border-white/15 pb-3 mb-4">┌─ CONNECTED ACCOUNTS ─────────────────┐</div>
+        <div className="font-space text-xs uppercase tracking-wider text-white/40 border-b border-dotted border-white/20 pb-3 mb-4">┌─ CONNECTED ACCOUNTS ─────────────────┐</div>
         {[
           { name: "Stripe", id: "acct_1NqOXXXXXXXX" },
           { name: "OpenAI", id: "org-XXXXXXXX" },
         ].map((acct) => (
-          <div key={acct.name} className="flex items-center justify-between py-3 border-b border-white/10">
+          <div key={acct.name} className="flex items-center justify-between py-3 border-b border-dotted border-white/10">
             <div className="font-ibm-plex text-sm">
               <span className="font-medium">{acct.name}</span>
               <span className="ml-2 text-xs text-white/40">{acct.id}</span>
@@ -45,13 +45,13 @@ export default function Settings() {
 
       {/* Billing Portal */}
       <div>
-        <div className="font-space text-xs uppercase tracking-wider text-white/40 border-b border-white/15 pb-3 mb-4">┌─ BILLING PORTAL ─────────────────────┐</div>
+        <div className="font-space text-xs uppercase tracking-wider text-white/40 border-b border-dotted border-white/20 pb-3 mb-4">┌─ BILLING PORTAL ─────────────────────┐</div>
         {[
           { label: "Portal URL", value: "https://billing.credyt.ai/portal/your-org" },
           { label: "Customization", value: "Default theme" },
           { label: "Self-service top-ups", value: "Enabled" },
         ].map((row) => (
-          <div key={row.label} className="flex items-center justify-between py-3 border-b border-white/10 font-ibm-plex text-sm">
+          <div key={row.label} className="flex items-center justify-between py-3 border-b border-dotted border-white/10 font-ibm-plex text-sm">
             <span className="text-white/40">{row.label}</span>
             <span className="text-xs">{row.value}</span>
           </div>
@@ -60,7 +60,7 @@ export default function Settings() {
 
       {/* System Info */}
       <div>
-        <div className="font-space text-xs uppercase tracking-wider text-white/40 border-b border-white/15 pb-3 mb-4">┌─ SYSTEM INFO ────────────────────────┐</div>
+        <div className="font-space text-xs uppercase tracking-wider text-white/40 border-b border-dotted border-white/20 pb-3 mb-4">┌─ SYSTEM INFO ────────────────────────┐</div>
         <pre className="font-ibm-plex text-xs text-white/40">
 {`$ credyt version
 credyt-admin v1.0.0
