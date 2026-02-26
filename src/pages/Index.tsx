@@ -94,7 +94,7 @@ export default function Overview() {
       </div>
 
       {/* Profitability + Wallet Health */}
-      <div className="grid grid-cols-[3fr_2fr] gap-6 mt-8">
+      <div className="grid grid-cols-[3fr_2fr_2fr] gap-6 mt-8">
         {/* LEFT — Profitability */}
         <div className="bg-[#0F0F0F] border border-dotted border-white/10 p-6 rounded-none">
           <div className="font-space text-xs uppercase tracking-wider text-white/40 mb-1">┌─ PROFITABILITY BY EVENT TYPE ─┐</div>
@@ -103,15 +103,17 @@ export default function Overview() {
           </div>
           <div className="space-y-0">
             {[
-              { type: "chat_completion", count: 38, revenue: 2.85, cost: 1.71, margin: 40 },
-              { type: "image_generation", count: 12, revenue: 0.48, cost: 0.29, margin: 40 },
-              { type: "api_call", count: 5, revenue: 0.01, cost: 0.00, margin: 100 },
+              { type: "chat_completion", count: 38, customers: 6, revenue: 2.85, cost: 1.71, margin: 40 },
+              { type: "image_generation", count: 12, customers: 4, revenue: 0.48, cost: 0.29, margin: 40 },
+              { type: "api_call", count: 5, customers: 2, revenue: 0.01, cost: 0.00, margin: 100 },
             ].map((row, i, arr) => (
               <div key={row.type} className={`pb-5 ${i < arr.length - 1 ? "border-b border-dotted border-white/10 mb-5" : ""}`}>
                 <div className="flex items-baseline justify-between">
                   <div>
                     <span className="font-mono text-sm text-white">{row.type}</span>
                     <span className="text-xs text-white/30 ml-2">{row.count.toLocaleString()} EVENTS</span>
+                    <span className="text-xs text-white/15 mx-1">·</span>
+                    <span className="text-xs text-white/30">{row.customers} CUSTOMERS</span>
                   </div>
                   <div className="flex items-baseline gap-4">
                     <div className="text-right">
@@ -137,7 +139,7 @@ export default function Overview() {
           </div>
         </div>
 
-        {/* RIGHT — Wallet Health */}
+        {/* MIDDLE — Wallet Health */}
         <div className="bg-[#0F0F0F] border border-dotted border-white/10 p-6 rounded-none">
           <div className="flex justify-between items-center mb-4">
             <div className="font-space text-xs uppercase tracking-wider text-white/40">┌─ WALLET HEALTH ─┐</div>
@@ -177,6 +179,38 @@ export default function Overview() {
                 </div>
               );
             })}
+          </div>
+        </div>
+
+        {/* RIGHT — Power Users */}
+        <div className="bg-[#0F0F0F] border border-dotted border-white/10 p-6 rounded-none">
+          <div className="font-space text-xs uppercase tracking-wider text-white/40 mb-1">┌─ POWER USERS ─┐</div>
+          <div className="text-xs text-white/40 font-mono mb-4">by spend, last 30 days</div>
+          <div>
+            {[
+              { rank: 1, name: "Acme Corp", id: "cust_01", spend: 1.82, eventCount: 14 },
+              { rank: 2, name: "Neural Labs", id: "cust_03", spend: 0.63, eventCount: 8 },
+              { rank: 3, name: "TechStart AI", id: "cust_02", spend: 0.48, eventCount: 9 },
+              { rank: 4, name: "Orbit AI", id: "cust_06", spend: 0.21, eventCount: 6 },
+              { rank: 5, name: "CloudMind", id: "cust_05", spend: 0.18, eventCount: 5 },
+            ].map((user) => (
+              <div key={user.id} className={`flex items-center justify-between py-3 border-b border-dotted border-white/10 ${user.rank === 1 ? "bg-white/[0.02]" : ""}`}>
+                <div className="flex items-start">
+                  <span className="text-xs text-white/20 font-mono w-5 shrink-0">#{user.rank}</span>
+                  <div className="ml-3">
+                    <div className="font-medium text-sm text-white">{user.name}</div>
+                    <div className="text-xs text-white/30 font-mono mt-0.5">{user.id}</div>
+                  </div>
+                </div>
+                <div className="text-right">
+                  <div className="font-mono font-bold text-white text-sm">${user.spend.toFixed(2)}</div>
+                  <div className="text-xs text-white/30 font-mono mt-0.5">{user.eventCount} events</div>
+                </div>
+              </div>
+            ))}
+          </div>
+          <div className="border-t border-dotted border-white/10 pt-3 mt-2 text-xs text-white/30 font-mono">
+            Top 5 of 8 customers · based on billed events
           </div>
         </div>
       </div>
