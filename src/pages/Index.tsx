@@ -31,7 +31,7 @@ function generateChartData() {
 
 const chartData = generateChartData();
 
-const recentEvents = events.slice(0, 10);
+const recentEvents = events.slice(0, 5);
 
 function formatTime(ts: string) {
   const d = new Date(ts);
