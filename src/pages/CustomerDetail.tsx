@@ -82,7 +82,7 @@ export default function CustomerDetail() {
   );
 
   const fieldRow = (label: string, value: React.ReactNode) => (
-    <div className="flex items-center justify-between font-ibm-plex text-sm py-2.5 border-b border-white/[0.08]">
+    <div className="flex items-center justify-between font-ibm-plex text-sm py-2.5 border-b border-dotted border-white/[0.08]">
       <span className="text-white/40">{label}</span>
       <span>{value}</span>
     </div>
@@ -193,7 +193,7 @@ export default function CustomerDetail() {
         {asciiHeader(`USAGE EVENTS (${customerEvents.length})`)}
         <table className="w-full table-fixed">
           <thead>
-            <tr className="border-b border-dashed border-white/15">
+            <tr className="border-b border-dashed border-white/20">
               <th className="w-[20%] px-4 pb-3 text-left font-space text-xs uppercase tracking-wider text-white/40 whitespace-nowrap">Timestamp</th>
               <th className="w-[20%] px-4 pb-3 text-left font-space text-xs uppercase tracking-wider text-white/40 whitespace-nowrap">Event Type</th>
               <th className="w-[35%] px-4 pb-3 text-left font-space text-xs uppercase tracking-wider text-white/40 whitespace-nowrap">Dimensions</th>
@@ -212,7 +212,7 @@ export default function CustomerDetail() {
               return (
                 <tr
                   key={event.id}
-                  className="border-b border-white/[0.06] hover:bg-white/[0.02] cursor-pointer"
+                  className="border-b border-dotted border-white/[0.08] hover:bg-white/[0.02] cursor-pointer"
                   onClick={() => setSelectedEvent(selectedEvent === event.id ? null : event.id)}
                 >
                   <td className="px-4 py-4 font-ibm-plex text-xs text-white/60 whitespace-nowrap">{formatTime(event.timestamp)}</td>
@@ -254,7 +254,7 @@ export default function CustomerDetail() {
         {showTopups && topups.length > 0 && (
           <table className="w-full table-fixed mt-4">
             <thead>
-              <tr className="border-b border-dashed border-white/15">
+              <tr className="border-b border-dashed border-white/20">
                 <th className="w-[25%] px-4 pb-3 text-left font-space text-xs uppercase tracking-wider text-white/40 whitespace-nowrap">Date</th>
                 <th className="w-[25%] px-4 pb-3 text-right font-space text-xs uppercase tracking-wider text-white/40 whitespace-nowrap">Amount</th>
                 <th className="w-[30%] px-4 pb-3 text-left font-space text-xs uppercase tracking-wider text-white/40 whitespace-nowrap">Description</th>
@@ -263,7 +263,7 @@ export default function CustomerDetail() {
             </thead>
             <tbody>
               {topups.map((tx) => (
-                <tr key={tx.id} className="border-b border-white/[0.06] hover:bg-white/[0.02]">
+                <tr key={tx.id} className="border-b border-dotted border-white/[0.08] hover:bg-white/[0.02]">
                   <td className="px-4 py-4 font-ibm-plex text-xs text-white/60">{formatTime(tx.created_at)}</td>
                   <td className="px-4 py-4 text-right font-ibm-plex text-sm text-[#4ADE80]">+${tx.amount.toFixed(2)}</td>
                   <td className="px-4 py-4 font-ibm-plex text-xs text-white/60">{tx.description}</td>

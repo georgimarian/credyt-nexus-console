@@ -21,7 +21,7 @@ export function AppLayout() {
   return (
     <div className="flex min-h-screen w-full">
       <AppSidebar collapsed={false} onToggle={() => {}} />
-      <div className="flex-1 ml-60 flex flex-col">
+      <div className="flex-1 ml-52 flex flex-col">
         {/* Sandbox Banner — absolute top */}
         <div className="flex items-center gap-2 px-10 py-2 font-space text-xs shrink-0" style={{ backgroundColor: "#FACC15", color: "#000" }}>
           ⚠ YOU'RE VIEWING DEMO DATA — Changes made here will not affect any live account
