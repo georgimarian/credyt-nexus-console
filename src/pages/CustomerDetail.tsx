@@ -82,7 +82,7 @@ export default function CustomerDetail() {
   );
 
   const fieldRow = (label: string, value: React.ReactNode) => (
-    <div className="flex items-center justify-between font-ibm-plex text-sm py-2.5 border-b border-dotted border-white/[0.08]">
+    <div className="flex items-center justify-between font-ibm-plex text-sm py-2.5 border-b border-white/10">
       <span className="text-white/40">{label}</span>
       <span>{value}</span>
     </div>
@@ -131,7 +131,7 @@ export default function CustomerDetail() {
       {/* 3. WALLET + DETAILS — two equal columns */}
       <div className="grid grid-cols-2 gap-8 mb-8">
         {/* WALLET */}
-        <div>
+        <div className="border border-white/10 p-5">
           {asciiHeader("WALLET")}
           {fieldRow("Balance", `$${balance.toFixed(2)}`)}
           {fieldRow("Available", `$${(primaryAccount?.available || 0).toFixed(2)}`)}
@@ -152,7 +152,7 @@ export default function CustomerDetail() {
         </div>
 
         {/* DETAILS */}
-        <div>
+        <div className="border border-white/10 p-5">
           {asciiHeader("DETAILS")}
           {fieldRow("External ID", customer.external_id)}
           {fieldRow("Email", customer.email)}
@@ -164,7 +164,7 @@ export default function CustomerDetail() {
       </div>
 
       {/* 4. USAGE CHART — full width */}
-      <div className="mb-8">
+      <div className="border border-white/10 p-5 mb-8">
         {asciiHeader("USAGE")}
         <div className="flex gap-6 mb-4">
           {(["30", "7", "90"] as const).map((r) => (
@@ -189,16 +189,16 @@ export default function CustomerDetail() {
       </div>
 
       {/* 5. USAGE EVENTS TABLE — full width */}
-      <div className="mb-8">
+      <div className="border border-white/10 p-5 mb-8">
         {asciiHeader(`USAGE EVENTS (${customerEvents.length})`)}
         <table className="w-full table-fixed">
           <thead>
-            <tr className="border-b border-dashed border-white/20">
-              <th className="w-[20%] px-4 pb-3 text-left font-space text-xs uppercase tracking-wider text-white/40 whitespace-nowrap">Timestamp</th>
-              <th className="w-[20%] px-4 pb-3 text-left font-space text-xs uppercase tracking-wider text-white/40 whitespace-nowrap">Event Type</th>
-              <th className="w-[35%] px-4 pb-3 text-left font-space text-xs uppercase tracking-wider text-white/40 whitespace-nowrap">Dimensions</th>
-              <th className="w-[10%] px-4 pb-3 text-left font-space text-xs uppercase tracking-wider text-white/40 whitespace-nowrap">Status</th>
-              <th className="w-[15%] px-4 pb-3 text-right font-space text-xs uppercase tracking-wider text-white/40 whitespace-nowrap">Cost</th>
+            <tr className="border-b border-white/15">
+              <th className="w-[20%] px-4 py-3 text-left font-space text-xs uppercase tracking-wider text-white/40 whitespace-nowrap">Timestamp</th>
+              <th className="w-[20%] px-4 py-3 text-left font-space text-xs uppercase tracking-wider text-white/40 whitespace-nowrap">Event Type</th>
+              <th className="w-[35%] px-4 py-3 text-left font-space text-xs uppercase tracking-wider text-white/40 whitespace-nowrap">Dimensions</th>
+              <th className="w-[10%] px-4 py-3 text-left font-space text-xs uppercase tracking-wider text-white/40 whitespace-nowrap">Status</th>
+              <th className="w-[15%] px-4 py-3 text-right font-space text-xs uppercase tracking-wider text-white/40 whitespace-nowrap">Cost</th>
             </tr>
           </thead>
           <tbody>
@@ -212,7 +212,7 @@ export default function CustomerDetail() {
               return (
                 <tr
                   key={event.id}
-                  className="border-b border-dotted border-white/[0.08] hover:bg-white/[0.02] cursor-pointer"
+                  className="border-b border-white/10 hover:bg-white/[0.02] cursor-pointer"
                   onClick={() => setSelectedEvent(selectedEvent === event.id ? null : event.id)}
                 >
                   <td className="px-4 py-4 font-ibm-plex text-xs text-white/60 whitespace-nowrap">{formatTime(event.timestamp)}</td>
@@ -252,26 +252,28 @@ export default function CustomerDetail() {
           {showTopups ? "▼" : "▶"} Top-up History ({topups.length})
         </button>
         {showTopups && topups.length > 0 && (
-          <table className="w-full table-fixed mt-4">
-            <thead>
-              <tr className="border-b border-dashed border-white/20">
-                <th className="w-[25%] px-4 pb-3 text-left font-space text-xs uppercase tracking-wider text-white/40 whitespace-nowrap">Date</th>
-                <th className="w-[25%] px-4 pb-3 text-right font-space text-xs uppercase tracking-wider text-white/40 whitespace-nowrap">Amount</th>
-                <th className="w-[30%] px-4 pb-3 text-left font-space text-xs uppercase tracking-wider text-white/40 whitespace-nowrap">Description</th>
-                <th className="w-[20%] px-4 pb-3 text-left font-space text-xs uppercase tracking-wider text-white/40 whitespace-nowrap">Status</th>
-              </tr>
-            </thead>
-            <tbody>
-              {topups.map((tx) => (
-                <tr key={tx.id} className="border-b border-dotted border-white/[0.08] hover:bg-white/[0.02]">
-                  <td className="px-4 py-4 font-ibm-plex text-xs text-white/60">{formatTime(tx.created_at)}</td>
-                  <td className="px-4 py-4 text-right font-ibm-plex text-sm text-[#4ADE80]">+${tx.amount.toFixed(2)}</td>
-                  <td className="px-4 py-4 font-ibm-plex text-xs text-white/60">{tx.description}</td>
-                  <td className="px-4 py-4"><StatusBadge status="processed" /></td>
+          <div className="border border-white/10 mt-4">
+            <table className="w-full table-fixed">
+              <thead>
+                <tr className="border-b border-white/15">
+                  <th className="w-[25%] px-4 py-3 text-left font-space text-xs uppercase tracking-wider text-white/40 whitespace-nowrap">Date</th>
+                  <th className="w-[25%] px-4 py-3 text-right font-space text-xs uppercase tracking-wider text-white/40 whitespace-nowrap">Amount</th>
+                  <th className="w-[30%] px-4 py-3 text-left font-space text-xs uppercase tracking-wider text-white/40 whitespace-nowrap">Description</th>
+                  <th className="w-[20%] px-4 py-3 text-left font-space text-xs uppercase tracking-wider text-white/40 whitespace-nowrap">Status</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
+              </thead>
+              <tbody>
+                {topups.map((tx) => (
+                  <tr key={tx.id} className="border-b border-white/10 hover:bg-white/[0.02]">
+                    <td className="px-4 py-4 font-ibm-plex text-xs text-white/60">{formatTime(tx.created_at)}</td>
+                    <td className="px-4 py-4 text-right font-ibm-plex text-sm text-[#4ADE80]">+${tx.amount.toFixed(2)}</td>
+                    <td className="px-4 py-4 font-ibm-plex text-xs text-white/60">{tx.description}</td>
+                    <td className="px-4 py-4"><StatusBadge status="processed" /></td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
         )}
       </div>
 

@@ -13,11 +13,9 @@ export default function Settings() {
 
   return (
     <div className="space-y-10">
-      <h1 className="font-space text-2xl font-bold uppercase tracking-wider">Settings</h1>
-
       {/* API KEY */}
       <div>
-        <div className="font-space text-xs uppercase tracking-wider text-white/40 border-b border-dashed border-white/15 pb-3 mb-4">┌─ API KEY ────────────────────────────┐</div>
+        <div className="font-space text-xs uppercase tracking-wider text-white/40 border-b border-white/15 pb-3 mb-4">┌─ API KEY ────────────────────────────┐</div>
         <div className="flex items-center gap-3">
           <div className="flex-1 border border-white/[0.08] bg-white/5 px-3 py-2 font-ibm-plex text-sm">
             {showKey ? apiKey : "sk_live_crdyt_" + "•".repeat(32)}
@@ -30,12 +28,12 @@ export default function Settings() {
 
       {/* Connected Accounts */}
       <div>
-        <div className="font-space text-xs uppercase tracking-wider text-white/40 border-b border-dashed border-white/15 pb-3 mb-4">┌─ CONNECTED ACCOUNTS ─────────────────┐</div>
+        <div className="font-space text-xs uppercase tracking-wider text-white/40 border-b border-white/15 pb-3 mb-4">┌─ CONNECTED ACCOUNTS ─────────────────┐</div>
         {[
           { name: "Stripe", id: "acct_1NqOXXXXXXXX" },
           { name: "OpenAI", id: "org-XXXXXXXX" },
         ].map((acct) => (
-          <div key={acct.name} className="flex items-center justify-between py-3 border-b border-white/[0.06]">
+          <div key={acct.name} className="flex items-center justify-between py-3 border-b border-white/10">
             <div className="font-ibm-plex text-sm">
               <span className="font-medium">{acct.name}</span>
               <span className="ml-2 text-xs text-white/40">{acct.id}</span>
@@ -47,13 +45,13 @@ export default function Settings() {
 
       {/* Billing Portal */}
       <div>
-        <div className="font-space text-xs uppercase tracking-wider text-white/40 border-b border-dashed border-white/15 pb-3 mb-4">┌─ BILLING PORTAL ─────────────────────┐</div>
+        <div className="font-space text-xs uppercase tracking-wider text-white/40 border-b border-white/15 pb-3 mb-4">┌─ BILLING PORTAL ─────────────────────┐</div>
         {[
           { label: "Portal URL", value: "https://billing.credyt.ai/portal/your-org" },
           { label: "Customization", value: "Default theme" },
           { label: "Self-service top-ups", value: "Enabled" },
         ].map((row) => (
-          <div key={row.label} className="flex items-center justify-between py-3 border-b border-white/[0.06] font-ibm-plex text-sm">
+          <div key={row.label} className="flex items-center justify-between py-3 border-b border-white/10 font-ibm-plex text-sm">
             <span className="text-white/40">{row.label}</span>
             <span className="text-xs">{row.value}</span>
           </div>
@@ -62,7 +60,7 @@ export default function Settings() {
 
       {/* System Info */}
       <div>
-        <div className="font-space text-xs uppercase tracking-wider text-white/40 border-b border-dashed border-white/15 pb-3 mb-4">┌─ SYSTEM INFO ────────────────────────┐</div>
+        <div className="font-space text-xs uppercase tracking-wider text-white/40 border-b border-white/15 pb-3 mb-4">┌─ SYSTEM INFO ────────────────────────┐</div>
         <pre className="font-ibm-plex text-xs text-white/40">
 {`$ credyt version
 credyt-admin v1.0.0
