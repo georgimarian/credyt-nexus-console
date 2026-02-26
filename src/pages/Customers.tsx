@@ -5,10 +5,13 @@ import { CreateCustomerModal } from "@/components/customers/CreateCustomerModal"
 import { customers as initialCustomers } from "@/data/customers";
 import { Input } from "@/components/ui/input";
 
+const PER_PAGE = 20;
+
 export default function Customers() {
   const [search, setSearch] = useState("");
   const [customerList, setCustomerList] = useState(initialCustomers);
   const [showCreate, setShowCreate] = useState(false);
+  const [page, setPage] = useState(0);
 
   const filtered = customerList.filter(
     (c) =>
@@ -16,6 +19,9 @@ export default function Customers() {
       c.external_id.toLowerCase().includes(search.toLowerCase()) ||
       c.email.toLowerCase().includes(search.toLowerCase())
   );
+
+  const totalPages = Math.ceil(filtered.length / PER_PAGE);
+  const paged = filtered.slice(page * PER_PAGE, (page + 1) * PER_PAGE);
 
   const getAvgDailySpend = (customer: typeof initialCustomers[0]) => {
     const charges = customer.wallet.transactions.filter((t) => t.type === "charge");
@@ -52,13 +58,13 @@ export default function Customers() {
       <Input
         placeholder="Search by name, email, or external_id..."
         value={search}
-        onChange={(e) => setSearch(e.target.value)}
+        onChange={(e) => { setSearch(e.target.value); setPage(0); }}
         className="border-white/[0.08] bg-transparent pl-4 font-ibm-plex text-sm"
       />
 
       <table className="w-full table-fixed">
         <thead>
-          <tr className="border-b border-dashed border-white/15">
+          <tr className="border-b border-dashed border-white/20">
             <th className="w-[30%] px-4 pb-3 text-left font-space text-xs uppercase tracking-wider text-white/40 whitespace-nowrap">Customer</th>
             <th className="w-[25%] px-4 pb-3 text-left font-space text-xs uppercase tracking-wider text-white/40 whitespace-nowrap">Email</th>
             <th className="w-[10%] px-4 pb-3 text-left font-space text-xs uppercase tracking-wider text-white/40 whitespace-nowrap">Status</th>
@@ -68,8 +74,8 @@ export default function Customers() {
           </tr>
         </thead>
         <tbody>
-          {filtered.map((customer) => (
-            <tr key={customer.id} className="border-b border-white/[0.06] hover:bg-white/[0.02] transition-colors">
+          {paged.map((customer) => (
+            <tr key={customer.id} className="border-b border-dotted border-white/[0.08] hover:bg-white/[0.02] transition-colors">
               <td className="px-4 py-4">
                 <Link to={`/customers/${customer.id}`} className="block hover:opacity-80">
                   <div className="font-ibm-plex text-sm font-medium">{customer.name}</div>
@@ -94,6 +100,13 @@ export default function Customers() {
           )}
         </tbody>
       </table>
+
+      {totalPages > 1 && (
+        <div className="flex justify-end items-center gap-4 pt-4 mt-2 border-t border-dotted border-white/10">
+          <button disabled={page === 0} onClick={() => setPage(page - 1)} className="text-xs font-mono uppercase tracking-wide text-white/40 hover:text-white cursor-pointer disabled:text-white/15 disabled:pointer-events-none">← Previous</button>
+          <button disabled={page >= totalPages - 1} onClick={() => setPage(page + 1)} className="text-xs font-mono uppercase tracking-wide text-white/40 hover:text-white cursor-pointer disabled:text-white/15 disabled:pointer-events-none">Next →</button>
+        </div>
+      )}
 
       <CreateCustomerModal
         open={showCreate}

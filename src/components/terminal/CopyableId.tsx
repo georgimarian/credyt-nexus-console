@@ -46,14 +46,14 @@ export function CopyableId({ value, label, href, truncate, size = "xs", classNam
       <button
         onClick={handleCopy}
         className={cn(
-          "inline-flex items-center justify-center text-xs transition-all",
+          "inline-flex items-center justify-center text-xs transition-all cursor-pointer",
           copied
             ? "text-[#4ADE80]"
-            : "text-white/20 opacity-0 group-hover/id:opacity-100 hover:text-white/60 cursor-pointer"
+            : "text-white/25 hover:text-white/70"
         )}
         aria-label={`Copy ${value}`}
       >
-        {copied ? "✓" : "⧉"}
+        {copied ? "✓" : "❐"}
       </button>
     </span>
   );

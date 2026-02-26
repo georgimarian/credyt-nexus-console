@@ -114,7 +114,7 @@ export default function Events() {
             <div
               key={event.id}
               onClick={() => setSelectedId(isSelected ? null : event.id)}
-              className={`grid grid-cols-[180px_1fr_200px] gap-4 items-start py-5 px-4 border-b border-white/[0.06] hover:bg-white/[0.02] cursor-pointer transition-colors ${isSelected ? "bg-white/[0.04] border-l-2 border-l-[#4ADE80]" : ""}`}
+              className={`grid grid-cols-[180px_1fr_200px] gap-4 items-start py-5 px-4 border-b border-dotted border-white/[0.08] hover:bg-white/[0.02] cursor-pointer transition-colors ${isSelected ? "bg-white/[0.04] border-l-2 border-l-[#4ADE80]" : ""}`}
             >
               {/* Zone 1 — LEFT: timestamp + event ID */}
               <div className="shrink-0">
@@ -146,11 +146,13 @@ export default function Events() {
                 )}
               </div>
 
-              {/* Zone 3 — RIGHT: status, revenue, cost */}
+              {/* Zone 3 — RIGHT: status, revenue, cost, search icon */}
               <div className="flex items-start justify-end gap-3">
                 <div className="text-right">
                   <div className="mb-1">
-                    <span className={`${event.status === "processed" ? "text-[#4ADE80]" : "text-[#F87171]"}`}>●</span>
+                    <span className={`inline-flex h-4 w-4 items-center justify-center rounded-full border ${event.status === "processed" ? "border-[#4ADE80]" : "border-[#F87171]"}`}>
+                      <span className={`text-[8px] leading-none ${event.status === "processed" ? "text-[#4ADE80]" : "text-[#F87171]"}`}>{event.status === "processed" ? "✓" : "✗"}</span>
+                    </span>
                   </div>
                   {fee ? (
                     isUsdFee ? (
@@ -167,7 +169,12 @@ export default function Events() {
                     <div className="text-white/30 font-ibm-plex text-sm">—</div>
                   )}
                 </div>
-                <span className="text-white/20 hover:text-white text-sm self-center">→</span>
+                <span
+                  className="text-white/20 hover:text-white/60 text-sm self-center cursor-pointer"
+                  onClick={(e) => { e.stopPropagation(); setSelectedId(event.id); }}
+                >
+                  ⌕
+                </span>
               </div>
             </div>
           );
@@ -175,12 +182,9 @@ export default function Events() {
       </div>
 
       {totalPages > 1 && (
-        <div className="flex items-center justify-between border-t border-white/[0.06] pt-4 font-ibm-plex text-xs text-white/40">
-          <span>Page {page + 1} of {totalPages}</span>
-          <div className="flex gap-2">
-            <button disabled={page === 0} onClick={() => setPage(page - 1)} className="border border-white/30 bg-transparent px-4 py-2 font-space text-xs uppercase tracking-wide text-white hover:bg-white/5 disabled:opacity-30">Prev</button>
-            <button disabled={page >= totalPages - 1} onClick={() => setPage(page + 1)} className="border border-white/30 bg-transparent px-4 py-2 font-space text-xs uppercase tracking-wide text-white hover:bg-white/5 disabled:opacity-30">Next</button>
-          </div>
+        <div className="flex justify-end items-center gap-4 pt-4 mt-2 border-t border-dotted border-white/10">
+          <button disabled={page === 0} onClick={() => setPage(page - 1)} className="text-xs font-mono uppercase tracking-wide text-white/40 hover:text-white cursor-pointer disabled:text-white/15 disabled:pointer-events-none">← Previous</button>
+          <button disabled={page >= totalPages - 1} onClick={() => setPage(page + 1)} className="text-xs font-mono uppercase tracking-wide text-white/40 hover:text-white cursor-pointer disabled:text-white/15 disabled:pointer-events-none">Next →</button>
         </div>
       )}
 

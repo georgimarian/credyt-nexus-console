@@ -1,7 +1,10 @@
+import { useState } from "react";
 import { CopyableId } from "@/components/terminal/CopyableId";
 import { vendors } from "@/data/vendors";
 import { events } from "@/data/events";
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer } from "recharts";
+
+const PER_PAGE = 20;
 
 function formatTime(ts: string) {
   const d = new Date(ts);
@@ -16,9 +19,14 @@ function formatTime(ts: string) {
 const costByVendor = vendors.map((v) => ({ name: v.name, costs: v.total_costs }));
 
 export default function Vendors() {
+  const [page, setPage] = useState(0);
+
   const vendorCosts = events.flatMap((e) =>
     (e.costs || []).map((c) => ({ event_type: e.event_type, customer_name: e.customer_name, timestamp: e.timestamp, ...c }))
-  ).slice(0, 20);
+  );
+
+  const totalPages = Math.ceil(vendorCosts.length / PER_PAGE);
+  const pagedCosts = vendorCosts.slice(page * PER_PAGE, (page + 1) * PER_PAGE);
 
   return (
     <div className="space-y-10">
@@ -32,7 +40,7 @@ export default function Vendors() {
 
       <table className="w-full table-fixed">
         <thead>
-          <tr className="border-b border-dashed border-white/15">
+          <tr className="border-b border-dashed border-white/20">
             <th className="w-[35%] px-4 pb-3 text-left font-space text-xs uppercase tracking-wider text-white/40 whitespace-nowrap">Vendor</th>
             <th className="w-[25%] px-4 pb-3 text-left font-space text-xs uppercase tracking-wider text-white/40 whitespace-nowrap">Code</th>
             <th className="w-[15%] px-4 pb-3 text-left font-space text-xs uppercase tracking-wider text-white/40 whitespace-nowrap">Status</th>
@@ -42,14 +50,19 @@ export default function Vendors() {
         </thead>
         <tbody>
           {vendors.map((v) => (
-            <tr key={v.id} className="border-b border-white/[0.06] hover:bg-white/[0.02]">
+            <tr key={v.id} className="border-b border-dotted border-white/[0.08] hover:bg-white/[0.02]">
               <td className="px-4 py-4">
                 <div className="font-ibm-plex text-sm font-medium">{v.name}</div>
                 <div className="font-ibm-plex text-xs text-white/40 mt-1">{v.id}</div>
               </td>
               <td className="px-4 py-4"><CopyableId value={v.external_id} /></td>
               <td className="px-4 py-4">
-                <span className="text-[#4ADE80]">● <span className="text-white/60 uppercase text-xs">active</span></span>
+                <span className="inline-flex items-center gap-1.5 font-ibm-plex text-xs">
+                  <span className="flex h-4 w-4 items-center justify-center rounded-full border border-[#4ADE80]">
+                    <span className="text-[8px] leading-none text-[#4ADE80]">✓</span>
+                  </span>
+                  <span className="text-white/60 uppercase">active</span>
+                </span>
               </td>
               <td className="px-4 py-4 text-right font-ibm-plex text-sm text-[#F87171]">${v.total_costs.toFixed(2)}</td>
               <td className="px-4 py-4 text-right text-white/40 text-sm">→</td>
@@ -59,7 +72,7 @@ export default function Vendors() {
       </table>
 
       <div>
-        <div className="font-space text-xs uppercase tracking-wider text-white/40 border-b border-dashed border-white/15 pb-3 mb-4">┌─ COSTS BY VENDOR ────────────────────┐</div>
+        <div className="font-space text-xs uppercase tracking-wider text-white/40 border-b border-dashed border-white/20 pb-3 mb-4">┌─ COSTS BY VENDOR ────────────────────┐</div>
         <ResponsiveContainer width="100%" height={200}>
           <BarChart data={costByVendor} layout="vertical">
             <XAxis type="number" tick={{ fontSize: 10, fontFamily: "IBM Plex Mono", fill: "rgba(255,255,255,0.3)" }} />
@@ -71,10 +84,10 @@ export default function Vendors() {
       </div>
 
       <div>
-        <div className="font-space text-xs uppercase tracking-wider text-white/40 border-b border-dashed border-white/15 pb-3 mb-4">┌─ RECENT COSTS ───────────────────────┐</div>
+        <div className="font-space text-xs uppercase tracking-wider text-white/40 border-b border-dashed border-white/20 pb-3 mb-4">┌─ RECENT COSTS ───────────────────────┐</div>
         <table className="w-full table-fixed">
           <thead>
-            <tr className="border-b border-dashed border-white/15">
+            <tr className="border-b border-dashed border-white/20">
               <th className="px-4 pb-3 text-left font-space text-xs uppercase tracking-wider text-white/40 whitespace-nowrap">Time</th>
               <th className="px-4 pb-3 text-right font-space text-xs uppercase tracking-wider text-white/40 whitespace-nowrap">Amount</th>
               <th className="px-4 pb-3 text-left font-space text-xs uppercase tracking-wider text-white/40 whitespace-nowrap">Vendor</th>
@@ -83,8 +96,8 @@ export default function Vendors() {
             </tr>
           </thead>
           <tbody>
-            {vendorCosts.map((c, i) => (
-              <tr key={i} className="border-b border-white/[0.06] hover:bg-white/[0.02]">
+            {pagedCosts.map((c, i) => (
+              <tr key={i} className="border-b border-dotted border-white/[0.08] hover:bg-white/[0.02]">
                 <td className="px-4 py-4 font-ibm-plex text-xs text-white/60">{formatTime(c.timestamp)}</td>
                 <td className="px-4 py-4 text-right font-ibm-plex text-sm text-[#F87171]">${c.amount.toFixed(4)}</td>
                 <td className="px-4 py-4 font-ibm-plex text-xs">{c.vendor_name}</td>
@@ -94,6 +107,12 @@ export default function Vendors() {
             ))}
           </tbody>
         </table>
+        {totalPages > 1 && (
+          <div className="flex justify-end items-center gap-4 pt-4 mt-2 border-t border-dotted border-white/10">
+            <button disabled={page === 0} onClick={() => setPage(page - 1)} className="text-xs font-mono uppercase tracking-wide text-white/40 hover:text-white cursor-pointer disabled:text-white/15 disabled:pointer-events-none">← Previous</button>
+            <button disabled={page >= totalPages - 1} onClick={() => setPage(page + 1)} className="text-xs font-mono uppercase tracking-wide text-white/40 hover:text-white cursor-pointer disabled:text-white/15 disabled:pointer-events-none">Next →</button>
+          </div>
+        )}
       </div>
     </div>
   );

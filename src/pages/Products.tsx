@@ -6,6 +6,8 @@ import { useProductStore } from "@/stores/productStore";
 import { CreateProductWizard } from "@/components/products/CreateProductWizard";
 import { Input } from "@/components/ui/input";
 
+const PER_PAGE = 20;
+
 function formatDate(iso: string) {
   const d = new Date(iso);
   return d.toLocaleString("en-US", { month: "short", day: "numeric", year: "numeric" });
@@ -15,12 +17,16 @@ export default function Products() {
   const { products } = useProductStore();
   const [search, setSearch] = useState("");
   const [showCreate, setShowCreate] = useState(false);
+  const [page, setPage] = useState(0);
 
   const filtered = products.filter(
     (p) =>
       p.code.toLowerCase().includes(search.toLowerCase()) ||
       p.name.toLowerCase().includes(search.toLowerCase())
   );
+
+  const totalPages = Math.ceil(filtered.length / PER_PAGE);
+  const paged = filtered.slice(page * PER_PAGE, (page + 1) * PER_PAGE);
 
   return (
     <div className="space-y-10">
@@ -42,13 +48,13 @@ export default function Products() {
       <Input
         placeholder="Search by code or name..."
         value={search}
-        onChange={(e) => setSearch(e.target.value)}
+        onChange={(e) => { setSearch(e.target.value); setPage(0); }}
         className="border-white/[0.08] bg-transparent pl-4 font-ibm-plex text-sm"
       />
 
       <table className="w-full table-fixed">
         <thead>
-          <tr className="border-b border-dashed border-white/15">
+          <tr className="border-b border-dashed border-white/20">
             <th className="w-[35%] px-4 pb-3 text-left font-space text-xs uppercase tracking-wider text-white/40 whitespace-nowrap">Product Name</th>
             <th className="w-[18%] px-4 pb-3 text-left font-space text-xs uppercase tracking-wider text-white/40 whitespace-nowrap">Product ID</th>
             <th className="w-[10%] px-4 pb-3 text-left font-space text-xs uppercase tracking-wider text-white/40 whitespace-nowrap">Status</th>
@@ -59,14 +65,14 @@ export default function Products() {
           </tr>
         </thead>
         <tbody>
-          {filtered.map((product) => {
+          {paged.map((product) => {
             const version = product.versions[0]?.version || 1;
             const model = product.pricing_model || "USAGE_BASED";
 
             return (
               <tr
                 key={product.id}
-                className="border-b border-white/[0.06] hover:bg-white/[0.02] transition-colors cursor-pointer"
+                className="border-b border-dotted border-white/[0.08] hover:bg-white/[0.02] transition-colors cursor-pointer"
                 onClick={() => {}}
               >
                 <td className="px-4 py-4">
@@ -102,6 +108,13 @@ export default function Products() {
           )}
         </tbody>
       </table>
+
+      {totalPages > 1 && (
+        <div className="flex justify-end items-center gap-4 pt-4 mt-2 border-t border-dotted border-white/10">
+          <button disabled={page === 0} onClick={() => setPage(page - 1)} className="text-xs font-mono uppercase tracking-wide text-white/40 hover:text-white cursor-pointer disabled:text-white/15 disabled:pointer-events-none">← Previous</button>
+          <button disabled={page >= totalPages - 1} onClick={() => setPage(page + 1)} className="text-xs font-mono uppercase tracking-wide text-white/40 hover:text-white cursor-pointer disabled:text-white/15 disabled:pointer-events-none">Next →</button>
+        </div>
+      )}
     </div>
   );
 }

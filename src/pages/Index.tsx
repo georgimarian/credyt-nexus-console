@@ -30,7 +30,6 @@ function generateChartData() {
 }
 
 const chartData = generateChartData();
-
 const recentEvents = events.slice(0, 5);
 
 function formatTime(ts: string) {
@@ -82,7 +81,7 @@ export default function Overview() {
                 ? `$${event.fees[0].amount.toFixed(4)}`
                 : "";
               return (
-                <div key={event.id} className="flex items-center gap-3 border-b border-white/[0.06] py-3">
+                <div key={event.id} className="flex items-center gap-3 border-b border-dotted border-white/[0.08] py-3">
                   <span className="font-ibm-plex text-xs text-white/40 w-28 shrink-0">{formatTime(event.timestamp)}</span>
                   <span className="font-ibm-plex text-xs font-medium flex-1">{event.customer_name}</span>
                   <span className="font-ibm-plex text-xs text-white/50">{event.event_type}</span>
@@ -108,7 +107,7 @@ export default function Overview() {
               { type: "image_generation", count: 12, revenue: 0.48, cost: 0.29, margin: 40 },
               { type: "api_call", count: 5, revenue: 0.01, cost: 0.00, margin: 100 },
             ].map((row, i, arr) => (
-              <div key={row.type} className={`pb-5 ${i < arr.length - 1 ? "border-b border-white/[0.08] mb-5" : ""}`}>
+              <div key={row.type} className={`pb-5 ${i < arr.length - 1 ? "border-b border-dotted border-white/[0.08] mb-5" : ""}`}>
                 <div className="flex items-baseline justify-between">
                   <div>
                     <span className="font-mono text-sm text-white">{row.type}</span>
@@ -162,7 +161,7 @@ export default function Overview() {
               const isLowCr = cr && cr.available > 0 && cr.available < 100;
               const isLow = isLowUsd || isLowCr;
               return (
-                <div key={c.id} className="flex items-center justify-between py-3 border-b border-white/[0.08]">
+                <div key={c.id} className="flex items-center justify-between py-3 border-b border-dotted border-white/[0.08]">
                   <div>
                     <div className="font-mono text-sm font-medium text-white">{c.name}</div>
                     <div className="text-xs text-white/30 font-mono mt-0.5">{c.id}</div>

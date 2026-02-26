@@ -2,6 +2,8 @@ import { useState } from "react";
 import { StatusBadge } from "@/components/terminal/StatusBadge";
 import { webhooks } from "@/data/webhooks";
 
+const PER_PAGE = 20;
+
 function formatTime(ts: string) {
   const d = new Date(ts);
   const mo = d.toLocaleString("en-US", { month: "short" });
@@ -14,6 +16,10 @@ function formatTime(ts: string) {
 
 export default function Webhooks() {
   const [expandedId, setExpandedId] = useState<string | null>(null);
+  const [page, setPage] = useState(0);
+
+  const totalPages = Math.ceil(webhooks.length / PER_PAGE);
+  const paged = webhooks.slice(page * PER_PAGE, (page + 1) * PER_PAGE);
 
   return (
     <div className="space-y-10">
@@ -27,7 +33,7 @@ export default function Webhooks() {
 
       <table className="w-full table-fixed">
         <thead>
-          <tr className="border-b border-dashed border-white/15">
+          <tr className="border-b border-dashed border-white/20">
             <th className="w-[40%] px-4 pb-3 text-left font-space text-xs uppercase tracking-wider text-white/40 whitespace-nowrap">Endpoint URL</th>
             <th className="w-[25%] px-4 pb-3 text-left font-space text-xs uppercase tracking-wider text-white/40 whitespace-nowrap">Events</th>
             <th className="w-[10%] px-4 pb-3 text-left font-space text-xs uppercase tracking-wider text-white/40 whitespace-nowrap">Status</th>
@@ -36,8 +42,8 @@ export default function Webhooks() {
           </tr>
         </thead>
         <tbody>
-          {webhooks.map((wh) => (
-            <tr key={wh.id} className="border-b border-white/[0.06] hover:bg-white/[0.02] cursor-pointer" onClick={() => setExpandedId(expandedId === wh.id ? null : wh.id)}>
+          {paged.map((wh) => (
+            <tr key={wh.id} className="border-b border-dotted border-white/[0.08] hover:bg-white/[0.02] cursor-pointer" onClick={() => setExpandedId(expandedId === wh.id ? null : wh.id)}>
               <td className="px-4 py-4 font-ibm-plex text-sm font-light truncate">{wh.url}</td>
               <td className="px-4 py-4 font-ibm-plex text-xs text-white/60">{wh.events.join(", ")}</td>
               <td className="px-4 py-4"><StatusBadge status={wh.status} /></td>
@@ -54,6 +60,13 @@ export default function Webhooks() {
         </tbody>
       </table>
 
+      {totalPages > 1 && (
+        <div className="flex justify-end items-center gap-4 pt-4 mt-2 border-t border-dotted border-white/10">
+          <button disabled={page === 0} onClick={() => setPage(page - 1)} className="text-xs font-mono uppercase tracking-wide text-white/40 hover:text-white cursor-pointer disabled:text-white/15 disabled:pointer-events-none">← Previous</button>
+          <button disabled={page >= totalPages - 1} onClick={() => setPage(page + 1)} className="text-xs font-mono uppercase tracking-wide text-white/40 hover:text-white cursor-pointer disabled:text-white/15 disabled:pointer-events-none">Next →</button>
+        </div>
+      )}
+
       {expandedId && (() => {
         const wh = webhooks.find(w => w.id === expandedId);
         if (!wh) return null;
@@ -68,7 +81,7 @@ export default function Webhooks() {
             <div className="font-space text-xs uppercase tracking-wider text-white/40 mb-3">Recent Deliveries</div>
             <table className="w-full table-fixed">
               <thead>
-                <tr className="border-b border-dashed border-white/15">
+                <tr className="border-b border-dashed border-white/20">
                   <th className="px-4 pb-3 text-left font-space text-xs uppercase tracking-wider text-white/40">Time</th>
                   <th className="px-4 pb-3 text-left font-space text-xs uppercase tracking-wider text-white/40">Status</th>
                   <th className="px-4 pb-3 text-left font-space text-xs uppercase tracking-wider text-white/40">Event</th>
@@ -77,7 +90,7 @@ export default function Webhooks() {
               </thead>
               <tbody>
                 {wh.deliveries.map((del) => (
-                  <tr key={del.id} className="border-b border-white/[0.06] hover:bg-white/[0.02]">
+                  <tr key={del.id} className="border-b border-dotted border-white/[0.08] hover:bg-white/[0.02]">
                     <td className="px-4 py-4 font-ibm-plex text-xs text-white/60">{formatTime(del.delivered_at)}</td>
                     <td className={`px-4 py-4 font-ibm-plex text-xs font-medium ${del.status_code < 300 ? "text-[#4ADE80]" : "text-[#F87171]"}`}>{del.status_code}</td>
                     <td className="px-4 py-4 font-ibm-plex text-xs">{del.event_type}</td>
