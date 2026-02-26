@@ -50,7 +50,6 @@ export default function Events() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="font-space text-2xl font-bold uppercase tracking-wider mb-2">Events</h1>
         <p className="font-space text-xs uppercase tracking-widest text-white/40">
           {events.length} Events · Today: {todayCount}
         </p>
@@ -98,7 +97,7 @@ export default function Events() {
       </div>
 
       {/* Event feed */}
-      <div>
+      <div className="border border-white/10">
         {paged.map((event) => {
           const cust = customerMap.get(event.customer_id);
           const isSelected = selectedId === event.id;
@@ -107,22 +106,18 @@ export default function Events() {
           const dims = event.properties ? Object.entries(event.properties) : [];
           const visibleDims = dims.slice(0, MAX_TAGS);
           const hiddenCount = dims.length - MAX_TAGS;
-
           const isUsdFee = fee && fee.asset_code === "USD";
 
           return (
             <div
               key={event.id}
               onClick={() => setSelectedId(isSelected ? null : event.id)}
-              className={`grid grid-cols-[180px_1fr_200px] gap-4 items-start py-5 px-4 border-b border-dotted border-white/[0.08] hover:bg-white/[0.02] cursor-pointer transition-colors ${isSelected ? "bg-white/[0.04] border-l-2 border-l-[#4ADE80]" : ""}`}
+              className={`grid grid-cols-[180px_1fr_200px] gap-4 items-start py-5 px-4 border-b border-white/10 hover:bg-white/[0.02] cursor-pointer transition-colors last:border-b-0 ${isSelected ? "bg-white/[0.04] border-l-2 border-l-[#4ADE80]" : ""}`}
             >
-              {/* Zone 1 — LEFT: timestamp + event ID */}
               <div className="shrink-0">
                 <div className="font-ibm-plex text-xs text-white/40">{formatTimeParts(event.timestamp)}</div>
                 <div className="font-ibm-plex text-xs text-white/20 mt-0.5">{event.id}</div>
               </div>
-
-              {/* Zone 2 — CENTER: event type, customer, dimensions */}
               <div className="min-w-0">
                 <div className="flex items-center flex-wrap">
                   <span className="font-ibm-plex text-sm font-bold text-white">{event.event_type}</span>
@@ -135,18 +130,12 @@ export default function Events() {
                 {dims.length > 0 && (
                   <div className="flex flex-wrap gap-1.5 mt-2">
                     {visibleDims.map(([k, v]) => (
-                      <span key={k} className="bg-white/5 px-2 py-0.5 text-xs font-ibm-plex text-white/50">
-                        {k}:{String(v)}
-                      </span>
+                      <span key={k} className="bg-white/5 px-2 py-0.5 text-xs font-ibm-plex text-white/50">{k}:{String(v)}</span>
                     ))}
-                    {hiddenCount > 0 && (
-                      <span className="text-white/20 text-xs font-ibm-plex self-center">+{hiddenCount} more</span>
-                    )}
+                    {hiddenCount > 0 && <span className="text-white/20 text-xs font-ibm-plex self-center">+{hiddenCount} more</span>}
                   </div>
                 )}
               </div>
-
-              {/* Zone 3 — RIGHT: status, revenue, cost, search icon */}
               <div className="flex items-start justify-end gap-3">
                 <div className="text-right">
                   <div className="mb-1">
@@ -158,9 +147,7 @@ export default function Events() {
                     isUsdFee ? (
                       <>
                         <div className="text-[#4ADE80] font-ibm-plex font-bold text-base">${fee.amount.toFixed(fee.amount < 0.01 ? 4 : 2)}</div>
-                        {cost && (
-                          <div className="text-[#F87171] font-ibm-plex text-xs mt-0.5">${cost.amount.toFixed(cost.amount < 0.01 ? 4 : 2)}</div>
-                        )}
+                        {cost && <div className="text-[#F87171] font-ibm-plex text-xs mt-0.5">${cost.amount.toFixed(cost.amount < 0.01 ? 4 : 2)}</div>}
                       </>
                     ) : (
                       <div className="text-white/60 font-ibm-plex font-bold text-base">{fee.amount.toLocaleString()} {fee.asset_code}</div>
@@ -169,12 +156,7 @@ export default function Events() {
                     <div className="text-white/30 font-ibm-plex text-sm">—</div>
                   )}
                 </div>
-                <span
-                  className="text-white/20 hover:text-white/60 text-sm self-center cursor-pointer"
-                  onClick={(e) => { e.stopPropagation(); setSelectedId(event.id); }}
-                >
-                  ⌕
-                </span>
+                <span className="text-white/20 hover:text-white/60 text-sm self-center cursor-pointer" onClick={(e) => { e.stopPropagation(); setSelectedId(event.id); }}>⌕</span>
               </div>
             </div>
           );
@@ -182,18 +164,14 @@ export default function Events() {
       </div>
 
       {totalPages > 1 && (
-        <div className="flex justify-end items-center gap-4 pt-4 mt-2 border-t border-dotted border-white/10">
+        <div className="flex justify-end items-center gap-4 pt-4 mt-2 border-t border-white/10">
           <button disabled={page === 0} onClick={() => setPage(page - 1)} className="text-xs font-mono uppercase tracking-wide text-white/40 hover:text-white cursor-pointer disabled:text-white/15 disabled:pointer-events-none">← Previous</button>
           <button disabled={page >= totalPages - 1} onClick={() => setPage(page + 1)} className="text-xs font-mono uppercase tracking-wide text-white/40 hover:text-white cursor-pointer disabled:text-white/15 disabled:pointer-events-none">Next →</button>
         </div>
       )}
 
       {selectedEvent && (
-        <EventDetailSheet
-          event={selectedEvent}
-          customerExternalId={selectedCust?.external_id}
-          onClose={() => setSelectedId(null)}
-        />
+        <EventDetailSheet event={selectedEvent} customerExternalId={selectedCust?.external_id} onClose={() => setSelectedId(null)} />
       )}
     </div>
   );

@@ -43,10 +43,7 @@ export default function Customers() {
   return (
     <div className="space-y-10">
       <div className="flex items-center justify-between">
-        <div>
-          <h1 className="font-space text-2xl font-bold uppercase tracking-wider mb-1">Customers</h1>
-          <p className="font-ibm-plex text-sm text-white/40">{customerList.length} customers</p>
-        </div>
+        <p className="font-ibm-plex text-sm text-white/40">{customerList.length} customers</p>
         <button
           onClick={() => setShowCreate(true)}
           className="border border-white/30 bg-transparent px-4 py-2 font-space text-xs uppercase tracking-wide text-white hover:bg-white/5"
@@ -62,47 +59,45 @@ export default function Customers() {
         className="border-white/[0.08] bg-transparent pl-4 font-ibm-plex text-sm"
       />
 
-      <table className="w-full table-fixed">
-        <thead>
-          <tr className="border-b border-dashed border-white/20">
-            <th className="w-[30%] px-4 pb-3 text-left font-space text-xs uppercase tracking-wider text-white/40 whitespace-nowrap">Customer</th>
-            <th className="w-[25%] px-4 pb-3 text-left font-space text-xs uppercase tracking-wider text-white/40 whitespace-nowrap">Email</th>
-            <th className="w-[10%] px-4 pb-3 text-left font-space text-xs uppercase tracking-wider text-white/40 whitespace-nowrap">Status</th>
-            <th className="w-[15%] px-4 pb-3 text-right font-space text-xs uppercase tracking-wider text-white/40 whitespace-nowrap">Balance</th>
-            <th className="w-[12%] px-4 pb-3 text-right font-space text-xs uppercase tracking-wider text-white/40 whitespace-nowrap">Avg Daily</th>
-            <th className="w-[8%] px-4 pb-3"></th>
-          </tr>
-        </thead>
-        <tbody>
-          {paged.map((customer) => (
-            <tr key={customer.id} className="border-b border-dotted border-white/[0.08] hover:bg-white/[0.02] transition-colors">
-              <td className="px-4 py-4">
-                <Link to={`/customers/${customer.id}`} className="block hover:opacity-80">
-                  <div className="font-ibm-plex text-sm font-medium">{customer.name}</div>
-                  <div className="font-ibm-plex text-xs text-white/40 mt-1">{customer.id}</div>
-                </Link>
-              </td>
-              <td className="px-4 py-4 font-ibm-plex text-sm font-light text-white/60">{customer.email}</td>
-              <td className="px-4 py-4"><StatusBadge status={customer.status} /></td>
-              <td className="px-4 py-4 text-right font-ibm-plex text-sm font-light">{getBalance(customer)}</td>
-              <td className="px-4 py-4 text-right font-ibm-plex text-sm font-light text-white/40">${getAvgDailySpend(customer).toFixed(2)}</td>
-              <td className="px-4 py-4 text-right">
-                <Link to={`/customers/${customer.id}`} className="text-white/40 hover:text-white text-sm">→</Link>
-              </td>
+      <div className="border border-white/10">
+        <table className="w-full table-fixed">
+          <thead>
+            <tr className="border-b border-white/15">
+              <th className="w-[30%] px-4 py-3 text-left font-space text-xs uppercase tracking-wider text-white/40 whitespace-nowrap">Customer</th>
+              <th className="w-[25%] px-4 py-3 text-left font-space text-xs uppercase tracking-wider text-white/40 whitespace-nowrap">Email</th>
+              <th className="w-[10%] px-4 py-3 text-left font-space text-xs uppercase tracking-wider text-white/40 whitespace-nowrap">Status</th>
+              <th className="w-[15%] px-4 py-3 text-right font-space text-xs uppercase tracking-wider text-white/40 whitespace-nowrap">Balance</th>
+              <th className="w-[12%] px-4 py-3 text-right font-space text-xs uppercase tracking-wider text-white/40 whitespace-nowrap">Avg Daily</th>
+              <th className="w-[8%] px-4 py-3"></th>
             </tr>
-          ))}
-          {filtered.length === 0 && (
-            <tr>
-              <td colSpan={6} className="px-4 py-12 text-center font-ibm-plex text-sm text-white/40">
-                No customers found matching "{search}"
-              </td>
-            </tr>
-          )}
-        </tbody>
-      </table>
+          </thead>
+          <tbody>
+            {paged.map((customer) => (
+              <tr key={customer.id} className="border-b border-white/10 hover:bg-white/[0.02] transition-colors">
+                <td className="px-4 py-4">
+                  <Link to={`/customers/${customer.id}`} className="block hover:opacity-80">
+                    <div className="font-ibm-plex text-sm font-medium">{customer.name}</div>
+                    <div className="font-ibm-plex text-xs text-white/40 mt-1">{customer.id}</div>
+                  </Link>
+                </td>
+                <td className="px-4 py-4 font-ibm-plex text-sm font-light text-white/60">{customer.email}</td>
+                <td className="px-4 py-4"><StatusBadge status={customer.status} /></td>
+                <td className="px-4 py-4 text-right font-ibm-plex text-sm font-light">{getBalance(customer)}</td>
+                <td className="px-4 py-4 text-right font-ibm-plex text-sm font-light text-white/40">${getAvgDailySpend(customer).toFixed(2)}</td>
+                <td className="px-4 py-4 text-right">
+                  <Link to={`/customers/${customer.id}`} className="text-white/40 hover:text-white text-sm">→</Link>
+                </td>
+              </tr>
+            ))}
+            {filtered.length === 0 && (
+              <tr><td colSpan={6} className="px-4 py-12 text-center font-ibm-plex text-sm text-white/40">No customers found matching "{search}"</td></tr>
+            )}
+          </tbody>
+        </table>
+      </div>
 
       {totalPages > 1 && (
-        <div className="flex justify-end items-center gap-4 pt-4 mt-2 border-t border-dotted border-white/10">
+        <div className="flex justify-end items-center gap-4 pt-4 mt-2 border-t border-white/10">
           <button disabled={page === 0} onClick={() => setPage(page - 1)} className="text-xs font-mono uppercase tracking-wide text-white/40 hover:text-white cursor-pointer disabled:text-white/15 disabled:pointer-events-none">← Previous</button>
           <button disabled={page >= totalPages - 1} onClick={() => setPage(page + 1)} className="text-xs font-mono uppercase tracking-wide text-white/40 hover:text-white cursor-pointer disabled:text-white/15 disabled:pointer-events-none">Next →</button>
         </div>

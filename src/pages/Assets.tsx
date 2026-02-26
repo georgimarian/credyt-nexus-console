@@ -26,10 +26,7 @@ export default function Assets() {
   return (
     <div className="space-y-10">
       <div className="flex items-center justify-between">
-        <div>
-          <h1 className="font-space text-2xl font-bold uppercase tracking-wider">Assets</h1>
-          <p className="font-ibm-plex text-sm text-white/40 mt-1">{assetList.length} assets configured</p>
-        </div>
+        <p className="font-ibm-plex text-sm text-white/40">{assetList.length} assets configured</p>
         <button
           onClick={() => setModalOpen(true)}
           className="border border-white/30 bg-transparent px-4 py-2 font-space text-xs uppercase tracking-wide text-white hover:bg-white/5"
