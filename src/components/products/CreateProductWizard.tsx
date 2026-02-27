@@ -295,7 +295,7 @@ export function CreateProductWizard({ onClose, onBack, prefilled }: CreateProduc
                       className={`w-full text-left p-6 transition-all ${
                         selected
                           ? "border border-[#4ADE80]/40 bg-[#4ADE80]/5"
-                          : "border border-white/10 bg-[#0F0F0F] hover:border-white/25"
+                          : "border border-white/10 bg-card hover:border-white/25"
                       }`}
                     >
                       <div className="flex items-center justify-between mb-2">

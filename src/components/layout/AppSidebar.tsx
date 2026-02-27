@@ -1,18 +1,19 @@
 import { NavLink, useLocation } from "react-router-dom";
 import { cn } from "@/lib/utils";
+import { Home, Zap, Users, Package, Coins, Building2, Webhook, Settings, Users2, Code2, LifeBuoy } from "lucide-react";
 
 const navItems = [
-  { label: "Overview", path: "/" },
-  { label: "Products", path: "/products" },
-  { label: "Customers", path: "/customers" },
-  { label: "Events", path: "/events" },
-  { label: "Assets", path: "/assets" },
-  { label: "Vendors", path: "/vendors" },
-  { label: "Webhooks", path: "/webhooks" },
+  { label: "Overview", path: "/", icon: Home },
+  { label: "Products", path: "/products", icon: Package },
+  { label: "Customers", path: "/customers", icon: Users },
+  { label: "Events", path: "/events", icon: Zap },
+  { label: "Assets", path: "/assets", icon: Coins },
+  { label: "Vendors", path: "/vendors", icon: Building2 },
+  { label: "Webhooks", path: "/webhooks", icon: Webhook },
 ];
 
 const bottomItems = [
-  { label: "Settings", path: "/settings" },
+  { label: "Settings", path: "/settings", icon: Settings },
 ];
 
 interface AppSidebarProps {
@@ -28,25 +29,27 @@ export function AppSidebar({ collapsed, onToggle }: AppSidebarProps) {
 
   const renderNavItem = (item: typeof navItems[0]) => {
     const active = isActive(item.path);
+    const Icon = item.icon;
     return (
       <NavLink
         key={item.path}
         to={item.path}
         className={cn(
-          "block py-2 px-4 font-space text-sm transition-colors",
+          "flex items-center py-2 px-4 font-space text-sm transition-colors",
           active
             ? "text-white font-medium"
             : "text-white/40 hover:text-white/70"
         )}
         title={collapsed ? item.label : undefined}
       >
+        <Icon className={cn("w-4 h-4 mr-3 shrink-0", active ? "text-white" : "text-white/40")} />
         {!collapsed && <span>{item.label}</span>}
       </NavLink>
     );
   };
 
   return (
-    <aside className="flex h-screen w-52 flex-col border-r border-dotted border-white/[0.08] fixed" style={{ backgroundColor: "#0A0B0E" }}>
+    <aside className="flex h-screen w-52 flex-col border-r border-dotted border-white/[0.08] fixed bg-sidebar">
       {/* Logo */}
       <div className="flex h-14 items-center px-4 border-b border-dotted border-white/[0.08]">
         <span className="font-space text-lg font-bold tracking-wider text-white">

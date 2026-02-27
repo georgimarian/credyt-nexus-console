@@ -224,7 +224,7 @@ export function AddPriceWizard({ product, onClose, onPriceAdded }: AddPriceWizar
                     </div>
                     <div>
                       <label className="block font-space text-xs uppercase tracking-wider text-white/40 mb-2">Asset</label>
-                      <select value={assetCode} onChange={(e) => setAssetCode(e.target.value)} className={`${inputCls} bg-[#111]`}>
+                      <select value={assetCode} onChange={(e) => setAssetCode(e.target.value)} className={`${inputCls} bg-card`}>
                         <option value="USD">USD</option>
                         <option value="CREDITS">CREDITS</option>
                       </select>

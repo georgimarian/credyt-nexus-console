@@ -7,7 +7,6 @@ import { Input } from "@/components/ui/input";
 
 const PER_PAGE = 20;
 
-// Mock enrichment data per customer id
 const customerMeta: Record<string, { spendMo: number; margin: number | null; runway: number | null }> = {
   cust_01: { spendMo: 1.82, margin: 42, runway: Infinity as any },
   cust_02: { spendMo: 0.48, margin: 38, runway: 182 },
@@ -20,17 +19,17 @@ const customerMeta: Record<string, { spendMo: number; margin: number | null; run
 };
 
 function runwayColor(days: number | null) {
-  if (days === null || !isFinite(days as number)) return "text-[#4ADE80]";
-  if ((days as number) > 30) return "text-[#4ADE80]";
-  if ((days as number) >= 7) return "text-[#FACC15]";
-  return "text-[#F87171]";
+  if (days === null || !isFinite(days as number)) return "text-green-400";
+  if ((days as number) > 30) return "text-green-400";
+  if ((days as number) >= 7) return "text-amber-400";
+  return "text-red-400";
 }
 
 function marginColor(m: number | null) {
   if (m === null) return "text-white/30";
-  if (m > 40) return "text-[#4ADE80]";
-  if (m >= 20) return "text-[#FACC15]";
-  return "text-[#F87171]";
+  if (m > 40) return "text-green-400";
+  if (m >= 20) return "text-amber-400";
+  return "text-red-400";
 }
 
 export default function Customers() {
@@ -57,10 +56,6 @@ export default function Customers() {
     return totalSpend / days;
   };
 
-  const getBalance = (customer: typeof initialCustomers[0]) => {
-    return customer.wallet.accounts;
-  };
-
   const formatAccountBalance = (account: { asset_code: string; available: number }) => {
     if (account.asset_code === "USD") {
       return `$${account.available.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
@@ -71,10 +66,10 @@ export default function Customers() {
   return (
     <div className="space-y-10">
       <div className="flex items-center justify-between">
-        <p className="font-ibm-plex text-sm text-white/40">{customerList.length} customers</p>
+        <p className="font-mono text-xs text-white/40 mb-6">{customerList.length} customers</p>
         <button
           onClick={() => setShowCreate(true)}
-          className="border border-dotted border-white/30 bg-transparent px-4 py-2 font-space text-xs uppercase tracking-wide text-white hover:bg-white/5"
+          className="border border-dotted border-white/30 bg-transparent px-4 py-2 font-mono text-xs uppercase tracking-wide text-white hover:bg-white/5"
         >
           + New Customer
         </button>
@@ -84,21 +79,21 @@ export default function Customers() {
         placeholder="Search by name, email, or external_id..."
         value={search}
         onChange={(e) => { setSearch(e.target.value); setPage(0); }}
-        className="border-white/[0.08] bg-transparent pl-4 font-ibm-plex text-sm"
+        className="border-white/[0.08] bg-transparent pl-4 font-mono text-sm"
       />
 
       <div className="border border-dotted border-white/10">
         <table className="w-full table-fixed">
           <thead>
             <tr className="border-b border-dotted border-white/20">
-              <th className="w-[30%] px-4 py-3 text-left font-space text-xs uppercase tracking-wider text-white/40 whitespace-nowrap">Customer</th>
-              <th className="w-[18%] px-4 py-3 text-left font-space text-xs uppercase tracking-wider text-white/40 whitespace-nowrap">Email</th>
-              <th className="w-[8%] px-4 py-3 text-left font-space text-xs uppercase tracking-wider text-white/40 whitespace-nowrap">Status</th>
-              <th className="w-[10%] px-4 py-3 text-right font-space text-xs uppercase tracking-wider text-white/40 whitespace-nowrap">Balance</th>
-              <th className="w-[8%] px-4 py-3 text-right font-space text-xs uppercase tracking-wider text-white/40 whitespace-nowrap">Avg Daily</th>
-              <th className="w-[8%] px-4 py-3 text-right font-space text-xs uppercase tracking-wider text-white/40 whitespace-nowrap">Spend/Mo</th>
-              <th className="w-[7%] px-4 py-3 text-right font-space text-xs uppercase tracking-wider text-white/40 whitespace-nowrap">Margin</th>
-              <th className="w-[7%] px-4 py-3 text-right font-space text-xs uppercase tracking-wider text-white/40 whitespace-nowrap">Runway</th>
+              <th className="w-[30%] px-4 py-3 text-left font-mono text-xs uppercase tracking-wider text-white/40 whitespace-nowrap">Customer</th>
+              <th className="w-[18%] px-4 py-3 text-left font-mono text-xs uppercase tracking-wider text-white/40 whitespace-nowrap">Email</th>
+              <th className="w-[8%] px-4 py-3 text-left font-mono text-xs uppercase tracking-wider text-white/40 whitespace-nowrap">Status</th>
+              <th className="w-[10%] px-4 py-3 text-right font-mono text-xs uppercase tracking-wider text-white/40 whitespace-nowrap">Balance</th>
+              <th className="w-[8%] px-4 py-3 text-right font-mono text-xs uppercase tracking-wider text-white/40 whitespace-nowrap">Avg Daily</th>
+              <th className="w-[8%] px-4 py-3 text-right font-mono text-xs uppercase tracking-wider text-white/40 whitespace-nowrap">Spend/Mo</th>
+              <th className="w-[7%] px-4 py-3 text-right font-mono text-xs uppercase tracking-wider text-white/40 whitespace-nowrap">Margin</th>
+              <th className="w-[7%] px-4 py-3 text-right font-mono text-xs uppercase tracking-wider text-white/40 whitespace-nowrap">Runway</th>
               <th className="w-[4%] px-4 py-3"></th>
             </tr>
           </thead>
@@ -111,21 +106,21 @@ export default function Customers() {
                 <tr key={customer.id} className="border-b border-dotted border-white/10 hover:bg-white/[0.02] transition-colors">
                   <td className="px-4 py-4">
                     <Link to={`/customers/${customer.id}`} className="block hover:opacity-80">
-                      <div className="font-ibm-plex text-sm font-medium">{customer.name}</div>
-                      <div className="font-ibm-plex text-xs text-white/30 mt-0.5">{customer.id}</div>
+                      <div className="font-mono text-sm font-medium">{customer.name}</div>
+                      <div className="font-mono text-xs text-white/30 mt-0.5">{customer.id}</div>
                     </Link>
                   </td>
-                  <td className="px-4 py-4 font-ibm-plex text-sm font-light text-white/60 truncate">{customer.email}</td>
+                  <td className="px-4 py-4 font-mono text-sm font-light text-white/60 truncate">{customer.email}</td>
                   <td className="px-4 py-4"><StatusBadge status={customer.status} /></td>
                   <td className="px-4 py-4 text-right">
                     {customer.wallet.accounts.map((acc, i) => (
-                      <div key={acc.asset_code} className={`font-ibm-plex font-mono ${i === 0 ? "text-sm font-bold text-white" : "text-xs text-teal-400 mt-0.5"}`}>
+                      <div key={acc.asset_code} className={`font-mono ${i === 0 ? "text-sm font-bold text-white" : "text-xs text-teal-400 mt-0.5"}`}>
                         {formatAccountBalance(acc)}
                       </div>
                     ))}
                   </td>
-                  <td className="px-4 py-4 text-right font-ibm-plex text-sm font-mono text-white/70">${getAvgDailySpend(customer).toFixed(2)}</td>
-                  <td className="px-4 py-4 text-right font-mono text-sm text-[#4ADE80]">${meta.spendMo.toFixed(2)}</td>
+                  <td className="px-4 py-4 text-right font-mono text-sm text-white/70">${getAvgDailySpend(customer).toFixed(2)}</td>
+                  <td className="px-4 py-4 text-right font-mono text-sm text-green-400">${meta.spendMo.toFixed(2)}</td>
                   <td className={`px-4 py-4 text-right font-mono text-sm ${marginColor(meta.margin)}`}>{meta.margin !== null ? `${meta.margin}%` : "—"}</td>
                   <td className="px-4 py-4 text-right">
                     {customer.wallet.accounts.length > 1 ? (
@@ -145,7 +140,7 @@ export default function Customers() {
               );
             })}
             {filtered.length === 0 && (
-              <tr><td colSpan={9} className="px-4 py-12 text-center font-ibm-plex text-sm text-white/40">No customers found matching "{search}"</td></tr>
+              <tr><td colSpan={9} className="px-4 py-12 text-center font-mono text-sm text-white/40">No customers found matching "{search}"</td></tr>
             )}
           </tbody>
         </table>

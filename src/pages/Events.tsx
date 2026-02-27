@@ -50,7 +50,7 @@ export default function Events() {
   return (
     <div className="space-y-6">
       <div>
-        <p className="font-space text-xs uppercase tracking-widest text-white/40">
+        <p className="font-mono text-xs text-white/40 mb-6">
           {events.length} Events · Today: {todayCount}
         </p>
       </div>
@@ -61,12 +61,12 @@ export default function Events() {
           placeholder="Search by customer or event ID..."
           value={search}
           onChange={(e) => { setSearch(e.target.value); setPage(0); }}
-          className="w-64 shrink-0 border-white/[0.08] bg-transparent pl-4 font-ibm-plex text-sm"
+          className="w-64 shrink-0 border-white/[0.08] bg-transparent pl-4 font-mono text-sm"
         />
         <button
           onClick={() => { setTypeFilter(""); setPage(0); }}
-          className={`border text-xs px-3 py-1 font-ibm-plex cursor-pointer ${
-            typeFilter === "" ? "border-[#4ADE80] text-[#4ADE80] bg-[#4ADE80]/5" : "border-white/20 text-white/50 hover:border-white/40"
+          className={`border text-xs px-3 py-1 font-mono cursor-pointer ${
+            typeFilter === "" ? "border-green-400 text-green-400 bg-green-400/5" : "border-white/20 text-white/50 hover:border-white/40"
           }`}
         >
           ALL
@@ -75,8 +75,8 @@ export default function Events() {
           <button
             key={t}
             onClick={() => { setTypeFilter(typeFilter === t ? "" : t); setPage(0); }}
-            className={`border text-xs px-3 py-1 font-ibm-plex cursor-pointer whitespace-nowrap ${
-              typeFilter === t ? "border-[#4ADE80] text-[#4ADE80] bg-[#4ADE80]/5" : "border-white/20 text-white/50 hover:border-white/40"
+            className={`border text-xs px-3 py-1 font-mono cursor-pointer whitespace-nowrap ${
+              typeFilter === t ? "border-green-400 text-green-400 bg-green-400/5" : "border-white/20 text-white/50 hover:border-white/40"
             }`}
           >
             {t}
@@ -85,12 +85,12 @@ export default function Events() {
       </div>
 
       {/* Summary bar */}
-      <div className="flex items-center justify-end gap-1 text-xs font-ibm-plex">
+      <div className="flex items-center justify-end gap-1 text-xs font-mono">
         <span className="text-white/40">revenue:</span>
-        <span className="text-[#4ADE80]">${summary.revenue.toFixed(2)}</span>
+        <span className="text-green-400">${summary.revenue.toFixed(2)}</span>
         <span className="text-white/20 mx-1">·</span>
         <span className="text-white/40">cost:</span>
-        <span className="text-[#F87171]">${summary.cost.toFixed(2)}</span>
+        <span className="text-red-400">${summary.cost.toFixed(2)}</span>
         <span className="text-white/20 mx-1">·</span>
         <span className="text-white/40">margin:</span>
         <span className="text-white/60">{summary.margin.toFixed(0)}%</span>
@@ -112,17 +112,17 @@ export default function Events() {
             <div
               key={event.id}
               onClick={() => setSelectedId(isSelected ? null : event.id)}
-              className={`grid grid-cols-[180px_1fr_200px] gap-4 items-start py-5 px-4 border-b border-dotted border-white/10 hover:bg-white/[0.02] cursor-pointer transition-colors last:border-b-0 ${isSelected ? "bg-white/[0.04] border-l-2 border-l-[#4ADE80]" : ""}`}
+              className={`grid grid-cols-[180px_1fr_200px] gap-4 items-start py-5 px-4 border-b border-dotted border-white/10 hover:bg-white/[0.02] cursor-pointer transition-colors last:border-b-0 ${isSelected ? "bg-white/[0.04] border-l-2 border-l-green-400" : ""}`}
             >
               <div className="shrink-0">
-                <div className="font-ibm-plex text-xs text-white/40">{formatTimeParts(event.timestamp)}</div>
-                <div className="font-ibm-plex text-xs text-white/20 mt-0.5">{event.id}</div>
+                <div className="font-mono text-xs text-white/40">{formatTimeParts(event.timestamp)}</div>
+                <div className="font-mono text-xs text-white/20 mt-0.5">{event.id}</div>
               </div>
               <div className="min-w-0">
                 <div className="flex items-center flex-wrap">
-                  <span className="font-ibm-plex text-sm font-bold text-white">{event.event_type}</span>
-                  <span className="font-ibm-plex text-sm font-medium text-white ml-3">{event.customer_name}</span>
-                  <span className="font-ibm-plex text-xs text-white/30 ml-2">
+                  <span className="font-mono text-sm font-bold text-white">{event.event_type}</span>
+                  <span className="font-mono text-sm font-medium text-white ml-3">{event.customer_name}</span>
+                  <span className="font-mono text-xs text-white/30 ml-2">
                     · {event.customer_id}
                     {cust?.external_id && ` · ${cust.external_id}`}
                   </span>
@@ -130,30 +130,30 @@ export default function Events() {
                 {dims.length > 0 && (
                   <div className="flex flex-wrap gap-1.5 mt-2">
                     {visibleDims.map(([k, v]) => (
-                      <span key={k} className="bg-white/5 px-2 py-0.5 text-xs font-ibm-plex text-white/50">{k}:{String(v)}</span>
+                      <span key={k} className="bg-white/5 px-2 py-0.5 text-xs font-mono text-white/50">{k}:{String(v)}</span>
                     ))}
-                    {hiddenCount > 0 && <span className="text-white/20 text-xs font-ibm-plex self-center">+{hiddenCount} more</span>}
+                    {hiddenCount > 0 && <span className="text-white/20 text-xs font-mono self-center">+{hiddenCount} more</span>}
                   </div>
                 )}
               </div>
               <div className="flex items-start justify-end gap-3">
                 <div className="text-right">
                   <div className="mb-1">
-                    <span className={`inline-flex h-4 w-4 items-center justify-center rounded-full border ${event.status === "processed" ? "border-[#4ADE80]" : "border-[#F87171]"}`}>
-                      <span className={`text-[8px] leading-none ${event.status === "processed" ? "text-[#4ADE80]" : "text-[#F87171]"}`}>{event.status === "processed" ? "✓" : "✗"}</span>
+                    <span className={`inline-flex h-4 w-4 items-center justify-center border ${event.status === "processed" ? "border-green-400/60" : "border-red-400/60"}`}>
+                      <span className={`text-[9px] leading-none ${event.status === "processed" ? "text-green-400" : "text-red-400"}`}>{event.status === "processed" ? "✓" : "✗"}</span>
                     </span>
                   </div>
                   {fee ? (
                     isUsdFee ? (
                       <>
-                        <div className="text-[#4ADE80] font-ibm-plex font-bold text-base">${fee.amount.toFixed(fee.amount < 0.01 ? 4 : 2)}</div>
-                        {cost && <div className="text-[#F87171] font-ibm-plex text-xs mt-0.5">${cost.amount.toFixed(cost.amount < 0.01 ? 4 : 2)}</div>}
+                        <div className="text-green-400 font-mono font-bold text-base">${fee.amount.toFixed(fee.amount < 0.01 ? 4 : 2)}</div>
+                        {cost && <div className="text-red-400 font-mono text-xs mt-0.5">${cost.amount.toFixed(cost.amount < 0.01 ? 4 : 2)}</div>}
                       </>
                     ) : (
-                      <div className="text-white/60 font-ibm-plex font-bold text-base">{fee.amount.toLocaleString()} {fee.asset_code}</div>
+                      <div className="text-white/60 font-mono font-bold text-base">{fee.amount.toLocaleString()} {fee.asset_code}</div>
                     )
                   ) : (
-                    <div className="text-white/30 font-ibm-plex text-sm">—</div>
+                    <div className="text-white/30 font-mono text-sm">—</div>
                   )}
                 </div>
                 <span className="text-white/20 hover:text-white/60 text-sm self-center cursor-pointer" onClick={(e) => { e.stopPropagation(); setSelectedId(event.id); }}>⌕</span>

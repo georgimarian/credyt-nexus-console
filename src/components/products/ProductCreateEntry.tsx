@@ -74,7 +74,7 @@ export function ProductCreateEntry({ onClose }: ProductCreateEntryProps) {
   // Path selector — vertical stack
   return (
     <Dialog open onOpenChange={(open) => { if (!open) onClose(); }}>
-      <DialogContent className="max-w-2xl p-0 gap-0 border-dotted border-white/10 bg-[#0F0F0F]">
+      <DialogContent className="max-w-2xl p-0 gap-0 border-dotted border-white/10 bg-card">
         <DialogHeader className="px-8 pt-8 pb-0">
           <DialogTitle className="font-space text-xs uppercase tracking-widest text-white/50">
             ┌─ CREATE PRODUCT ─────────────────────────┐

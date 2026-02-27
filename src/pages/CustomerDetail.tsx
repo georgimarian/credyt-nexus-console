@@ -321,7 +321,7 @@ export default function CustomerDetail() {
                   className="border border-dotted border-white/20 text-white/40 text-xs px-3 py-1 font-mono bg-transparent appearance-none cursor-pointer hover:text-white/60 focus:outline-none"
                 >
                   {periodOptions.map((opt) => (
-                    <option key={opt.value} value={opt.value} className="bg-[#111] text-white">{opt.label}</option>
+                    <option key={opt.value} value={opt.value} className="bg-card text-white">{opt.label}</option>
                   ))}
                 </select>
               </div>
@@ -333,7 +333,7 @@ export default function CustomerDetail() {
                   <CartesianGrid stroke="rgba(255,255,255,0.05)" strokeDasharray="3 3" />
                   <XAxis dataKey="day" tick={{ fontSize: 9, fontFamily: "IBM Plex Mono", fill: "rgba(255,255,255,0.3)" }} tickLine={false} axisLine={false} interval="preserveStartEnd" />
                   <YAxis tick={{ fontSize: 9, fontFamily: "IBM Plex Mono", fill: "rgba(255,255,255,0.3)" }} tickLine={false} axisLine={false} tickFormatter={(v: number) => chartAsset === "USD" ? `$${v}` : `${v}`} width={50} />
-                  <Tooltip contentStyle={{ fontFamily: "IBM Plex Mono", fontSize: 11, background: "#0F0F0F", border: "1px dotted rgba(255,255,255,0.08)", borderRadius: 0 }} formatter={(v: number) => [chartAsset === "USD" ? `$${v.toFixed(4)}` : `${v.toLocaleString()} ${chartAsset}`, chartAsset === "USD" ? "Spend" : "Balance"]} />
+                  <Tooltip contentStyle={{ fontFamily: "IBM Plex Mono", fontSize: 11, background: "#0D1117", border: "1px dotted rgba(255,255,255,0.08)", borderRadius: 0 }} formatter={(v: number) => [chartAsset === "USD" ? `$${v.toFixed(4)}` : `${v.toLocaleString()} ${chartAsset}`, chartAsset === "USD" ? "Spend" : "Balance"]} />
                   <Line type="monotone" dataKey="spend" stroke="#FAFAFA" strokeWidth={1.5} dot={{ r: 3, fill: "#FAFAFA" }} activeDot={{ r: 4, fill: "#FAFAFA" }} />
                 </LineChart>
               </ResponsiveContainer>
@@ -371,9 +371,9 @@ export default function CustomerDetail() {
               onChange={(e) => { setProductFilter(e.target.value); setEventPage(0); }}
               className="border border-dotted border-white/20 text-white/40 text-xs px-3 py-1 font-mono bg-transparent appearance-none cursor-pointer hover:text-white/60 focus:outline-none"
             >
-              <option value="all" className="bg-[#111] text-white">All Products</option>
+              <option value="all" className="bg-card text-white">All Products</option>
               {products.map((p) => (
-                <option key={p.code} value={p.code} className="bg-[#111] text-white">{p.name}</option>
+                <option key={p.code} value={p.code} className="bg-card text-white">{p.name}</option>
               ))}
             </select>
           </div>
@@ -447,7 +447,7 @@ export default function CustomerDetail() {
               const acctSpent = charges.filter((t) => t.asset_code === account.asset_code).reduce((s, t) => s + Math.abs(t.amount), 0);
 
               return (
-                <div key={account.asset_code} className={`border border-dotted p-5 ${isCustom ? "border-teal-400/20 bg-[#0d1f24]" : "border-white/10 bg-[#0F0F0F]"}`}>
+                <div key={account.asset_code} className={`border border-dotted p-5 ${isCustom ? "border-teal-400/20 bg-[#0d1f24]" : "border-white/10 bg-card"}`}>
                   {/* Header */}
                   <div className="flex items-center justify-between mb-4">
                     <div className="flex items-center gap-2">
@@ -632,7 +632,7 @@ export default function CustomerDetail() {
 
       {/* Top-up Modal */}
       <Dialog open={showTopupModal} onOpenChange={setShowTopupModal}>
-        <DialogContent className="border-dotted border-white/10 sm:max-w-sm p-0 gap-0" style={{ backgroundColor: "#111111" }}>
+        <DialogContent className="border-dotted border-white/10 sm:max-w-sm p-0 gap-0 bg-card">
           <div className="border-b border-dotted border-white/[0.08] px-8 py-4">
             <span className="font-space text-xs text-white/50">┌─ TOP UP WALLET ──────────────────────┐</span>
           </div>

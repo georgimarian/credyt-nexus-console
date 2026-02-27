@@ -114,7 +114,7 @@ export function CreateCustomerModal({ open, onClose, onCreated }: CreateCustomer
           <div className="grid grid-cols-2 gap-4">
             <div>
               <label className="block font-space text-xs uppercase tracking-wider text-white/40 mb-2">Currency</label>
-              <select value={currency} onChange={(e) => setCurrency(e.target.value)} className={selectCls} style={{ backgroundColor: "#111111" }}>
+              <select value={currency} onChange={(e) => setCurrency(e.target.value)} className={`${selectCls} bg-card`}>
                 <option value="USD">USD</option>
                 <option value="CREDITS">CREDITS</option>
               </select>

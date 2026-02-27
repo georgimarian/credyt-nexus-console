@@ -4,17 +4,17 @@
 
 @layer base {
   :root {
-    --background: 220 10% 4%;
+    --background: 222 47% 3%;
     --foreground: 0 0% 98%;
 
-    --card: 220 7% 6%;
+    --card: 215 33% 7%;
     --card-foreground: 0 0% 98%;
 
-    --popover: 220 7% 6%;
+    --popover: 215 33% 7%;
     --popover-foreground: 0 0% 98%;
 
     --primary: 0 0% 98%;
-    --primary-foreground: 220 10% 4%;
+    --primary-foreground: 222 47% 3%;
 
     --secondary: 0 0% 10%;
     --secondary-foreground: 0 0% 98%;
@@ -39,10 +39,10 @@
     --terminal-yellow: 48 96% 53%;
     --terminal-teal: 174 58% 51%;
 
-    --sidebar-background: 210 10% 5%;
+    --sidebar-background: 221 39% 11%;
     --sidebar-foreground: 0 0% 98%;
     --sidebar-primary: 0 0% 98%;
-    --sidebar-primary-foreground: 220 10% 4%;
+    --sidebar-primary-foreground: 222 47% 3%;
     --sidebar-accent: 0 0% 100% / 0.02;
     --sidebar-accent-foreground: 0 0% 98%;
     --sidebar-border: 0 0% 100% / 0.08;
@@ -50,17 +50,17 @@
   }
 
   .dark {
-    --background: 220 10% 4%;
+    --background: 222 47% 3%;
     --foreground: 0 0% 98%;
 
-    --card: 220 7% 6%;
+    --card: 215 33% 7%;
     --card-foreground: 0 0% 98%;
 
-    --popover: 220 7% 6%;
+    --popover: 215 33% 7%;
     --popover-foreground: 0 0% 98%;
 
     --primary: 0 0% 98%;
-    --primary-foreground: 220 10% 4%;
+    --primary-foreground: 222 47% 3%;
 
     --secondary: 0 0% 10%;
     --secondary-foreground: 0 0% 98%;
@@ -83,10 +83,10 @@
     --terminal-yellow: 48 96% 53%;
     --terminal-teal: 174 58% 51%;
 
-    --sidebar-background: 210 10% 5%;
+    --sidebar-background: 221 39% 11%;
     --sidebar-foreground: 0 0% 98%;
     --sidebar-primary: 0 0% 98%;
-    --sidebar-primary-foreground: 220 10% 4%;
+    --sidebar-primary-foreground: 222 47% 3%;
     --sidebar-accent: 0 0% 100% / 0.02;
     --sidebar-accent-foreground: 0 0% 98%;
     --sidebar-border: 0 0% 100% / 0.08;
@@ -101,7 +101,7 @@
   }
   body {
     @apply bg-background text-foreground font-ibm-plex;
-    background-color: #0C0D10;
+    background-color: #030712;
   }
   h1, h2, h3, h4, h5, h6 {
     @apply font-space;
