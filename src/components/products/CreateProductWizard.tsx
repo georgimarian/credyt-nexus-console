@@ -73,19 +73,25 @@ const MODEL_INFO: Record<PricingModel, { icon: string; title: string; tagline: s
 
 interface CreateProductWizardProps {
   onClose: () => void;
+  prefilled?: {
+    name?: string;
+    code?: string;
+    pricingModel?: "realtime" | "fixed" | "hybrid";
+    recipeBanner?: string;
+  };
 }
 
-export function CreateProductWizard({ onClose }: CreateProductWizardProps) {
+export function CreateProductWizard({ onClose, prefilled }: CreateProductWizardProps) {
   const navigate = useNavigate();
   const { addProduct } = useProductStore();
-  const [step, setStep] = useState<Step>("model");
+  const [step, setStep] = useState<Step>(prefilled?.pricingModel ? "basics" : "model");
 
   // Basics
-  const [name, setName] = useState("");
-  const [code, setCode] = useState("");
+  const [name, setName] = useState(prefilled?.name || "");
+  const [code, setCode] = useState(prefilled?.code || "");
 
   // Model
-  const [pricingModel, setPricingModel] = useState<PricingModel | null>(null);
+  const [pricingModel, setPricingModel] = useState<PricingModel | null>(prefilled?.pricingModel || null);
 
   // Prices
   const [prices, setPrices] = useState<Partial<Price>[]>([]);
@@ -251,6 +257,13 @@ export function CreateProductWizard({ onClose }: CreateProductWizardProps) {
 
         <ScrollArea className="max-h-[85vh]">
           <div className="px-6 py-6">
+            {/* ── Recipe / AI banner ── */}
+            {prefilled?.recipeBanner && (
+              <div className="bg-teal-400/10 border border-dotted border-teal-400/20 px-4 py-2 text-xs font-mono text-teal-400 mb-4">
+                {prefilled.recipeBanner}
+              </div>
+            )}
+
             {/* ── Step indicator ── */}
             <div className="mb-8 space-y-3">
               <div className="flex items-center justify-between">
