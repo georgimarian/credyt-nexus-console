@@ -12,6 +12,7 @@ import {
 
 interface AIProductPathProps {
   onClose: () => void;
+  onBack: () => void;
   onManualEdit: (data: {
     name?: string;
     code?: string;
@@ -93,7 +94,7 @@ const MOCK_RESPONSES: Record<string, MockResponse> = {
   },
 };
 
-export function AIProductPath({ onClose, onManualEdit, onCreateDirect }: AIProductPathProps) {
+export function AIProductPath({ onClose, onBack, onManualEdit, onCreateDirect }: AIProductPathProps) {
   const navigate = useNavigate();
   const { addProduct } = useProductStore();
   const [prompt, setPrompt] = useState("");
@@ -152,7 +153,7 @@ export function AIProductPath({ onClose, onManualEdit, onCreateDirect }: AIProdu
 
         <div className="px-8 pb-8 pt-4">
           <button
-            onClick={onClose}
+            onClick={onBack}
             className="font-mono text-xs text-white/30 hover:text-white/60 cursor-pointer mb-4"
           >
             ← back

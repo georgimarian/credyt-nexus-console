@@ -73,15 +73,17 @@ const MODEL_INFO: Record<PricingModel, { icon: string; title: string; tagline: s
 
 interface CreateProductWizardProps {
   onClose: () => void;
+  onBack?: () => void;
   prefilled?: {
     name?: string;
     code?: string;
     pricingModel?: "realtime" | "fixed" | "hybrid";
     recipeBanner?: string;
+    prices?: Partial<Price>[];
   };
 }
 
-export function CreateProductWizard({ onClose, prefilled }: CreateProductWizardProps) {
+export function CreateProductWizard({ onClose, onBack, prefilled }: CreateProductWizardProps) {
   const navigate = useNavigate();
   const { addProduct } = useProductStore();
   const [step, setStep] = useState<Step>(prefilled?.pricingModel ? "basics" : "model");
@@ -93,8 +95,8 @@ export function CreateProductWizard({ onClose, prefilled }: CreateProductWizardP
   // Model
   const [pricingModel, setPricingModel] = useState<PricingModel | null>(prefilled?.pricingModel || null);
 
-  // Prices
-  const [prices, setPrices] = useState<Partial<Price>[]>([]);
+  // Prices — pre-fill from recipe/AI if provided
+  const [prices, setPrices] = useState<Partial<Price>[]>(prefilled?.prices || []);
   const [showPriceForm, setShowPriceForm] = useState(false);
   const [editingPriceType, setEditingPriceType] = useState<"usage" | "fixed">("usage");
   const [billingModel, setBillingModel] = useState<"real_time" | "recurring">("real_time");
@@ -1024,14 +1026,21 @@ export function CreateProductWizard({ onClose, prefilled }: CreateProductWizardP
             {/* ── Navigation ── */}
             <div className="mt-8 flex items-center justify-between border-t border-foreground/[0.08] pt-5">
               <div>
-                {stepIndex > 0 && (
+                {stepIndex === 0 && onBack ? (
+                  <button
+                    onClick={onBack}
+                    className="flex items-center gap-1.5 font-space text-xs uppercase tracking-wide text-muted-foreground transition-all duration-150 hover:text-foreground"
+                  >
+                    <ArrowLeft className="h-3.5 w-3.5" /> Back
+                  </button>
+                ) : stepIndex > 0 ? (
                   <button
                     onClick={goBack}
                     className="flex items-center gap-1.5 font-space text-xs uppercase tracking-wide text-muted-foreground transition-all duration-150 hover:text-foreground"
                   >
                     <ArrowLeft className="h-3.5 w-3.5" /> Back
                   </button>
-                )}
+                ) : null}
               </div>
               <div className="flex gap-3">
                 <button onClick={onClose} className={btnOutlineCls}>

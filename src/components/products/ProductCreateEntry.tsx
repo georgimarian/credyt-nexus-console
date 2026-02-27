@@ -9,6 +9,7 @@ import {
 import { AIProductPath } from "./AIProductPath";
 import { RecipePath } from "./RecipePath";
 import { CreateProductWizard } from "./CreateProductWizard";
+import type { Price } from "@/data/types";
 
 type Path = "select" | "ai" | "recipes" | "manual";
 
@@ -21,16 +22,23 @@ interface PrefilledData {
   code?: string;
   pricingModel?: "realtime" | "fixed" | "hybrid";
   recipeBanner?: string;
+  prices?: Partial<Price>[];
 }
 
 export function ProductCreateEntry({ onClose }: ProductCreateEntryProps) {
   const [path, setPath] = useState<Path>("select");
   const [prefilled, setPrefilled] = useState<PrefilledData | null>(null);
 
+  const goBack = () => {
+    setPrefilled(null);
+    setPath("select");
+  };
+
   if (path === "manual") {
     return (
       <CreateProductWizard
         onClose={onClose}
+        onBack={goBack}
         prefilled={prefilled ?? undefined}
       />
     );
@@ -40,6 +48,7 @@ export function ProductCreateEntry({ onClose }: ProductCreateEntryProps) {
     return (
       <AIProductPath
         onClose={onClose}
+        onBack={goBack}
         onManualEdit={(data) => {
           setPrefilled(data);
           setPath("manual");
@@ -53,6 +62,7 @@ export function ProductCreateEntry({ onClose }: ProductCreateEntryProps) {
     return (
       <RecipePath
         onClose={onClose}
+        onBack={goBack}
         onUseRecipe={(data) => {
           setPrefilled(data);
           setPath("manual");
@@ -61,7 +71,7 @@ export function ProductCreateEntry({ onClose }: ProductCreateEntryProps) {
     );
   }
 
-  // Path selector
+  // Path selector — vertical stack
   return (
     <Dialog open onOpenChange={(open) => { if (!open) onClose(); }}>
       <DialogContent className="max-w-2xl p-0 gap-0 border-dotted border-white/10 bg-[#0F0F0F]">
@@ -75,55 +85,49 @@ export function ProductCreateEntry({ onClose }: ProductCreateEntryProps) {
         </DialogHeader>
 
         <div className="px-8 pb-8 pt-6">
-          <div className="grid grid-cols-3 gap-4">
+          <div className="space-y-3">
             {/* AI Assistant */}
             <button
               onClick={() => setPath("ai")}
-              className="border border-dotted border-white/15 p-5 text-left hover:border-white/30 hover:bg-white/[0.02] transition-all group"
+              className="flex items-center justify-between w-full border border-dotted border-white/15 p-5 cursor-pointer hover:border-white/30 hover:bg-white/[0.02] transition-all text-left"
             >
-              <div className="flex items-center justify-between mb-3">
-                <span className="text-lg">⚡</span>
-                <span className="border border-dotted border-teal-400/40 text-teal-400 text-xs px-2 py-0.5 font-mono">AI</span>
+              <div className="flex items-center">
+                <span className="text-lg mr-3">⚡</span>
+                <div>
+                  <span className="font-mono text-sm font-bold">AI ASSISTANT</span>
+                  <span className="font-mono text-xs text-white/40 ml-3">Describe what you want · we'll configure it</span>
+                </div>
               </div>
-              <div className="font-space text-sm font-bold uppercase tracking-wide mb-2">AI Assistant</div>
-              <p className="font-mono text-xs text-white/50 leading-relaxed mb-3">
-                Describe what you want to charge for and we'll configure it for you.
-              </p>
-              <div className="space-y-1">
-                <div className="font-mono text-xs text-white/30">"Bill like OpenAI"</div>
-                <div className="font-mono text-xs text-white/30">"Charge per video generated"</div>
-                <div className="font-mono text-xs text-white/30">"SaaS with included credits"</div>
-              </div>
+              <span className="border border-dotted border-teal-400/40 text-teal-400 text-xs px-2 py-0.5 font-mono shrink-0">AI</span>
             </button>
 
             {/* Recipes */}
             <button
               onClick={() => setPath("recipes")}
-              className="border border-dotted border-white/15 p-5 text-left hover:border-white/30 hover:bg-white/[0.02] transition-all group"
+              className="flex items-center justify-between w-full border border-dotted border-white/15 p-5 cursor-pointer hover:border-white/30 hover:bg-white/[0.02] transition-all text-left"
             >
-              <div className="flex items-center justify-between mb-3">
-                <span className="text-lg">◈</span>
-                <span className="border border-dotted border-green-400/40 text-green-400 text-xs px-2 py-0.5 font-mono">RECOMMENDED</span>
+              <div className="flex items-center">
+                <span className="text-lg mr-3">◈</span>
+                <div>
+                  <span className="font-mono text-sm font-bold">RECIPES</span>
+                  <span className="font-mono text-xs text-white/40 ml-3">Pick a pre-built pattern and customize it</span>
+                </div>
               </div>
-              <div className="font-space text-sm font-bold uppercase tracking-wide mb-2">Recipes</div>
-              <p className="font-mono text-xs text-white/50 leading-relaxed mb-3">
-                Pick a pre-built pricing pattern and customize it.
-              </p>
-              <div className="font-mono text-xs text-white/30">3 recipes available</div>
+              <span className="border border-dotted border-green-400/40 text-green-400 text-xs px-2 py-0.5 font-mono shrink-0">RECOMMENDED</span>
             </button>
 
             {/* Manual */}
             <button
               onClick={() => setPath("manual")}
-              className="border border-dotted border-white/15 p-5 text-left hover:border-white/30 hover:bg-white/[0.02] transition-all group"
+              className="flex items-center justify-between w-full border border-dotted border-white/15 p-5 cursor-pointer hover:border-white/30 hover:bg-white/[0.02] transition-all text-left"
             >
-              <div className="flex items-center justify-between mb-3">
-                <span className="text-lg">⌘</span>
+              <div className="flex items-center">
+                <span className="text-lg mr-3">⌘</span>
+                <div>
+                  <span className="font-mono text-sm font-bold">MANUAL</span>
+                  <span className="font-mono text-xs text-white/40 ml-3">Configure every field yourself with full control</span>
+                </div>
               </div>
-              <div className="font-space text-sm font-bold uppercase tracking-wide mb-2">Manual</div>
-              <p className="font-mono text-xs text-white/50 leading-relaxed mb-3">
-                Configure every field yourself with full control.
-              </p>
             </button>
           </div>
 
