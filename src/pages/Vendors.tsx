@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { CopyableId } from "@/components/terminal/CopyableId";
+import { StatusBadge } from "@/components/terminal/StatusBadge";
 import { vendors } from "@/data/vendors";
 import { events } from "@/data/events";
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer } from "recharts";
@@ -31,18 +32,18 @@ export default function Vendors() {
   return (
     <div className="space-y-10">
       <div className="flex items-center justify-between">
-        <p className="font-ibm-plex text-sm text-white/40">{vendors.length} vendors configured</p>
-        <button className="border border-white/30 bg-transparent px-4 py-2 font-space text-xs uppercase tracking-wide text-white hover:bg-white/5">+ New Vendor</button>
+        <p className="font-mono text-xs text-white/40 mb-6">{vendors.length} vendors configured</p>
+        <button className="border border-dotted border-white/30 bg-transparent px-4 py-2 font-mono text-xs uppercase tracking-wide text-white hover:bg-white/5">+ New Vendor</button>
       </div>
 
       <div className="border border-dotted border-white/10">
         <table className="w-full table-fixed">
           <thead>
             <tr className="border-b border-dotted border-white/20">
-              <th className="w-[35%] px-4 py-3 text-left font-space text-xs uppercase tracking-wider text-white/40 whitespace-nowrap">Vendor</th>
-              <th className="w-[25%] px-4 py-3 text-left font-space text-xs uppercase tracking-wider text-white/40 whitespace-nowrap">Code</th>
-              <th className="w-[15%] px-4 py-3 text-left font-space text-xs uppercase tracking-wider text-white/40 whitespace-nowrap">Status</th>
-              <th className="w-[15%] px-4 py-3 text-right font-space text-xs uppercase tracking-wider text-white/40 whitespace-nowrap">Costs</th>
+              <th className="w-[35%] px-4 py-3 text-left font-mono text-xs uppercase tracking-wider text-white/40 whitespace-nowrap">Vendor</th>
+              <th className="w-[25%] px-4 py-3 text-left font-mono text-xs uppercase tracking-wider text-white/40 whitespace-nowrap">Code</th>
+              <th className="w-[15%] px-4 py-3 text-left font-mono text-xs uppercase tracking-wider text-white/40 whitespace-nowrap">Status</th>
+              <th className="w-[15%] px-4 py-3 text-right font-mono text-xs uppercase tracking-wider text-white/40 whitespace-nowrap">Costs</th>
               <th className="w-[10%] px-4 py-3"></th>
             </tr>
           </thead>
@@ -50,19 +51,12 @@ export default function Vendors() {
             {vendors.map((v) => (
               <tr key={v.id} className="border-b border-dotted border-white/10 hover:bg-white/[0.02]">
                 <td className="px-4 py-4">
-                  <div className="font-ibm-plex text-sm font-medium">{v.name}</div>
-                  <div className="font-ibm-plex text-xs text-white/40 mt-1">{v.id}</div>
+                  <div className="font-mono text-sm font-medium">{v.name}</div>
+                  <div className="font-mono text-xs text-white/40 mt-1">{v.id}</div>
                 </td>
                 <td className="px-4 py-4"><CopyableId value={v.external_id} /></td>
-                <td className="px-4 py-4">
-                  <span className="inline-flex items-center gap-1.5 font-ibm-plex text-xs">
-                    <span className="flex h-4 w-4 items-center justify-center rounded-full border border-[#4ADE80]">
-                      <span className="text-[8px] leading-none text-[#4ADE80]">✓</span>
-                    </span>
-                    <span className="text-white/60 uppercase">active</span>
-                  </span>
-                </td>
-                <td className="px-4 py-4 text-right font-ibm-plex text-sm text-[#F87171]">${v.total_costs.toFixed(2)}</td>
+                <td className="px-4 py-4"><StatusBadge status="active" /></td>
+                <td className="px-4 py-4 text-right font-mono text-sm text-red-400">${v.total_costs.toFixed(2)}</td>
                 <td className="px-4 py-4 text-right text-white/40 text-sm">→</td>
               </tr>
             ))}
@@ -71,38 +65,38 @@ export default function Vendors() {
       </div>
 
       <div>
-        <div className="font-space text-xs uppercase tracking-wider text-white/40 border-b border-dotted border-white/20 pb-3 mb-4">┌─ COSTS BY VENDOR ────────────────────┐</div>
+        <div className="font-mono text-xs text-white/50 border-b border-dotted border-white/20 pb-3 mb-4">┌─ COSTS BY VENDOR ──────────────────────────┐</div>
         <ResponsiveContainer width="100%" height={200}>
           <BarChart data={costByVendor} layout="vertical">
             <XAxis type="number" tick={{ fontSize: 10, fontFamily: "IBM Plex Mono", fill: "rgba(255,255,255,0.3)" }} />
             <YAxis type="category" dataKey="name" tick={{ fontSize: 11, fontFamily: "IBM Plex Mono", fill: "rgba(255,255,255,0.5)" }} width={80} />
-            <Tooltip contentStyle={{ fontFamily: "IBM Plex Mono", fontSize: 12, background: "#0F0F0F", border: "1px dotted rgba(255,255,255,0.08)", borderRadius: 0 }} />
+            <Tooltip contentStyle={{ fontFamily: "IBM Plex Mono", fontSize: 12, background: "#0D1117", border: "1px dotted rgba(255,255,255,0.08)", borderRadius: 0 }} />
             <Bar dataKey="costs" fill="#F87171" opacity={0.7} />
           </BarChart>
         </ResponsiveContainer>
       </div>
 
       <div>
-        <div className="font-space text-xs uppercase tracking-wider text-white/40 border-b border-dotted border-white/20 pb-3 mb-4">┌─ RECENT COSTS ───────────────────────┐</div>
+        <div className="font-mono text-xs text-white/50 border-b border-dotted border-white/20 pb-3 mb-4">┌─ RECENT COSTS ──────────────────────────┐</div>
         <div className="border border-dotted border-white/10">
           <table className="w-full table-fixed">
             <thead>
               <tr className="border-b border-dotted border-white/20">
-                <th className="px-4 py-3 text-left font-space text-xs uppercase tracking-wider text-white/40 whitespace-nowrap">Time</th>
-                <th className="px-4 py-3 text-right font-space text-xs uppercase tracking-wider text-white/40 whitespace-nowrap">Amount</th>
-                <th className="px-4 py-3 text-left font-space text-xs uppercase tracking-wider text-white/40 whitespace-nowrap">Vendor</th>
-                <th className="px-4 py-3 text-left font-space text-xs uppercase tracking-wider text-white/40 whitespace-nowrap">Event Type</th>
-                <th className="px-4 py-3 text-left font-space text-xs uppercase tracking-wider text-white/40 whitespace-nowrap">Customer</th>
+                <th className="px-4 py-3 text-left font-mono text-xs uppercase tracking-wider text-white/40 whitespace-nowrap">Time</th>
+                <th className="px-4 py-3 text-right font-mono text-xs uppercase tracking-wider text-white/40 whitespace-nowrap">Amount</th>
+                <th className="px-4 py-3 text-left font-mono text-xs uppercase tracking-wider text-white/40 whitespace-nowrap">Vendor</th>
+                <th className="px-4 py-3 text-left font-mono text-xs uppercase tracking-wider text-white/40 whitespace-nowrap">Event Type</th>
+                <th className="px-4 py-3 text-left font-mono text-xs uppercase tracking-wider text-white/40 whitespace-nowrap">Customer</th>
               </tr>
             </thead>
             <tbody>
               {pagedCosts.map((c, i) => (
                 <tr key={i} className="border-b border-dotted border-white/10 hover:bg-white/[0.02]">
-                  <td className="px-4 py-4 font-ibm-plex text-xs text-white/60">{formatTime(c.timestamp)}</td>
-                  <td className="px-4 py-4 text-right font-ibm-plex text-sm text-[#F87171]">${c.amount.toFixed(4)}</td>
-                  <td className="px-4 py-4 font-ibm-plex text-xs">{c.vendor_name}</td>
-                  <td className="px-4 py-4 font-ibm-plex text-xs">{c.event_type}</td>
-                  <td className="px-4 py-4 font-ibm-plex text-xs text-white/60">{c.customer_name}</td>
+                  <td className="px-4 py-4 font-mono text-xs text-white/60">{formatTime(c.timestamp)}</td>
+                  <td className="px-4 py-4 text-right font-mono text-sm text-red-400">${c.amount.toFixed(4)}</td>
+                  <td className="px-4 py-4 font-mono text-xs">{c.vendor_name}</td>
+                  <td className="px-4 py-4 font-mono text-xs">{c.event_type}</td>
+                  <td className="px-4 py-4 font-mono text-xs text-white/60">{c.customer_name}</td>
                 </tr>
               ))}
             </tbody>

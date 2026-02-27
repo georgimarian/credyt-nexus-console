@@ -26,10 +26,10 @@ export default function Assets() {
   return (
     <div className="space-y-10">
       <div className="flex items-center justify-between">
-        <p className="font-ibm-plex text-sm text-white/40">{assetList.length} assets configured</p>
+        <p className="font-mono text-xs text-white/40 mb-6">{assetList.length} assets configured</p>
         <button
           onClick={() => setModalOpen(true)}
-          className="border border-white/30 bg-transparent px-4 py-2 font-space text-xs uppercase tracking-wide text-white hover:bg-white/5"
+          className="border border-dotted border-white/30 bg-transparent px-4 py-2 font-mono text-xs uppercase tracking-wide text-white hover:bg-white/5"
         >
           + New Asset
         </button>
@@ -43,42 +43,42 @@ export default function Assets() {
           const latestRate = asset.rates.length > 0 ? asset.rates[asset.rates.length - 1] : null;
 
           return (
-            <div key={asset.id} className="border border-dotted border-white/10 p-8 flex flex-col" style={{ backgroundColor: "#0D1117" }}>
+            <div key={asset.id} className="border border-dotted border-white/10 p-8 flex flex-col bg-card">
               {/* Top */}
               <div className="flex items-start justify-between mb-1">
                 <div className="flex items-center gap-3">
-                  <span className="text-2xl text-[#2DD4BF]">{icon}</span>
-                  <span className="font-space text-2xl font-bold text-white">{asset.code}</span>
+                  <span className="text-2xl text-teal-400">{icon}</span>
+                  <span className="font-mono text-2xl font-bold text-white">{asset.code}</span>
                 </div>
-                <span className={`border border-dotted px-2 py-0.5 font-space text-xs uppercase tracking-widest ${isFiat ? "border-[#4ADE80]/40 text-[#4ADE80]" : "border-[#FACC15]/40 text-[#FACC15]"}`}>
+                <span className={`border border-dotted px-2 py-0.5 font-mono text-xs uppercase tracking-widest ${isFiat ? "border-green-400/40 text-green-400" : "border-amber-400/40 text-amber-400"}`}>
                   {asset.type}
                 </span>
               </div>
-              <div className="font-ibm-plex text-sm text-white/50 mb-4">{asset.name}</div>
+              <div className="font-mono text-sm text-white/50 mb-4">{asset.name}</div>
 
               {/* 2-column grid fields */}
               <div className="grid grid-cols-2 gap-x-8 gap-y-4 mt-2">
                 <div>
-                  <div className="font-space text-xs text-white/40 uppercase tracking-wider mb-1">Type</div>
-                  <div className="font-ibm-plex text-sm text-white">{asset.type}</div>
+                  <div className="font-mono text-xs text-white/40 uppercase tracking-wider mb-1">Type</div>
+                  <div className="font-mono text-sm text-white">{asset.type}</div>
                 </div>
                 <div>
-                  <div className="font-space text-xs text-white/40 uppercase tracking-wider mb-1">Precision</div>
-                  <div className="font-ibm-plex text-sm text-white">{asset.scale} decimals</div>
+                  <div className="font-mono text-xs text-white/40 uppercase tracking-wider mb-1">Precision</div>
+                  <div className="font-mono text-sm text-white">{asset.scale} decimals</div>
                 </div>
                 <div>
-                  <div className="font-space text-xs text-white/40 uppercase tracking-wider mb-1">Symbol</div>
-                  <div className="font-ibm-plex text-sm text-white">{asset.symbol || "—"}</div>
+                  <div className="font-mono text-xs text-white/40 uppercase tracking-wider mb-1">Symbol</div>
+                  <div className="font-mono text-sm text-white">{asset.symbol || "—"}</div>
                 </div>
               </div>
 
               {/* Exchange rates — custom assets only */}
               {!isFiat && latestRate && (
                 <div className="border-t border-dotted border-white/10 mt-6 pt-6">
-                  <div className="font-space text-xs uppercase tracking-wider text-white/40 mb-3">Exchange Rates</div>
-                  <div className="font-ibm-plex text-sm">
+                  <div className="font-mono text-xs uppercase tracking-wider text-white/40 mb-3">Exchange Rates</div>
+                  <div className="font-mono text-sm">
                     <span className="text-white/50">1 USD = </span>
-                    <span className="font-bold text-[#2DD4BF]">{latestRate.rate} {latestRate.to_asset}</span>
+                    <span className="font-bold text-teal-400">{latestRate.rate} {latestRate.to_asset}</span>
                     <span className="text-white/30 text-xs ml-2">(${latestRate.rate > 0 ? (1 / latestRate.rate).toFixed(4) : "0"} per {latestRate.to_asset})</span>
                   </div>
                 </div>
@@ -86,7 +86,7 @@ export default function Assets() {
 
               {/* Explanation block — custom only */}
               {!isFiat && (
-                <div className="bg-black/20 p-4 font-ibm-plex text-xs text-white/40 mt-4">
+                <div className="bg-white/[0.03] p-4 font-mono text-xs text-white/40 mt-4">
                   Customers top up in {latestRate?.from_asset || "USD"} → receive {asset.code} at configured rate. Used in product pricing as a billing unit.
                 </div>
               )}
@@ -95,7 +95,7 @@ export default function Assets() {
               {!isFiat && (
                 <button
                   onClick={() => setRateModalAsset(asset)}
-                  className="mt-4 border border-white/30 bg-transparent px-4 py-2 font-space text-xs uppercase tracking-wide text-white hover:bg-white/5 self-start"
+                  className="mt-4 border border-dotted border-white/30 bg-transparent px-4 py-2 font-mono text-xs uppercase tracking-wide text-white hover:bg-white/5 self-start"
                 >
                   + Add Rate
                 </button>
@@ -107,27 +107,27 @@ export default function Assets() {
 
       {/* Quote Calculator */}
       <div>
-        <div className="font-space text-xs uppercase tracking-wider text-white/40 border-b border-dotted border-white/20 pb-3 mb-4">
-          ┌─ QUOTE CALCULATOR ────────────────────┐
+        <div className="font-mono text-xs text-white/50 border-b border-dotted border-white/20 pb-3 mb-4">
+          ┌─ QUOTE CALCULATOR ──────────────────────────┐
         </div>
-        <div className="flex flex-wrap items-end gap-6 font-ibm-plex text-sm">
+        <div className="flex flex-wrap items-end gap-6 font-mono text-sm">
           <div>
-            <label className="block font-space text-xs uppercase tracking-wider text-white/40 mb-2">USD Amount</label>
+            <label className="block font-mono text-xs uppercase tracking-wider text-white/40 mb-2">USD Amount</label>
             <input
               type="number"
               value={quoteInput}
               onChange={(e) => setQuoteInput(e.target.value)}
-              className="w-36 border border-dotted border-white/[0.08] bg-transparent px-3 py-2 text-sm focus:outline-none focus:border-[#2DD4BF]"
+              className="w-36 border border-dotted border-white/[0.08] bg-transparent px-3 py-2 text-sm font-mono focus:outline-none focus:border-teal-400"
             />
           </div>
           <div className="py-2 text-lg text-white/40">→</div>
           <div>
-            <label className="block font-space text-xs uppercase tracking-wider text-white/40 mb-2">CREDITS</label>
-            <div className="w-36 border border-dotted border-white/[0.06] bg-white/5 px-3 py-2 font-bold text-[#2DD4BF]">
+            <label className="block font-mono text-xs uppercase tracking-wider text-white/40 mb-2">CREDITS</label>
+            <div className="w-36 border border-dotted border-white/[0.06] bg-white/5 px-3 py-2 font-bold text-teal-400 font-mono">
               {quoteResult.toFixed(0)}
             </div>
           </div>
-          <div className="py-2 font-ibm-plex text-xs text-white/30">
+          <div className="py-2 font-mono text-xs text-white/30">
             Rate: 1 USD = {currentRate} CREDITS
           </div>
         </div>

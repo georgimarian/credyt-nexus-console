@@ -31,10 +31,10 @@ export default function Products() {
   return (
     <div className="space-y-10">
       <div className="flex items-center justify-between">
-        <p className="font-ibm-plex text-sm text-white/40">{products.length} products configured</p>
+        <p className="font-mono text-xs text-white/40 mb-6">{products.length} products configured</p>
         <button
           onClick={() => setShowCreate(true)}
-          className="border border-white/30 bg-transparent px-4 py-2 font-space text-xs uppercase tracking-wide text-white hover:bg-white/5"
+          className="border border-dotted border-white/30 bg-transparent px-4 py-2 font-mono text-xs uppercase tracking-wide text-white hover:bg-white/5"
         >
           + New Product
         </button>
@@ -46,19 +46,19 @@ export default function Products() {
         placeholder="Search by code or name..."
         value={search}
         onChange={(e) => { setSearch(e.target.value); setPage(0); }}
-        className="border-white/[0.08] bg-transparent pl-4 font-ibm-plex text-sm"
+        className="border-white/[0.08] bg-transparent pl-4 font-mono text-sm"
       />
 
       <div className="border border-dotted border-white/10">
         <table className="w-full table-fixed">
           <thead>
             <tr className="border-b border-dotted border-white/20">
-              <th className="w-[35%] px-4 py-3 text-left font-space text-xs uppercase tracking-wider text-white/40 whitespace-nowrap">Product Name</th>
-              <th className="w-[18%] px-4 py-3 text-left font-space text-xs uppercase tracking-wider text-white/40 whitespace-nowrap">Product ID</th>
-              <th className="w-[10%] px-4 py-3 text-left font-space text-xs uppercase tracking-wider text-white/40 whitespace-nowrap">Status</th>
-              <th className="w-[8%] px-4 py-3 text-center font-space text-xs uppercase tracking-wider text-white/40 whitespace-nowrap">Prices</th>
-              <th className="w-[8%] px-4 py-3 text-center font-space text-xs uppercase tracking-wider text-white/40 whitespace-nowrap">Subs</th>
-              <th className="w-[15%] px-4 py-3 text-left font-space text-xs uppercase tracking-wider text-white/40 whitespace-nowrap">Type</th>
+              <th className="w-[35%] px-4 py-3 text-left font-mono text-xs uppercase tracking-wider text-white/40 whitespace-nowrap">Product Name</th>
+              <th className="w-[18%] px-4 py-3 text-left font-mono text-xs uppercase tracking-wider text-white/40 whitespace-nowrap">Product ID</th>
+              <th className="w-[10%] px-4 py-3 text-left font-mono text-xs uppercase tracking-wider text-white/40 whitespace-nowrap">Status</th>
+              <th className="w-[8%] px-4 py-3 text-center font-mono text-xs uppercase tracking-wider text-white/40 whitespace-nowrap">Prices</th>
+              <th className="w-[8%] px-4 py-3 text-center font-mono text-xs uppercase tracking-wider text-white/40 whitespace-nowrap">Subs</th>
+              <th className="w-[15%] px-4 py-3 text-left font-mono text-xs uppercase tracking-wider text-white/40 whitespace-nowrap">Type</th>
               <th className="w-[6%] px-4 py-3"></th>
             </tr>
           </thead>
@@ -70,24 +70,24 @@ export default function Products() {
                 <tr key={product.id} className="border-b border-dotted border-white/10 hover:bg-white/[0.02] transition-colors cursor-pointer" onClick={() => {}}>
                   <td className="px-4 py-4">
                     <Link to={`/products/${product.id}`} className="block">
-                      <div className="font-ibm-plex text-sm font-bold">
+                      <div className="font-mono text-sm font-bold">
                         {product.name}
-                        <span className="ml-2 border border-dotted border-white/20 text-white/60 text-xs px-1.5 py-0.5 font-ibm-plex font-normal">v{version}</span>
+                        <span className="ml-2 border border-dotted border-white/20 text-white/60 text-xs px-1.5 py-0.5 font-mono font-normal">v{version}</span>
                       </div>
-                      <div className="text-xs text-white/30 font-ibm-plex mt-0.5">{product.code} · {formatDate(product.created_at)}</div>
+                      <div className="text-xs text-white/30 font-mono mt-0.5">{product.code} · {formatDate(product.created_at)}</div>
                     </Link>
                   </td>
                   <td className="px-4 py-4"><CopyableId value={product.id} /></td>
                   <td className="px-4 py-4"><StatusBadge status={product.status} /></td>
-                  <td className="px-4 py-4 text-center font-ibm-plex text-sm font-light">{product.prices.length}</td>
-                  <td className="px-4 py-4 text-center font-ibm-plex text-sm font-light">{product.subscriber_count}</td>
-                  <td className="px-4 py-4"><span className="border border-dotted border-white/20 text-white/40 text-xs px-2 py-0.5 font-ibm-plex">{model}</span></td>
+                  <td className="px-4 py-4 text-center font-mono text-sm font-light">{product.prices.length}</td>
+                  <td className="px-4 py-4 text-center font-mono text-sm font-light">{product.subscriber_count}</td>
+                  <td className="px-4 py-4"><span className="border border-dotted border-white/20 text-white/40 text-xs px-2 py-0.5 font-mono">{model}</span></td>
                   <td className="px-4 py-4 text-right"><Link to={`/products/${product.id}`} className="text-white/40 hover:text-white text-sm">→</Link></td>
                 </tr>
               );
             })}
             {filtered.length === 0 && (
-              <tr><td colSpan={7} className="px-4 py-12 text-center font-ibm-plex text-sm text-white/40"><span className="terminal-cursor">$ no products found </span></td></tr>
+              <tr><td colSpan={7} className="px-4 py-12 text-center font-mono text-sm text-white/40"><span className="terminal-cursor">$ no products found </span></td></tr>
             )}
           </tbody>
         </table>

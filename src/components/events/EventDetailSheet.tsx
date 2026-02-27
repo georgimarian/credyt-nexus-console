@@ -54,7 +54,7 @@ export function EventDetailSheet({ event, customerExternalId, onClose }: Props) 
       <div className="fixed inset-0 bg-black/40 z-40" onClick={onClose} />
 
       {/* Sheet */}
-      <div className="fixed right-0 top-0 h-screen w-[420px] bg-[#0F0F0F] border-l border-dotted border-white/10 z-50 flex flex-col animate-slide-in-right">
+      <div className="fixed right-0 top-0 h-screen w-[420px] bg-card border-l border-dotted border-white/10 z-50 flex flex-col animate-slide-in-right">
         {/* Header */}
         <div className="flex items-center justify-between px-6 pt-6 pb-4 border-b border-dotted border-white/[0.08] shrink-0">
           <span className="font-space text-xs text-white/40">┌─ EVENT DETAILS ──────────────────────┐</span>
