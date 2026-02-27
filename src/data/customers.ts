@@ -16,6 +16,7 @@ export const customers: Customer[] = [
     wallet: {
       accounts: [
         { asset_code: "USD", available: 1247.32, pending_in: 0, pending_out: 12.50 },
+        { asset_code: "TOK", available: 8500, pending_in: 0, pending_out: 0 },
       ],
       credit_grants: [
         { id: "cg_01", asset_code: "USD", amount: 200, remaining: 152.68, purpose: "included", effective_at: "2025-02-01T00:00:00Z", expires_at: "2025-03-01T00:00:00Z" },
@@ -28,6 +29,10 @@ export const customers: Customer[] = [
         { id: "tx_02", type: "charge", amount: -45.20, asset_code: "USD", description: "chat_completion usage", created_at: "2025-02-20T14:00:00Z", event_id: "evt_01" },
         { id: "tx_03", type: "credit_grant", amount: 200, asset_code: "USD", description: "Monthly included credits", created_at: "2025-02-01T00:00:00Z" },
         { id: "tx_04", type: "charge", amount: -8.12, asset_code: "USD", description: "image_generation usage", created_at: "2025-02-22T09:15:00Z", event_id: "evt_05" },
+        { id: "tx_t01", type: "top_up", amount: 10000, asset_code: "TOK", description: "TOK allocation", created_at: "2024-09-15T14:00:00Z" },
+        { id: "tx_t02", type: "charge", amount: -500, asset_code: "TOK", description: "api_call usage", created_at: "2025-02-20T11:00:00Z", event_id: "evt_tok01" },
+        { id: "tx_t03", type: "charge", amount: -500, asset_code: "TOK", description: "api_call usage", created_at: "2025-02-18T14:00:00Z", event_id: "evt_tok02" },
+        { id: "tx_t04", type: "charge", amount: -500, asset_code: "TOK", description: "api_call usage", created_at: "2025-02-15T09:00:00Z", event_id: "evt_tok03" },
       ],
     },
   },

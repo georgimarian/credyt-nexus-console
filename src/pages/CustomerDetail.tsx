@@ -41,13 +41,42 @@ export default function CustomerDetail() {
   const [expandedSub, setExpandedSub] = useState<string | null>(null);
 
   const customerEvents = customer ? events.filter((e) => e.customer_id === customer.id) : [];
-  const charges = customer ? customer.wallet.transactions.filter((t) => t.type === "charge") : [];
+  const allCharges = customer ? customer.wallet.transactions.filter((t) => t.type === "charge") : [];
 
-  // Generate sparse spend data for chart (must be before early return)
+  // Generate chart data — for custom assets show balance rundown, for USD show spend
   const chartDays = parseInt(chartRange);
   const chartData = useMemo(() => {
     if (!customer) return [];
     const nowLocal = new Date();
+    const isCustomAsset = chartAsset !== "USD";
+    
+    if (isCustomAsset) {
+      // Step-down balance chart for custom assets
+      const account = customer.wallet.accounts.find(a => a.asset_code === chartAsset);
+      if (!account) return [];
+      const assetTxns = customer.wallet.transactions
+        .filter(t => t.asset_code === chartAsset)
+        .sort((a, b) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime());
+      
+      // Start from initial topup, then apply charges day by day
+      const initialTopup = assetTxns.filter(t => t.type === "top_up").reduce((s, t) => s + t.amount, 0);
+      
+      return Array.from({ length: chartDays }, (_, i) => {
+        const date = new Date(nowLocal);
+        date.setDate(date.getDate() - (chartDays - 1 - i));
+        const dayStr = date.toISOString().split("T")[0];
+        const mo = date.toLocaleString("en-US", { month: "short" });
+        const dayLabel = `${mo} ${String(date.getDate()).padStart(2, "0")}`;
+        
+        // Sum all txns up to end of this day
+        const spent = assetTxns
+          .filter(t => t.type === "charge" && t.created_at.split("T")[0] <= dayStr)
+          .reduce((s, t) => s + Math.abs(t.amount), 0);
+        
+        return { day: dayLabel, spend: initialTopup - spent };
+      });
+    }
+    
     return Array.from({ length: chartDays }, (_, i) => {
       const date = new Date(nowLocal);
       date.setDate(date.getDate() - (chartDays - 1 - i));
@@ -57,10 +86,10 @@ export default function CustomerDetail() {
       const dayEvts = customerEvents.filter((e) => e.timestamp.startsWith(dayStr));
       let spend = 0;
       dayEvts.forEach((e) => {
-        spend += e.fees?.reduce((s, f) => s + (f.asset_code === chartAsset ? f.amount : 0), 0) || 0;
+        spend += e.fees?.reduce((s, f) => s + (f.asset_code === "USD" ? f.amount : 0), 0) || 0;
       });
       if (spend === 0) {
-        spend = charges.filter((t) => t.created_at.startsWith(dayStr)).reduce((s, t) => s + Math.abs(t.amount), 0);
+        spend = allCharges.filter((t) => t.asset_code === "USD" && t.created_at.startsWith(dayStr)).reduce((s, t) => s + Math.abs(t.amount), 0);
       }
       return { day: dayLabel, spend: +spend.toFixed(4) };
     });
@@ -80,14 +109,22 @@ export default function CustomerDetail() {
 
   const now = new Date();
   const monthStart = new Date(now.getFullYear(), now.getMonth(), 1);
+  const charges = customer ? customer.wallet.transactions.filter((t) => t.type === "charge") : [];
   const monthCharges = charges.filter((t) => new Date(t.created_at) >= monthStart);
-  const totalSpend = monthCharges.reduce((s, t) => s + Math.abs(t.amount), 0);
+  const totalSpend = monthCharges.filter(t => t.asset_code === "USD").reduce((s, t) => s + Math.abs(t.amount), 0);
   const daysElapsed = Math.max(1, Math.ceil((now.getTime() - monthStart.getTime()) / 86400000));
   const avgDaily = totalSpend / daysElapsed;
   const runway = avgDaily > 0 ? Math.round((primaryAccount?.available || 0) / avgDaily) : Infinity;
   const monthEventCount = customerEvents.filter((e) => new Date(e.timestamp) >= monthStart).length;
 
   const runwayColor = runway === Infinity ? "text-[#4ADE80]" : runway > 30 ? "text-[#4ADE80]" : runway >= 7 ? "text-[#FACC15]" : "text-[#F87171]";
+
+  // Multi-asset helpers
+  const hasMultiAsset = customer.wallet.accounts.length > 1;
+  const tokAccount = customer.wallet.accounts.find(a => a.asset_code === "TOK");
+  const tokBalance = tokAccount ? tokAccount.available + tokAccount.pending_out : 0;
+  const tokMonthSpend = monthCharges.filter(t => t.asset_code === "TOK").reduce((s, t) => s + Math.abs(t.amount), 0);
+  const formatAsset = (v: number, code: string) => code === "USD" ? `$${v.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}` : `${v.toLocaleString()} ${code}`;
 
   const hasChartData = chartData.some((d) => d.spend > 0);
   const metadataEntries = customer.metadata ? Object.entries(customer.metadata) : [];
@@ -183,18 +220,34 @@ export default function CustomerDetail() {
 
       {/* STATS BAR — 4 cards matching overview style */}
       <div className="grid grid-cols-4 gap-0 border border-dotted border-white/10 mb-8">
-        {[
-          { label: "Balance", value: `$${balance.toFixed(2)}`, sub: `$${(primaryAccount?.pending_out || 0).toFixed(2)} reserved`, color: "" },
-          { label: "Available", value: `$${(primaryAccount?.available || 0).toFixed(2)}`, sub: `$${(primaryAccount?.pending_in || 0).toFixed(2)} pending`, color: "" },
-          { label: "This Month", value: `$${totalSpend.toFixed(2)} spent`, sub: `${monthEventCount} events`, color: "" },
-          { label: "Runway", value: runway === Infinity ? "∞" : `${runway} days`, sub: "at current spend rate", color: runwayColor },
-        ].map((stat, i) => (
-          <div key={stat.label} className={`px-6 py-5 ${i < 3 ? "border-r border-dotted border-white/10" : ""}`}>
-            <div className="font-space text-xs uppercase text-white/40 tracking-wider mb-2">{stat.label}</div>
-            <div className={`font-space text-2xl font-bold ${stat.color || "text-white"}`}>{stat.value}</div>
-            <div className="text-xs font-mono text-white/30 mt-1">{stat.sub}</div>
-          </div>
-        ))}
+        {/* BALANCE */}
+        <div className="px-6 py-5 border-r border-dotted border-white/10">
+          <div className="font-space text-xs uppercase text-white/40 tracking-wider mb-2">Balance</div>
+          <div className="font-space text-2xl font-bold text-white">${balance.toFixed(2)} USD</div>
+          {hasMultiAsset && tokAccount && <div className="font-space text-lg font-bold text-teal-400 mt-1">{tokBalance.toLocaleString()} TOK</div>}
+          <div className="text-xs font-mono text-white/30 mt-1">${(primaryAccount?.pending_out || 0).toFixed(2)} reserved{hasMultiAsset ? " · 0 TOK reserved" : ""}</div>
+        </div>
+        {/* AVAILABLE */}
+        <div className="px-6 py-5 border-r border-dotted border-white/10">
+          <div className="font-space text-xs uppercase text-white/40 tracking-wider mb-2">Available</div>
+          <div className="font-space text-2xl font-bold text-white">${(primaryAccount?.available || 0).toFixed(2)} USD</div>
+          {hasMultiAsset && tokAccount && <div className="font-space text-lg font-bold text-teal-400 mt-1">{tokAccount.available.toLocaleString()} TOK</div>}
+          <div className="text-xs font-mono text-white/30 mt-1">${(primaryAccount?.pending_in || 0).toFixed(2)} pending</div>
+        </div>
+        {/* THIS MONTH */}
+        <div className="px-6 py-5 border-r border-dotted border-white/10">
+          <div className="font-space text-xs uppercase text-white/40 tracking-wider mb-2">This Month</div>
+          <div className="font-space text-2xl font-bold text-white">${totalSpend.toFixed(2)} spent</div>
+          {hasMultiAsset && <div className="font-space text-lg font-bold text-teal-400 mt-1">{tokMonthSpend.toLocaleString()} TOK spent</div>}
+          <div className="text-xs font-mono text-white/30 mt-1">{monthEventCount} events</div>
+        </div>
+        {/* RUNWAY */}
+        <div className="px-6 py-5">
+          <div className="font-space text-xs uppercase text-white/40 tracking-wider mb-2">Runway</div>
+          <div className={`font-space text-2xl font-bold ${runwayColor}`}>{runway === Infinity ? "∞" : `${runway} days`}</div>
+          {hasMultiAsset && <div className="text-xs font-mono text-white/30 mt-1">∞ both assets</div>}
+          {!hasMultiAsset && <div className="text-xs font-mono text-white/30 mt-1">at current spend rate</div>}
+        </div>
       </div>
 
       {/* DETAILS section — always visible */}
@@ -279,8 +332,8 @@ export default function CustomerDetail() {
                 <LineChart data={chartData}>
                   <CartesianGrid stroke="rgba(255,255,255,0.05)" strokeDasharray="3 3" />
                   <XAxis dataKey="day" tick={{ fontSize: 9, fontFamily: "IBM Plex Mono", fill: "rgba(255,255,255,0.3)" }} tickLine={false} axisLine={false} interval="preserveStartEnd" />
-                  <YAxis tick={{ fontSize: 9, fontFamily: "IBM Plex Mono", fill: "rgba(255,255,255,0.3)" }} tickLine={false} axisLine={false} tickFormatter={(v: number) => `$${v}`} width={40} />
-                  <Tooltip contentStyle={{ fontFamily: "IBM Plex Mono", fontSize: 11, background: "#0F0F0F", border: "1px dotted rgba(255,255,255,0.08)", borderRadius: 0 }} formatter={(v: number) => [`$${v.toFixed(4)}`, "Spend"]} />
+                  <YAxis tick={{ fontSize: 9, fontFamily: "IBM Plex Mono", fill: "rgba(255,255,255,0.3)" }} tickLine={false} axisLine={false} tickFormatter={(v: number) => chartAsset === "USD" ? `$${v}` : `${v}`} width={50} />
+                  <Tooltip contentStyle={{ fontFamily: "IBM Plex Mono", fontSize: 11, background: "#0F0F0F", border: "1px dotted rgba(255,255,255,0.08)", borderRadius: 0 }} formatter={(v: number) => [chartAsset === "USD" ? `$${v.toFixed(4)}` : `${v.toLocaleString()} ${chartAsset}`, chartAsset === "USD" ? "Spend" : "Balance"]} />
                   <Line type="monotone" dataKey="spend" stroke="#FAFAFA" strokeWidth={1.5} dot={{ r: 3, fill: "#FAFAFA" }} activeDot={{ r: 4, fill: "#FAFAFA" }} />
                 </LineChart>
               </ResponsiveContainer>
@@ -327,11 +380,12 @@ export default function CustomerDetail() {
           <table className="w-full table-fixed">
             <thead>
               <tr className="border-b border-dotted border-white/20">
-                <th className="w-[20%] px-4 py-3 text-left font-space text-xs uppercase tracking-wider text-white/40 whitespace-nowrap">Timestamp</th>
-                <th className="w-[20%] px-4 py-3 text-left font-space text-xs uppercase tracking-wider text-white/40 whitespace-nowrap">Event Type</th>
-                <th className="w-[35%] px-4 py-3 text-left font-space text-xs uppercase tracking-wider text-white/40 whitespace-nowrap">Dimensions</th>
-                <th className="w-[10%] px-4 py-3 text-left font-space text-xs uppercase tracking-wider text-white/40 whitespace-nowrap">Status</th>
+                <th className="w-[18%] px-4 py-3 text-left font-space text-xs uppercase tracking-wider text-white/40 whitespace-nowrap">Timestamp</th>
+                <th className="w-[16%] px-4 py-3 text-left font-space text-xs uppercase tracking-wider text-white/40 whitespace-nowrap">Event Type</th>
+                <th className="w-[28%] px-4 py-3 text-left font-space text-xs uppercase tracking-wider text-white/40 whitespace-nowrap">Dimensions</th>
+                <th className="w-[8%] px-4 py-3 text-left font-space text-xs uppercase tracking-wider text-white/40 whitespace-nowrap">Status</th>
                 <th className="w-[15%] px-4 py-3 text-right font-space text-xs uppercase tracking-wider text-white/40 whitespace-nowrap">Cost</th>
+                <th className="w-[10%] px-4 py-3 text-right font-space text-xs uppercase tracking-wider text-white/40 whitespace-nowrap">Asset</th>
               </tr>
             </thead>
             <tbody>
@@ -340,6 +394,8 @@ export default function CustomerDetail() {
                 const visibleDims = dims.slice(0, 3);
                 const extraCount = dims.length - 3;
                 const fee = event.fees?.[0];
+                const feeAsset = fee?.asset_code || "USD";
+                const isTok = feeAsset === "TOK";
                 return (
                   <tr key={event.id} className="border-b border-dotted border-white/10 hover:bg-white/[0.02] cursor-pointer" onClick={() => setSelectedEvent(selectedEvent === event.id ? null : event.id)}>
                     <td className="px-4 py-4 font-ibm-plex text-xs text-white/60 whitespace-nowrap">{formatTime(event.timestamp)}</td>
@@ -354,14 +410,17 @@ export default function CustomerDetail() {
                     </td>
                     <td className="px-4 py-4 whitespace-nowrap"><StatusBadge status={event.status} /></td>
                     <td className="px-4 py-4 text-right font-ibm-plex text-sm whitespace-nowrap">
-                      {fee ? <span className="text-[#4ADE80]">${fee.amount.toFixed(4)}</span> : <span className="text-white/20">—</span>}
+                      {fee ? <span className={isTok ? "text-teal-400" : "text-[#4ADE80]"}>{isTok ? `${fee.amount.toLocaleString()} TOK` : `$${fee.amount.toFixed(4)}`}</span> : <span className="text-white/20">—</span>}
+                    </td>
+                    <td className="px-4 py-4 text-right">
+                      <span className={`text-xs font-mono ${isTok ? "text-teal-400" : "text-white/40"}`}>{feeAsset}</span>
                     </td>
                   </tr>
                 );
               })}
               {pagedEvents.length === 0 && (
                 <tr>
-                  <td colSpan={5} className="px-4 py-8 text-center font-ibm-plex text-sm text-white/40">$ no events match filter <span className="animate-pulse">█</span></td>
+                  <td colSpan={6} className="px-4 py-8 text-center font-ibm-plex text-sm text-white/40">$ no events match filter <span className="animate-pulse">█</span></td>
                 </tr>
               )}
             </tbody>
@@ -381,17 +440,18 @@ export default function CustomerDetail() {
           <div className={`grid gap-4 ${customer.wallet.accounts.length > 2 ? "grid-cols-3" : customer.wallet.accounts.length === 2 ? "grid-cols-2" : "grid-cols-1 max-w-md"}`}>
             {customer.wallet.accounts.map((account) => {
               const isFiat = account.asset_code === "USD";
-              const symbol = isFiat ? "$" : "CR";
-              const formatVal = (v: number) => isFiat ? `$${v.toFixed(2)}` : `${v.toLocaleString()} ${account.asset_code}`;
+              const isCustom = !isFiat;
+              const symbol = isFiat ? "$" : account.asset_code === "TOK" ? "T" : account.asset_code === "CREDITS" ? "CR" : account.asset_code[0];
+              const formatVal = (v: number) => isFiat ? `$${v.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}` : `${v.toLocaleString()} ${account.asset_code}`;
               const acctTopups = topups.filter((t) => t.asset_code === account.asset_code).reduce((s, t) => s + t.amount, 0);
               const acctSpent = charges.filter((t) => t.asset_code === account.asset_code).reduce((s, t) => s + Math.abs(t.amount), 0);
 
               return (
-                <div key={account.asset_code} className="border border-dotted border-white/10 bg-[#0F0F0F] p-5">
+                <div key={account.asset_code} className={`border border-dotted p-5 ${isCustom ? "border-teal-400/20 bg-[#0d1f24]" : "border-white/10 bg-[#0F0F0F]"}`}>
                   {/* Header */}
-                  <div className="flex items-center justify-between mb-3">
+                  <div className="flex items-center justify-between mb-4">
                     <div className="flex items-center gap-2">
-                      <span className="text-teal-400 font-bold font-mono">{symbol}</span>
+                      <span className="text-teal-400 font-bold font-mono text-lg">{symbol}</span>
                       <span className="font-bold font-mono text-sm">{account.asset_code}</span>
                     </div>
                     <div className="text-right">
@@ -402,35 +462,30 @@ export default function CustomerDetail() {
 
                   {/* Field rows */}
                   <div className="space-y-0">
-                    <div className="flex justify-between py-1.5 text-sm font-mono">
-                      <span className="text-white/40">Top-ups</span>
-                      <span className="text-white">{formatVal(acctTopups)}</span>
-                    </div>
-                    <div className="flex justify-between py-1.5 text-sm font-mono">
-                      <span className="text-white/40">Spent</span>
-                      <span className="text-white">{formatVal(acctSpent)}</span>
-                    </div>
-                    <div className="flex justify-between py-1.5 text-sm font-mono">
-                      <span className="text-white/40">Pending</span>
-                      <span className="text-white">{formatVal(account.pending_in)}</span>
-                    </div>
-                    <div className="flex justify-between py-1.5 text-sm font-mono">
-                      <span className="text-white/40">Reserved</span>
-                      <span className="text-white">{formatVal(account.pending_out)}</span>
-                    </div>
+                    {[
+                      { label: "Top-ups", value: formatVal(acctTopups) },
+                      { label: "Spent", value: formatVal(acctSpent) },
+                      { label: "Pending", value: formatVal(account.pending_in) },
+                      { label: "Reserved", value: formatVal(account.pending_out) },
+                    ].map(row => (
+                      <div key={row.label} className="flex justify-between py-1.5 border-b border-dotted border-white/8 text-sm font-mono">
+                        <span className="text-white/40">{row.label}</span>
+                        <span className="text-white">{row.value}</span>
+                      </div>
+                    ))}
                   </div>
 
                   {/* Auto top-up */}
-                  <div className="text-xs font-mono mt-3 space-y-1">
+                  <div className="text-xs font-mono mt-3 pt-3 border-t border-dotted border-white/8 space-y-1">
                     <div>
                       <span className="text-white/40">Auto Top-up: </span>
-                      {customer.auto_topup?.enabled ? (
+                      {isFiat && customer.auto_topup?.enabled ? (
                         <span className="text-[#4ADE80]">✓ ENABLED</span>
                       ) : (
                         <span className="text-[#F87171]">✗ OFF</span>
                       )}
                     </div>
-                    {customer.auto_topup?.enabled && (
+                    {isFiat && customer.auto_topup?.enabled && (
                       <>
                         <div>
                           <span className="text-white/40">Threshold: </span>
@@ -443,6 +498,13 @@ export default function CustomerDetail() {
                       </>
                     )}
                   </div>
+
+                  {/* Exchange rate for custom assets */}
+                  {isCustom && account.asset_code === "TOK" && (
+                    <div className="text-xs text-teal-400/60 font-mono mt-1">
+                      Exchange Rate: 1 USD = 1,000 TOK
+                    </div>
+                  )}
 
                   {/* Top Up button */}
                   <button
@@ -473,7 +535,7 @@ export default function CustomerDetail() {
                   {topups.map((tx) => (
                     <tr key={tx.id} className="border-b border-dotted border-white/10 hover:bg-white/[0.02]">
                       <td className="px-2 py-3 font-ibm-plex text-xs text-white/60">{formatTime(tx.created_at)}</td>
-                      <td className="px-2 py-3 text-right font-ibm-plex text-sm text-[#4ADE80]">+${tx.amount.toFixed(2)}</td>
+                      <td className={`px-2 py-3 text-right font-ibm-plex text-sm ${tx.asset_code === "TOK" ? "text-teal-400" : "text-[#4ADE80]"}`}>+{tx.asset_code === "USD" ? `$${tx.amount.toFixed(2)}` : `${tx.amount.toLocaleString()} ${tx.asset_code}`}</td>
                       <td className="px-2 py-3 font-ibm-plex text-xs text-white/60">{tx.description}</td>
                       <td className="px-2 py-3"><StatusBadge status="processed" /></td>
                     </tr>
