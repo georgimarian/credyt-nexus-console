@@ -3,7 +3,7 @@ import { Link } from "react-router-dom";
 import { StatusBadge } from "@/components/terminal/StatusBadge";
 import { CopyableId } from "@/components/terminal/CopyableId";
 import { useProductStore } from "@/stores/productStore";
-import { CreateProductWizard } from "@/components/products/CreateProductWizard";
+import { ProductCreateEntry } from "@/components/products/ProductCreateEntry";
 import { Input } from "@/components/ui/input";
 
 const PER_PAGE = 20;
@@ -40,7 +40,7 @@ export default function Products() {
         </button>
       </div>
 
-      {showCreate && <CreateProductWizard onClose={() => setShowCreate(false)} />}
+      {showCreate && <ProductCreateEntry onClose={() => setShowCreate(false)} />}
 
       <Input
         placeholder="Search by code or name..."
