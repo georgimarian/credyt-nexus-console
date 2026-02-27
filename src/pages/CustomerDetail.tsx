@@ -1,5 +1,5 @@
 import { useParams, Link } from "react-router-dom";
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { StatusBadge } from "@/components/terminal/StatusBadge";
 import { customers as initialCustomers } from "@/data/customers";
 import { events } from "@/data/events";
@@ -8,7 +8,7 @@ import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { EditCustomerModal } from "@/components/customers/EditCustomerModal";
 import { EventDetailSheet } from "@/components/events/EventDetailSheet";
 import {
-  AreaChart, Area, XAxis, Tooltip, ResponsiveContainer,
+  LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid,
 } from "recharts";
 import { toast } from "@/hooks/use-toast";
 
@@ -35,6 +35,34 @@ export default function CustomerDetail() {
   const [selectedEvent, setSelectedEvent] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState<TabKey>("overview");
   const [eventPage, setEventPage] = useState(0);
+  const [chartAsset, setChartAsset] = useState("USD");
+  const [productFilter, setProductFilter] = useState("all");
+
+  const customerEvents = customer ? events.filter((e) => e.customer_id === customer.id) : [];
+  const charges = customer ? customer.wallet.transactions.filter((t) => t.type === "charge") : [];
+
+  // Generate sparse spend data for chart (must be before early return)
+  const chartDays = parseInt(chartRange);
+  const chartData = useMemo(() => {
+    if (!customer) return [];
+    const nowLocal = new Date();
+    return Array.from({ length: chartDays }, (_, i) => {
+      const date = new Date(nowLocal);
+      date.setDate(date.getDate() - (chartDays - 1 - i));
+      const dayStr = date.toISOString().split("T")[0];
+      const mo = date.toLocaleString("en-US", { month: "short" });
+      const dayLabel = `${mo} ${String(date.getDate()).padStart(2, "0")}`;
+      const dayEvts = customerEvents.filter((e) => e.timestamp.startsWith(dayStr));
+      let spend = 0;
+      dayEvts.forEach((e) => {
+        spend += e.fees?.reduce((s, f) => s + (f.asset_code === chartAsset ? f.amount : 0), 0) || 0;
+      });
+      if (spend === 0) {
+        spend = charges.filter((t) => t.created_at.startsWith(dayStr)).reduce((s, t) => s + Math.abs(t.amount), 0);
+      }
+      return { day: dayLabel, spend: +spend.toFixed(4) };
+    });
+  }, [chartDays, chartAsset, customer?.id]);
 
   if (!customer) {
     return (
@@ -44,9 +72,7 @@ export default function CustomerDetail() {
     );
   }
 
-  const customerEvents = events.filter((e) => e.customer_id === customer.id);
   const topups = customer.wallet.transactions.filter((t) => t.type === "top_up");
-  const charges = customer.wallet.transactions.filter((t) => t.type === "charge");
   const primaryAccount = customer.wallet.accounts[0];
   const balance = primaryAccount ? primaryAccount.available + primaryAccount.pending_out : 0;
 
@@ -61,15 +87,6 @@ export default function CustomerDetail() {
 
   const runwayColor = runway === Infinity ? "text-[#4ADE80]" : runway > 30 ? "text-[#4ADE80]" : runway >= 7 ? "text-[#FACC15]" : "text-[#F87171]";
 
-  const chartDays = parseInt(chartRange);
-  const chartData = Array.from({ length: chartDays }, (_, i) => {
-    const date = new Date(now);
-    date.setDate(date.getDate() - (chartDays - 1 - i));
-    const dayStr = date.toISOString().split("T")[0];
-    const spend = charges.filter((t) => t.created_at.startsWith(dayStr)).reduce((s, t) => s + Math.abs(t.amount), 0);
-    return { day: `${date.getMonth() + 1}/${date.getDate()}`, spend: +spend.toFixed(2) };
-  });
-
   const hasChartData = chartData.some((d) => d.spend > 0);
   const metadataEntries = customer.metadata ? Object.entries(customer.metadata) : [];
 
@@ -80,6 +97,15 @@ export default function CustomerDetail() {
   const mostUsedType = Object.entries(eventTypeCounts).sort((a, b) => b[1] - a[1])[0];
   const totalFees = customerEvents.reduce((s, e) => s + (e.fees?.[0]?.amount || 0), 0);
   const avgPerEvent = customerEvents.length > 0 ? totalFees / customerEvents.length : 0;
+
+  // Filtered events for events tab
+  const filteredEvents = productFilter === "all"
+    ? customerEvents
+    : customerEvents.filter((e) => {
+        const product = products.find((p) => p.code === productFilter);
+        if (!product) return false;
+        return product.prices.some((pr) => pr.event_type === e.event_type);
+      });
 
   const handleTopup = () => {
     const amount = parseFloat(topupAmount);
@@ -103,14 +129,26 @@ export default function CustomerDetail() {
   );
 
   const EVENTS_PER_PAGE = 10;
-  const pagedEvents = customerEvents.slice(eventPage * EVENTS_PER_PAGE, (eventPage + 1) * EVENTS_PER_PAGE);
-  const totalEventPages = Math.ceil(customerEvents.length / EVENTS_PER_PAGE);
+  const pagedEvents = filteredEvents.slice(eventPage * EVENTS_PER_PAGE, (eventPage + 1) * EVENTS_PER_PAGE);
+  const totalEventPages = Math.ceil(filteredEvents.length / EVENTS_PER_PAGE);
 
   const tabs: { key: TabKey; label: string }[] = [
     { key: "overview", label: "Overview" },
     { key: "events", label: "Usage Events" },
     { key: "wallet", label: "Wallet" },
     { key: "subscriptions", label: "Subscriptions" },
+  ];
+
+  // Wallet tab helpers
+  const totalTopups = topups.reduce((s, t) => s + t.amount, 0);
+  const totalSpentAll = charges.reduce((s, t) => s + Math.abs(t.amount), 0);
+  const assetCodes = customer.wallet.accounts.map((a) => a.asset_code);
+
+  // Period dropdown options
+  const periodOptions = [
+    { label: "Last 7 days", value: "7" },
+    { label: "Last 30 days", value: "30" },
+    { label: "Last 90 days", value: "90" },
   ];
 
   return (
@@ -196,31 +234,53 @@ export default function CustomerDetail() {
         ))}
       </div>
 
-      {/* TAB CONTENT */}
+      {/* ==================== OVERVIEW TAB ==================== */}
       {activeTab === "overview" && (
         <div className="space-y-0">
-          {/* Chart */}
           <div className="border border-dotted border-white/10 p-5 mb-4">
+            {/* Chart header with asset switcher + period */}
             <div className="flex items-center justify-between mb-4">
-              {asciiHeader("USAGE")}
-              <div className="flex gap-6">
-                {(["30", "7", "90"] as const).map((r) => (
-                  <button key={r} onClick={() => setChartRange(r)} className={`font-space text-xs uppercase tracking-wide pb-1 ${chartRange === r ? "text-white border-b-2 border-white" : "text-white/40 hover:text-white"}`}>
-                    {r} Days
-                  </button>
-                ))}
+              {asciiHeader("RECENT SPEND")}
+              <div className="flex items-center gap-3">
+                {/* Asset switcher */}
+                {assetCodes.length > 1 && (
+                  <div className="flex gap-1">
+                    {assetCodes.map((code) => (
+                      <button
+                        key={code}
+                        onClick={() => setChartAsset(code)}
+                        className={`text-xs px-3 py-1 font-mono ${chartAsset === code ? "bg-white text-black" : "border border-dotted border-white/20 text-white/40 hover:text-white/60"}`}
+                      >
+                        {code}
+                      </button>
+                    ))}
+                  </div>
+                )}
+                {/* Period dropdown */}
+                <select
+                  value={chartRange}
+                  onChange={(e) => setChartRange(e.target.value as "7" | "30" | "90")}
+                  className="border border-dotted border-white/20 text-white/40 text-xs px-3 py-1 font-mono bg-transparent appearance-none cursor-pointer hover:text-white/60 focus:outline-none"
+                >
+                  {periodOptions.map((opt) => (
+                    <option key={opt.value} value={opt.value} className="bg-[#111] text-white">{opt.label}</option>
+                  ))}
+                </select>
               </div>
             </div>
+
             {hasChartData ? (
-              <ResponsiveContainer width="100%" height={192}>
-                <AreaChart data={chartData}>
-                  <XAxis dataKey="day" tick={{ fontSize: 9, fontFamily: "IBM Plex Mono", fill: "rgba(255,255,255,0.3)" }} tickLine={false} axisLine={false} />
-                  <Tooltip contentStyle={{ fontFamily: "IBM Plex Mono", fontSize: 11, background: "#0F0F0F", border: "1px dotted rgba(255,255,255,0.08)", borderRadius: 0 }} formatter={(v: number) => [`$${v.toFixed(2)}`, "Spend"]} />
-                  <Area type="monotone" dataKey="spend" stroke="#4ADE80" fill="rgba(74,222,128,0.08)" />
-                </AreaChart>
+              <ResponsiveContainer width="100%" height={224}>
+                <LineChart data={chartData}>
+                  <CartesianGrid stroke="rgba(255,255,255,0.05)" strokeDasharray="3 3" />
+                  <XAxis dataKey="day" tick={{ fontSize: 9, fontFamily: "IBM Plex Mono", fill: "rgba(255,255,255,0.3)" }} tickLine={false} axisLine={false} interval="preserveStartEnd" />
+                  <YAxis tick={{ fontSize: 9, fontFamily: "IBM Plex Mono", fill: "rgba(255,255,255,0.3)" }} tickLine={false} axisLine={false} tickFormatter={(v: number) => `$${v}`} width={40} />
+                  <Tooltip contentStyle={{ fontFamily: "IBM Plex Mono", fontSize: 11, background: "#0F0F0F", border: "1px dotted rgba(255,255,255,0.08)", borderRadius: 0 }} formatter={(v: number) => [`$${v.toFixed(4)}`, "Spend"]} />
+                  <Line type="monotone" dataKey="spend" stroke="#FAFAFA" strokeWidth={1.5} dot={{ r: 3, fill: "#FAFAFA" }} activeDot={{ r: 4, fill: "#FAFAFA" }} />
+                </LineChart>
               </ResponsiveContainer>
             ) : (
-              <div className="h-48 flex items-center justify-center">
+              <div className="h-56 flex items-center justify-center">
                 <span className="font-ibm-plex text-sm text-white/40">$ no usage data for this period <span className="animate-pulse">█</span></span>
               </div>
             )}
@@ -243,9 +303,22 @@ export default function CustomerDetail() {
         </div>
       )}
 
+      {/* ==================== USAGE EVENTS TAB ==================== */}
       {activeTab === "events" && (
         <div className="border border-dotted border-white/10 p-5">
-          {asciiHeader(`USAGE EVENTS (${customerEvents.length})`)}
+          <div className="flex items-center justify-between mb-4">
+            {asciiHeader(`USAGE EVENTS (${filteredEvents.length})`)}
+            <select
+              value={productFilter}
+              onChange={(e) => { setProductFilter(e.target.value); setEventPage(0); }}
+              className="border border-dotted border-white/20 text-white/40 text-xs px-3 py-1 font-mono bg-transparent appearance-none cursor-pointer hover:text-white/60 focus:outline-none"
+            >
+              <option value="all" className="bg-[#111] text-white">All Products</option>
+              {products.map((p) => (
+                <option key={p.code} value={p.code} className="bg-[#111] text-white">{p.name}</option>
+              ))}
+            </select>
+          </div>
           <table className="w-full table-fixed">
             <thead>
               <tr className="border-b border-dotted border-white/20">
@@ -281,6 +354,11 @@ export default function CustomerDetail() {
                   </tr>
                 );
               })}
+              {pagedEvents.length === 0 && (
+                <tr>
+                  <td colSpan={5} className="px-4 py-8 text-center font-ibm-plex text-sm text-white/40">$ no events match filter <span className="animate-pulse">█</span></td>
+                </tr>
+              )}
             </tbody>
           </table>
           {totalEventPages > 1 && (
@@ -292,27 +370,75 @@ export default function CustomerDetail() {
         </div>
       )}
 
+      {/* ==================== WALLET TAB ==================== */}
       {activeTab === "wallet" && (
-        <div className="grid grid-cols-2 gap-6">
-          <div className="border border-dotted border-white/10 p-5">
-            {asciiHeader("WALLET")}
-            {fieldRow("Balance", `$${balance.toFixed(2)}`)}
-            {fieldRow("Available", `$${(primaryAccount?.available || 0).toFixed(2)}`)}
-            {fieldRow("Pending", `$${(primaryAccount?.pending_in || 0).toFixed(2)}`)}
-            {fieldRow("Reserved", `$${(primaryAccount?.pending_out || 0).toFixed(2)}`)}
-            <div className="my-2" />
-            {fieldRow("Auto Top-up", (
-              <span className={customer.auto_topup?.enabled ? "text-[#4ADE80]" : "text-white/40"}>
-                {customer.auto_topup?.enabled ? "✓ ENABLED" : "OFF"}
-              </span>
-            ))}
-            {customer.auto_topup?.enabled && (
-              <>
-                {fieldRow("Threshold", `below $${customer.auto_topup.threshold.toFixed(2)}`)}
-                {fieldRow("Top-up Amount", `+$${customer.auto_topup.amount.toFixed(2)}`)}
-              </>
-            )}
+        <div className="space-y-6">
+          {/* Asset balance cards */}
+          <div className={`grid gap-4 ${customer.wallet.accounts.length > 2 ? "grid-cols-3" : customer.wallet.accounts.length === 2 ? "grid-cols-2" : "grid-cols-1 max-w-md"}`}>
+            {customer.wallet.accounts.map((account) => {
+              const isFiat = account.asset_code === "USD";
+              const symbol = isFiat ? "$" : "CR";
+              const formatVal = (v: number) => isFiat ? `$${v.toFixed(2)}` : `${v.toLocaleString()} ${account.asset_code}`;
+              const acctTopups = topups.filter((t) => t.asset_code === account.asset_code).reduce((s, t) => s + t.amount, 0);
+              const acctSpent = charges.filter((t) => t.asset_code === account.asset_code).reduce((s, t) => s + Math.abs(t.amount), 0);
+
+              return (
+                <div key={account.asset_code} className="border border-dotted border-white/10 bg-[#0F0F0F] p-5">
+                  {/* Header */}
+                  <div className="flex items-center justify-between mb-3">
+                    <div className="flex items-center gap-2">
+                      <span className="text-teal-400 font-bold font-mono">{symbol}</span>
+                      <span className="font-bold font-mono text-sm">{account.asset_code}</span>
+                    </div>
+                    <div className="text-right">
+                      <div className="text-[#4ADE80] font-bold text-lg font-mono">{formatVal(account.available)}</div>
+                      <div className="text-xs text-white/40">Available</div>
+                    </div>
+                  </div>
+
+                  {/* Field rows */}
+                  <div className="space-y-0">
+                    <div className="flex justify-between py-1.5 text-sm font-mono">
+                      <span className="text-white/40">Top-ups</span>
+                      <span className="text-white">{formatVal(acctTopups)}</span>
+                    </div>
+                    <div className="flex justify-between py-1.5 text-sm font-mono">
+                      <span className="text-white/40">Spent</span>
+                      <span className="text-white">{formatVal(acctSpent)}</span>
+                    </div>
+                    <div className="flex justify-between py-1.5 text-sm font-mono">
+                      <span className="text-white/40">Pending</span>
+                      <span className="text-white">{formatVal(account.pending_in)}</span>
+                    </div>
+                    <div className="flex justify-between py-1.5 text-sm font-mono">
+                      <span className="text-white/40">Reserved</span>
+                      <span className="text-white">{formatVal(account.pending_out)}</span>
+                    </div>
+                  </div>
+
+                  {/* Auto top-up */}
+                  <div className="text-xs font-mono mt-3">
+                    <span className="text-white/40">Auto Top-up: </span>
+                    {customer.auto_topup?.enabled ? (
+                      <span className="text-[#4ADE80]">✓ ENABLED</span>
+                    ) : (
+                      <span className="text-[#F87171]">✗ OFF</span>
+                    )}
+                  </div>
+
+                  {/* Top Up button */}
+                  <button
+                    onClick={() => setShowTopupModal(true)}
+                    className="bg-white text-black w-full py-2 text-xs font-mono uppercase tracking-wide mt-4 hover:bg-white/90"
+                  >
+                    Top Up
+                  </button>
+                </div>
+              );
+            })}
           </div>
+
+          {/* Top-up history */}
           <div className="border border-dotted border-white/10 p-5">
             {asciiHeader(`TOP-UP HISTORY (${topups.length})`)}
             {topups.length > 0 ? (
@@ -343,6 +469,7 @@ export default function CustomerDetail() {
         </div>
       )}
 
+      {/* ==================== SUBSCRIPTIONS TAB ==================== */}
       {activeTab === "subscriptions" && (
         <div className="border border-dotted border-white/10 p-5">
           <div className="flex items-center justify-between mb-4">
