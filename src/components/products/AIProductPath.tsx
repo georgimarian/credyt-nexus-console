@@ -27,6 +27,7 @@ interface MockResponse {
   code: string;
   pricingModel: "realtime" | "fixed" | "hybrid";
   description: string;
+  confidence: string;
   prices: {
     event_type?: string;
     calculation: string;
@@ -50,6 +51,7 @@ const MOCK_RESPONSES: Record<string, MockResponse> = {
     name: "AI Usage Billing",
     code: "ai-usage-billing",
     pricingModel: "realtime",
+    confidence: "BASED ON OPENAI GPT-4",
     description: "Based on OpenAI's GPT-4 pricing model. You can edit any field before saving.",
     prices: [
       {
@@ -66,6 +68,7 @@ const MOCK_RESPONSES: Record<string, MockResponse> = {
     name: "Image Generation",
     code: "image-generation",
     pricingModel: "realtime",
+    confidence: "BASED ON PER-EVENT BILLING",
     description: "Per-event billing for image generation. Each API call incurs a flat fee.",
     prices: [
       {
@@ -81,6 +84,7 @@ const MOCK_RESPONSES: Record<string, MockResponse> = {
     name: "Pro Plan",
     code: "pro-plan",
     pricingModel: "hybrid",
+    confidence: "BASED ON SAAS + CREDITS",
     description: "Monthly subscription with included credit bundle. Overage charged at usage rates.",
     prices: [
       {
@@ -103,7 +107,6 @@ export function AIProductPath({ onClose, onBack, onManualEdit, onCreateDirect }:
 
   const generate = (input: string) => {
     setIsGenerating(true);
-    // Find best matching mock response
     const key = Object.keys(MOCK_RESPONSES).find((k) =>
       input.toLowerCase().includes(k.toLowerCase().slice(0, 10))
     );
@@ -140,6 +143,9 @@ export function AIProductPath({ onClose, onBack, onManualEdit, onCreateDirect }:
     onCreateDirect();
     navigate(`/products/${product.id}`);
   };
+
+  const billingModelLabel = (pm: string) =>
+    pm === "realtime" ? "REAL-TIME USAGE" : pm === "fixed" ? "FIXED RECURRING" : "HYBRID";
 
   return (
     <Dialog open onOpenChange={(open) => { if (!open) onClose(); }}>
@@ -192,51 +198,91 @@ export function AIProductPath({ onClose, onBack, onManualEdit, onCreateDirect }:
             </button>
           )}
 
-          {/* AI Response */}
+          {/* AI Response — beautified */}
           {response && (
             <div className="bg-white/[0.03] border border-dotted border-teal-400/20 p-5 mt-4">
-              <div className="text-xs text-teal-400 font-mono uppercase mb-4">⚡ Suggested Configuration</div>
+              {/* Header row */}
+              <div className="flex items-center justify-between mb-5">
+                <div className="text-xs text-teal-400 font-mono uppercase">⚡ Suggested Configuration</div>
+                <span className="border border-dotted border-teal-400/30 text-teal-400/60 text-xs px-2 py-0.5 font-mono">
+                  {response.confidence}
+                </span>
+              </div>
 
               {/* Product block */}
-              <div className="font-mono text-xs text-white/70 mb-4">
-                <div className="text-white/30 mb-2">┌─ PRODUCT ──────────────────────────────┐</div>
-                <div className="flex gap-8 ml-2">
-                  <div className="space-y-1">
-                    <div><span className="text-white/40 inline-block w-28">name</span>{response.name}</div>
-                    <div><span className="text-white/40 inline-block w-28">code</span>{response.code}</div>
-                    <div><span className="text-white/40 inline-block w-28">billing model</span>{response.pricingModel === "realtime" ? "REAL-TIME USAGE" : response.pricingModel === "fixed" ? "FIXED RECURRING" : "HYBRID"}</div>
+              <div className="bg-white/[0.03] border border-dotted border-white/10 p-4 mb-3">
+                <div className="text-xs text-white/30 uppercase font-mono mb-3">PRODUCT</div>
+                <div className="grid grid-cols-2 gap-x-6 gap-y-2">
+                  <div>
+                    <div className="text-xs text-white/30 font-mono">NAME</div>
+                    <div className="text-xs font-mono text-white">{response.name}</div>
+                  </div>
+                  <div>
+                    <div className="text-xs text-white/30 font-mono">CODE</div>
+                    <div className="text-xs font-mono text-white">{response.code}</div>
+                  </div>
+                  <div>
+                    <div className="text-xs text-white/30 font-mono">BILLING MODEL</div>
+                    <div className="text-xs font-mono text-white">{billingModelLabel(response.pricingModel)}</div>
                   </div>
                 </div>
-                <div className="text-white/30 mt-2">└────────────────────────────────────────┘</div>
               </div>
 
               {/* Price blocks */}
               {response.prices.map((p, i) => (
-                <div key={i} className="font-mono text-xs text-white/70 mb-3">
-                  <div className="text-white/30 mb-2">┌─ PRICE ────────────────────────────────┐</div>
-                  <div className="space-y-1 ml-2">
-                    {p.event_type && <div><span className="text-white/40 inline-block w-28">event_type</span>{p.event_type}</div>}
-                    <div><span className="text-white/40 inline-block w-28">calculation</span>{p.calculation}</div>
-                    {p.volume_field && <div><span className="text-white/40 inline-block w-28">volume_field</span>{p.volume_field}</div>}
+                <div key={i} className="bg-white/[0.03] border border-dotted border-teal-400/20 p-4 mb-3">
+                  <div className="flex items-center justify-between mb-3">
+                    <div className="text-xs text-white/30 uppercase font-mono">PRICE #{i + 1}</div>
+                    <span className="border border-dotted border-green-400/30 text-green-400/60 text-xs px-2 py-0.5 font-mono">
+                      {p.billing_model}
+                    </span>
+                  </div>
+                  <div className="grid grid-cols-2 gap-x-6 gap-y-2">
+                    {p.event_type && (
+                      <div>
+                        <div className="text-xs text-white/30 font-mono">EVENT TYPE</div>
+                        <div className="text-xs font-mono text-white">{p.event_type}</div>
+                      </div>
+                    )}
+                    <div>
+                      <div className="text-xs text-white/30 font-mono">CALCULATION</div>
+                      <div className="text-xs font-mono text-white">{p.calculation}</div>
+                    </div>
+                    {p.volume_field && (
+                      <div>
+                        <div className="text-xs text-white/30 font-mono">VOLUME FIELD</div>
+                        <div className="text-xs font-mono text-white">{p.volume_field}</div>
+                      </div>
+                    )}
                     {p.unit_price !== undefined && (
-                      <div><span className="text-white/40 inline-block w-28">unit_price</span>${p.unit_price} per {p.volume_field || "event"}</div>
+                      <div>
+                        <div className="text-xs text-white/30 font-mono">UNIT PRICE</div>
+                        <div className="text-sm font-mono text-green-400 font-bold">${p.unit_price} per {p.volume_field || "event"}</div>
+                      </div>
                     )}
                     {p.amount !== undefined && (
-                      <div><span className="text-white/40 inline-block w-28">amount</span>${p.amount}/month</div>
+                      <div>
+                        <div className="text-xs text-white/30 font-mono">AMOUNT</div>
+                        <div className="text-sm font-mono text-green-400 font-bold">${p.amount}/month</div>
+                      </div>
                     )}
-                    <div><span className="text-white/40 inline-block w-28">billing_model</span>{p.billing_model}</div>
                     {p.entitlement && (
-                      <div><span className="text-white/40 inline-block w-28">entitlement</span>{p.entitlement}</div>
+                      <div className="col-span-2">
+                        <div className="text-xs text-white/30 font-mono">ENTITLEMENT</div>
+                        <div className="text-xs font-mono text-white">{p.entitlement}</div>
+                      </div>
                     )}
                   </div>
-                  <div className="text-white/30 mt-2">└────────────────────────────────────────┘</div>
                 </div>
               ))}
 
-              <p className="text-xs text-white/40 font-mono italic mt-3">{response.description}</p>
+              {/* Insight line */}
+              <div className="border-t border-dotted border-white/10 pt-3 mt-3 text-xs text-white/30 font-mono italic">
+                {response.description}
+              </div>
 
               {/* Action buttons */}
-              <div className="flex gap-3 mt-5">
+              <div className="flex justify-between mt-5">
                 <button
                   onClick={() =>
                     onManualEdit({
