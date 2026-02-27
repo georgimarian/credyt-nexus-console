@@ -1,5 +1,5 @@
 import { useParams, Link } from "react-router-dom";
-import { useState, useMemo } from "react";
+import React, { useState, useMemo } from "react";
 import { StatusBadge } from "@/components/terminal/StatusBadge";
 import { customers as initialCustomers } from "@/data/customers";
 import { events } from "@/data/events";
@@ -37,6 +37,8 @@ export default function CustomerDetail() {
   const [eventPage, setEventPage] = useState(0);
   const [chartAsset, setChartAsset] = useState("USD");
   const [productFilter, setProductFilter] = useState("all");
+  const [eventsShowAll, setEventsShowAll] = useState(false);
+  const [expandedSub, setExpandedSub] = useState<string | null>(null);
 
   const customerEvents = customer ? events.filter((e) => e.customer_id === customer.id) : [];
   const charges = customer ? customer.wallet.transactions.filter((t) => t.type === "charge") : [];
@@ -129,7 +131,9 @@ export default function CustomerDetail() {
   );
 
   const EVENTS_PER_PAGE = 10;
-  const pagedEvents = filteredEvents.slice(eventPage * EVENTS_PER_PAGE, (eventPage + 1) * EVENTS_PER_PAGE);
+  const INITIAL_EVENT_COUNT2 = 10;
+  const visibleEvents = eventsShowAll ? filteredEvents : filteredEvents.slice(0, INITIAL_EVENT_COUNT2);
+  const pagedEvents = visibleEvents;
   const totalEventPages = Math.ceil(filteredEvents.length / EVENTS_PER_PAGE);
 
   const tabs: { key: TabKey; label: string }[] = [
@@ -143,6 +147,7 @@ export default function CustomerDetail() {
   const totalTopups = topups.reduce((s, t) => s + t.amount, 0);
   const totalSpentAll = charges.reduce((s, t) => s + Math.abs(t.amount), 0);
   const assetCodes = customer.wallet.accounts.map((a) => a.asset_code);
+
 
   // Period dropdown options
   const periodOptions = [
@@ -361,10 +366,9 @@ export default function CustomerDetail() {
               )}
             </tbody>
           </table>
-          {totalEventPages > 1 && (
-            <div className="flex justify-end items-center gap-4 pt-4 mt-2 border-t border-dotted border-white/10">
-              <button disabled={eventPage === 0} onClick={() => setEventPage(eventPage - 1)} className="text-xs font-mono uppercase tracking-wide text-white/40 hover:text-white cursor-pointer disabled:text-white/15 disabled:pointer-events-none">← Previous</button>
-              <button disabled={eventPage >= totalEventPages - 1} onClick={() => setEventPage(eventPage + 1)} className="text-xs font-mono uppercase tracking-wide text-white/40 hover:text-white cursor-pointer disabled:text-white/15 disabled:pointer-events-none">Next →</button>
+          {!eventsShowAll && filteredEvents.length > INITIAL_EVENT_COUNT2 && (
+            <div className="flex justify-center pt-4 mt-2 border-t border-dotted border-white/10">
+              <button onClick={() => setEventsShowAll(true)} className="text-xs font-mono uppercase tracking-wide text-white/40 hover:text-white cursor-pointer">Load More ({filteredEvents.length - INITIAL_EVENT_COUNT2} remaining)</button>
             </div>
           )}
         </div>
@@ -417,12 +421,26 @@ export default function CustomerDetail() {
                   </div>
 
                   {/* Auto top-up */}
-                  <div className="text-xs font-mono mt-3">
-                    <span className="text-white/40">Auto Top-up: </span>
-                    {customer.auto_topup?.enabled ? (
-                      <span className="text-[#4ADE80]">✓ ENABLED</span>
-                    ) : (
-                      <span className="text-[#F87171]">✗ OFF</span>
+                  <div className="text-xs font-mono mt-3 space-y-1">
+                    <div>
+                      <span className="text-white/40">Auto Top-up: </span>
+                      {customer.auto_topup?.enabled ? (
+                        <span className="text-[#4ADE80]">✓ ENABLED</span>
+                      ) : (
+                        <span className="text-[#F87171]">✗ OFF</span>
+                      )}
+                    </div>
+                    {customer.auto_topup?.enabled && (
+                      <>
+                        <div>
+                          <span className="text-white/40">Threshold: </span>
+                          <span className="text-white">${customer.auto_topup.threshold.toFixed(2)}</span>
+                        </div>
+                        <div>
+                          <span className="text-white/40">Top-up Amount: </span>
+                          <span className="text-white">${customer.auto_topup.amount.toFixed(2)}</span>
+                        </div>
+                      </>
                     )}
                   </div>
 
@@ -490,20 +508,47 @@ export default function CustomerDetail() {
               <tbody>
                 {customer.subscriptions.map((sub) => {
                   const product = products.find((p) => p.id === sub.product_id);
+                  const isExpanded = expandedSub === sub.id;
                   return (
-                    <tr key={sub.id} className="border-b border-dotted border-white/10 hover:bg-white/[0.02]">
-                      <td className="px-4 py-4 font-ibm-plex text-sm font-medium">{sub.product_name}</td>
-                      <td className="px-4 py-4">
-                        <span className="border border-dotted border-white/20 text-white/60 text-xs px-1.5 py-0.5 font-mono">{product?.code || "—"}</span>
-                      </td>
-                      <td className="px-4 py-4"><StatusBadge status={sub.status} /></td>
-                      <td className="px-4 py-4 font-ibm-plex text-xs text-white/60">{formatTime(sub.start_date)}</td>
-                      <td className="px-4 py-4 text-right">
-                        {sub.status === "active" && (
-                          <button className="border border-dotted border-[#F87171]/30 text-[#F87171] bg-transparent px-3 py-1 font-space text-xs uppercase tracking-wide hover:bg-[#F87171]/5">Unsubscribe</button>
-                        )}
-                      </td>
-                    </tr>
+                    <React.Fragment key={sub.id}>
+                      <tr className="border-b border-dotted border-white/10 hover:bg-white/[0.02] cursor-pointer" onClick={() => setExpandedSub(isExpanded ? null : sub.id)}>
+                        <td className="px-4 py-4 font-ibm-plex text-sm font-medium">
+                          <span className={`text-white/20 text-xs mr-2 inline-block transition-transform duration-150 ${isExpanded ? "rotate-90" : ""}`}>›</span>
+                          {sub.product_name}
+                        </td>
+                        <td className="px-4 py-4">
+                          <span className="border border-dotted border-white/20 text-white/60 text-xs px-1.5 py-0.5 font-mono">{product?.code || "—"}</span>
+                        </td>
+                        <td className="px-4 py-4"><StatusBadge status={sub.status} /></td>
+                        <td className="px-4 py-4 font-ibm-plex text-xs text-white/60">{formatTime(sub.start_date)}</td>
+                        <td className="px-4 py-4 text-right" onClick={(e) => e.stopPropagation()}>
+                          {sub.status === "active" && (
+                            <button className="border border-dotted border-[#F87171]/30 text-[#F87171] bg-transparent px-3 py-1 font-space text-xs uppercase tracking-wide hover:bg-[#F87171]/5">Unsubscribe</button>
+                          )}
+                        </td>
+                      </tr>
+                      {isExpanded && product && (
+                        <tr>
+                          <td colSpan={5} className="px-4 pb-4">
+                            <div className="ml-8 border-t border-dotted border-white/8 pt-3 space-y-2">
+                              {product.prices.map((price) => (
+                                <div key={price.id} className="flex items-center gap-4 font-mono text-xs text-white/50">
+                                  <span className="text-white/70 w-36">{price.event_type || "flat fee"}</span>
+                                  <span className="text-white/30 w-20">{price.usage_calculation || "recurring"}</span>
+                                  <span className="text-white/30 w-20">{price.billing_model}</span>
+                                  <span className="text-[#4ADE80]">
+                                    {price.unit_price != null ? `$${price.unit_price} per ${price.volume_field || "event"}` : price.amount != null ? `$${price.amount.toFixed(2)}/month` : "—"}
+                                  </span>
+                                  {price.entitlements && price.entitlements.length > 0 && (
+                                    <span className="text-white/20 ml-2">(overage)</span>
+                                  )}
+                                </div>
+                              ))}
+                            </div>
+                          </td>
+                        </tr>
+                      )}
+                    </React.Fragment>
                   );
                 })}
               </tbody>

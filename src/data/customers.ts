@@ -8,10 +8,10 @@ export const customers: Customer[] = [
     external_id: "acme-001",
     status: "active",
     metadata: { plan: "enterprise", industry: "fintech" },
-    created_at: "2024-09-15T10:00:00Z",
+    created_at: "2024-09-15T13:00:00Z",
     auto_topup: { enabled: true, threshold: 50, amount: 500 },
     subscriptions: [
-      { id: "sub_01", product_id: "prod_03", product_name: "Enterprise", status: "active", start_date: "2024-09-15T10:00:00Z" },
+      { id: "sub_01", product_id: "prod_03", product_name: "Enterprise", status: "active", start_date: "2024-09-15T13:00:00Z" },
     ],
     wallet: {
       accounts: [
@@ -21,7 +21,10 @@ export const customers: Customer[] = [
         { id: "cg_01", asset_code: "USD", amount: 200, remaining: 152.68, purpose: "included", effective_at: "2025-02-01T00:00:00Z", expires_at: "2025-03-01T00:00:00Z" },
       ],
       transactions: [
-        { id: "tx_01", type: "top_up", amount: 1000, asset_code: "USD", description: "Initial deposit", created_at: "2024-09-15T10:30:00Z" },
+        { id: "tx_01", type: "top_up", amount: 1000, asset_code: "USD", description: "Initial deposit", created_at: "2024-09-15T13:30:00Z" },
+        { id: "tx_01b", type: "top_up", amount: 500, asset_code: "USD", description: "Auto top-up triggered", created_at: "2024-10-12T09:15:00Z" },
+        { id: "tx_01c", type: "top_up", amount: 500, asset_code: "USD", description: "Auto top-up triggered", created_at: "2024-11-28T16:45:00Z" },
+        { id: "tx_01d", type: "top_up", amount: 500, asset_code: "USD", description: "Auto top-up triggered", created_at: "2025-01-08T11:20:00Z" },
         { id: "tx_02", type: "charge", amount: -45.20, asset_code: "USD", description: "chat_completion usage", created_at: "2025-02-20T14:00:00Z", event_id: "evt_01" },
         { id: "tx_03", type: "credit_grant", amount: 200, asset_code: "USD", description: "Monthly included credits", created_at: "2025-02-01T00:00:00Z" },
         { id: "tx_04", type: "charge", amount: -8.12, asset_code: "USD", description: "image_generation usage", created_at: "2025-02-22T09:15:00Z", event_id: "evt_05" },
