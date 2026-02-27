@@ -1,5 +1,12 @@
 import { UsageEvent } from "./types";
 
+// 3 TOK-billed Acme Corp events
+const acmeTokEvents: UsageEvent[] = [
+  { id: "evt_tok01", event_type: "api_call", customer_id: "cust_01", customer_name: "Acme Corp", timestamp: "2025-02-20T11:00:00Z", properties: { model: "gpt-4o" }, status: "processed", fees: [{ product_code: "enterprise", price_id: "price_tok", amount: 500, asset_code: "TOK" }], costs: [{ vendor_id: "vendor_01", vendor_name: "OpenAI", amount: 0.50, asset_code: "USD" }] },
+  { id: "evt_tok02", event_type: "api_call", customer_id: "cust_01", customer_name: "Acme Corp", timestamp: "2025-02-18T14:00:00Z", properties: { model: "gpt-4o" }, status: "processed", fees: [{ product_code: "enterprise", price_id: "price_tok", amount: 500, asset_code: "TOK" }], costs: [{ vendor_id: "vendor_01", vendor_name: "OpenAI", amount: 0.50, asset_code: "USD" }] },
+  { id: "evt_tok03", event_type: "api_call", customer_id: "cust_01", customer_name: "Acme Corp", timestamp: "2025-02-15T09:00:00Z", properties: { model: "gpt-4o" }, status: "processed", fees: [{ product_code: "enterprise", price_id: "price_tok", amount: 500, asset_code: "TOK" }], costs: [{ vendor_id: "vendor_01", vendor_name: "OpenAI", amount: 0.50, asset_code: "USD" }] },
+];
+
 // 17 hardcoded Acme Corp events
 const acmeEvents: UsageEvent[] = [
   { id: "evt_a01", event_type: "chat_completion", customer_id: "cust_01", customer_name: "Acme Corp", timestamp: "2025-02-23T09:00:00Z", properties: { model: "gpt-4o", total_tokens: 1520, prompt_tokens: 1200, completion_tokens: 320, model_tier: "premium" }, status: "processed", fees: [{ product_code: "enterprise", price_id: "price_05", amount: 0.0912, asset_code: "USD", dimensions: { model_tier: "premium" } }], costs: [{ vendor_id: "vendor_01", vendor_name: "OpenAI", amount: 0.045, asset_code: "USD" }] },
@@ -33,7 +40,7 @@ const baseEvents: Partial<UsageEvent>[] = [
 ];
 
 function generateEvents(): UsageEvent[] {
-  const events: UsageEvent[] = [...acmeEvents];
+  const events: UsageEvent[] = [...acmeTokEvents, ...acmeEvents];
   const now = new Date("2025-02-23T12:00:00Z");
 
   for (let i = 0; i < 38; i++) {

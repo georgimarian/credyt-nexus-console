@@ -58,12 +58,14 @@ export default function Customers() {
   };
 
   const getBalance = (customer: typeof initialCustomers[0]) => {
-    const primary = customer.wallet.accounts[0];
-    if (!primary) return "—";
-    if (primary.asset_code === "USD") {
-      return `$${primary.available.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+    return customer.wallet.accounts;
+  };
+
+  const formatAccountBalance = (account: { asset_code: string; available: number }) => {
+    if (account.asset_code === "USD") {
+      return `$${account.available.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
     }
-    return `${primary.available.toLocaleString()} ${primary.asset_code}`;
+    return `${account.available.toLocaleString()} ${account.asset_code}`;
   };
 
   return (
@@ -115,11 +117,27 @@ export default function Customers() {
                   </td>
                   <td className="px-4 py-4 font-ibm-plex text-sm font-light text-white/60 truncate">{customer.email}</td>
                   <td className="px-4 py-4"><StatusBadge status={customer.status} /></td>
-                  <td className="px-4 py-4 text-right font-ibm-plex text-sm font-bold">{getBalance(customer)}</td>
+                  <td className="px-4 py-4 text-right">
+                    {customer.wallet.accounts.map((acc, i) => (
+                      <div key={acc.asset_code} className={`font-ibm-plex font-mono ${i === 0 ? "text-sm font-bold text-white" : "text-xs text-teal-400 mt-0.5"}`}>
+                        {formatAccountBalance(acc)}
+                      </div>
+                    ))}
+                  </td>
                   <td className="px-4 py-4 text-right font-ibm-plex text-sm font-mono text-white/70">${getAvgDailySpend(customer).toFixed(2)}</td>
                   <td className="px-4 py-4 text-right font-mono text-sm text-[#4ADE80]">${meta.spendMo.toFixed(2)}</td>
                   <td className={`px-4 py-4 text-right font-mono text-sm ${marginColor(meta.margin)}`}>{meta.margin !== null ? `${meta.margin}%` : "—"}</td>
-                  <td className={`px-4 py-4 text-right font-mono text-sm ${runwayColor(rDays)}`}>{rDisplay}</td>
+                  <td className="px-4 py-4 text-right">
+                    {customer.wallet.accounts.length > 1 ? (
+                      customer.wallet.accounts.map((acc, i) => (
+                        <div key={acc.asset_code} className={`font-mono text-sm ${i === 0 ? runwayColor(rDays) : "text-teal-400 text-xs mt-0.5"}`}>
+                          {i === 0 ? rDisplay : "∞"} {acc.asset_code}
+                        </div>
+                      ))
+                    ) : (
+                      <span className={`font-mono text-sm ${runwayColor(rDays)}`}>{rDisplay}</span>
+                    )}
+                  </td>
                   <td className="px-4 py-4 text-right">
                     <Link to={`/customers/${customer.id}`} className="text-white/40 hover:text-white text-sm">→</Link>
                   </td>
