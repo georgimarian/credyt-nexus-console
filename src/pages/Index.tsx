@@ -78,7 +78,7 @@ export default function Overview() {
   return (
     <div className="space-y-10">
       {/* Stat Row */}
-      <div className="flex items-stretch divide-x divide-dotted divide-white/[0.08]">
+      <div className="flex items-stretch divide-x divide-dotted divide-white/20">
         {[
           { label: "TOTAL CUSTOMERS", value: totalCustomers, delta: "+2 this month", deltaColor: "text-green-400" },
           { label: "ACTIVE WALLETS", value: activeWallets, delta: `$${totalBalance.toLocaleString("en-US", { minimumFractionDigits: 2 })} total balance`, deltaColor: "text-white/40" },
@@ -100,20 +100,20 @@ export default function Overview() {
           <ResponsiveContainer width="100%" height={220}>
             <AreaChart data={chartData}>
               <XAxis dataKey="day" tick={{ fontSize: 10, fontFamily: "IBM Plex Mono", fill: "rgba(255,255,255,0.3)" }} tickLine={false} axisLine={false} />
-              <Tooltip contentStyle={{ fontFamily: "IBM Plex Mono", fontSize: 11, background: "#0D1117", border: "1px dotted rgba(255,255,255,0.08)", borderRadius: 0 }} />
+              <Tooltip contentStyle={{ fontFamily: "IBM Plex Mono", fontSize: 11, background: "#030712", border: "1px dotted rgba(255,255,255,0.20)", borderRadius: 0 }} />
               <Area type="monotone" dataKey="revenue" stroke="#4ADE80" fill="rgba(74,222,128,0.08)" />
             </AreaChart>
           </ResponsiveContainer>
         </div>
         <div className="col-span-2">
           <div className="font-mono text-xs uppercase tracking-widest text-white/40 mb-4">RECENT EVENTS</div>
-          <div className="border border-dotted border-white/10">
+          <div className="border border-dotted border-white/20">
             {recentEvents.map((event) => {
               const feeAmount = event.fees?.[0]
                 ? `$${event.fees[0].amount.toFixed(4)}`
                 : "";
               return (
-                <div key={event.id} className="flex items-center gap-3 border-b border-dotted border-white/10 py-3 px-4 last:border-b-0">
+                <div key={event.id} className="flex items-center gap-3 border-b border-dotted border-white/15 py-3 px-4 last:border-b-0">
                   <span className="font-mono text-xs text-white/40 w-28 shrink-0">{formatTime(event.timestamp)}</span>
                   <span className="font-mono text-xs font-medium flex-1">{event.customer_name}</span>
                   <span className="font-mono text-xs text-white/50">{event.event_type}</span>
@@ -128,7 +128,7 @@ export default function Overview() {
       {/* Profitability + Wallet Health + Power Users */}
       <div className="grid grid-cols-[3fr_2fr_2fr] gap-6 mt-8">
         {/* LEFT — Profitability */}
-        <div className="bg-card border border-dotted border-white/10 p-6">
+        <div className="border border-dotted border-white/20 p-6">
           <div className="font-mono text-xs text-white/50 mb-1">┌─ PROFITABILITY BY EVENT TYPE ──────────────────────────┐</div>
           <div className="flex justify-end gap-6 text-xs text-white/40 font-mono uppercase mb-4">
             <span>REVENUE</span><span>COST</span><span>MARGIN</span>
@@ -141,7 +141,7 @@ export default function Overview() {
             ].map((row, i, arr) => {
               const leader = profitabilityLeaders[row.type];
               return (
-              <div key={row.type} className={`pb-5 ${i < arr.length - 1 ? "border-b border-dotted border-white/10 mb-5" : ""}`}>
+              <div key={row.type} className={`pb-5 ${i < arr.length - 1 ? "border-b border-dotted border-white/15 mb-5" : ""}`}>
                 <div className="flex items-baseline justify-between">
                   <div>
                     <span className="font-mono text-sm text-white">{row.type}</span>
@@ -169,7 +169,7 @@ export default function Overview() {
                   <div className="w-full h-1 bg-white/5"><div className="h-1 bg-green-400/60 w-full" /></div>
                 </div>
                 {leader && (
-                  <div className="border-t border-dotted border-white/8 mt-2 pt-2">
+                  <div className="border-t border-dotted border-white/[0.12] mt-2 pt-2">
                     <span className="text-xs text-white/20 font-mono">↑ led by </span>
                     <span
                       className="text-xs text-white/60 font-mono font-medium cursor-pointer hover:text-white/80"
@@ -185,7 +185,7 @@ export default function Overview() {
         </div>
 
         {/* MIDDLE — Wallet Health */}
-        <div className="bg-card border border-dotted border-white/10 p-6">
+        <div className="border border-dotted border-white/20 p-6">
           <div className="flex justify-between items-center mb-4">
             <div className="font-mono text-xs text-white/50">┌─ WALLET HEALTH ──────────────────────────┐</div>
             {customers.some(c => {
@@ -208,7 +208,7 @@ export default function Overview() {
               const isLowCr = cr && cr.available > 0 && cr.available < 100;
               const isLow = isLowUsd || isLowCr;
               return (
-                <div key={c.id} className="flex items-center justify-between py-3 border-b border-dotted border-white/10">
+                <div key={c.id} className="flex items-center justify-between py-3 border-b border-dotted border-white/15">
                   <div>
                     <div className="font-mono text-sm font-medium text-white">{c.name}</div>
                     <div className="text-xs text-white/30 font-mono mt-0.5">{c.id}</div>
@@ -228,7 +228,7 @@ export default function Overview() {
         </div>
 
         {/* RIGHT — Power Users */}
-        <div className="bg-card border border-dotted border-white/10 p-6">
+        <div className="border border-dotted border-white/20 p-6">
           <div className="font-mono text-xs text-white/50 mb-1">┌─ POWER USERS ──────────────────────────┐</div>
           <div className="text-xs text-white/40 font-mono mb-4">by spend, last 30 days</div>
           <div>
@@ -242,7 +242,7 @@ export default function Overview() {
               const isExpanded = expandedUser === user.id;
               const breakdown = powerUserBreakdowns[user.id] || [];
               return (
-                <div key={user.id} className={`border-b border-dotted border-white/10 ${user.rank === 1 && !isExpanded ? "bg-white/[0.02]" : ""} ${isExpanded ? "bg-white/[0.03]" : ""}`}>
+                <div key={user.id} className={`border-b border-dotted border-white/15 ${isExpanded ? "bg-white/[0.02]" : ""}`}>
                   <div
                     className="flex items-center justify-between py-3 cursor-pointer"
                     onClick={() => setExpandedUser(isExpanded ? null : user.id)}
@@ -261,7 +261,7 @@ export default function Overview() {
                     </div>
                   </div>
                   {isExpanded && breakdown.length > 0 && (
-                    <div className="border-t border-dotted border-white/8 mt-0 pt-3 ml-8 space-y-2 pb-3">
+                    <div className="border-t border-dotted border-white/[0.12] mt-0 pt-3 ml-8 space-y-2 pb-3">
                       {breakdown.map((b) => (
                         <div key={b.type} className="flex items-center">
                           <span className="text-xs font-mono text-white/70 w-36 shrink-0">{b.type}</span>
@@ -280,7 +280,7 @@ export default function Overview() {
               );
             })}
           </div>
-          <div className="border-t border-dotted border-white/10 pt-3 mt-2 text-xs text-white/30 font-mono">
+          <div className="border-t border-dotted border-white/20 pt-3 mt-2 text-xs text-white/30 font-mono">
             Top 5 of 8 customers · based on billed events
           </div>
         </div>

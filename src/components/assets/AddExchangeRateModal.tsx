@@ -69,7 +69,7 @@ export function AddExchangeRateModal({ open, onClose, asset, onRateAdded }: AddE
   return (
     <Dialog open={open} onOpenChange={(v) => !v && handleClose()}>
       <DialogContent className="sm:max-w-md p-0 gap-0">
-        <div className="border-b border-dotted border-white/[0.08] px-8 py-4">
+        <div className="border-b border-dotted border-white/20 px-8 py-4">
           <span className="font-space text-xs text-white/50">┌─ ADD EXCHANGE RATE ──────────────────┐</span>
         </div>
 
@@ -125,7 +125,7 @@ export function AddExchangeRateModal({ open, onClose, asset, onRateAdded }: AddE
           )}
 
           {/* Existing rates */}
-          <div className="border-t border-dotted border-white/[0.08] mt-5 pt-5">
+          <div className="border-t border-dotted border-white/20 mt-5 pt-5">
             <div className="font-space text-xs uppercase tracking-wider text-white/40 mb-3">Existing Rates</div>
             {asset.rates.length === 0 ? (
               <div className="font-ibm-plex text-sm text-white/40">
@@ -134,7 +134,7 @@ export function AddExchangeRateModal({ open, onClose, asset, onRateAdded }: AddE
             ) : (
               <table className="w-full table-fixed">
                 <thead>
-                  <tr className="text-xs text-white/40 uppercase tracking-wider border-b border-dotted border-white/20">
+                  <tr className="text-xs text-white/40 uppercase tracking-wider border-b border-dotted border-white/30">
                     <th className="text-left py-2 font-normal whitespace-nowrap">From</th>
                     <th className="text-left py-2 font-normal whitespace-nowrap">To</th>
                     <th className="text-left py-2 font-normal whitespace-nowrap">Rate</th>
@@ -146,7 +146,7 @@ export function AddExchangeRateModal({ open, onClose, asset, onRateAdded }: AddE
                     const d = new Date(r.effective_at);
                     const formatted = d.toLocaleDateString("en-US", { month: "short", day: "2-digit", year: "numeric" });
                     return (
-                      <tr key={i} className="border-b border-dotted border-white/[0.08] text-xs font-ibm-plex">
+                      <tr key={i} className="border-b border-dotted border-white/[0.12] text-xs font-ibm-plex">
                         <td className="py-2">{r.from_asset}</td>
                         <td className="py-2">{r.to_asset}</td>
                         <td className="py-2 text-[#2DD4BF]">{r.rate}</td>
@@ -160,7 +160,7 @@ export function AddExchangeRateModal({ open, onClose, asset, onRateAdded }: AddE
           </div>
         </div>
 
-        <div className="flex items-center justify-between border-t border-dotted border-white/[0.08] px-8 py-4">
+        <div className="flex items-center justify-between border-t border-dotted border-white/20 px-8 py-4">
           <button onClick={handleClose} className="border border-white/30 bg-transparent px-4 py-2 font-space text-xs uppercase tracking-wide text-white hover:bg-white/5">
             Cancel
           </button>

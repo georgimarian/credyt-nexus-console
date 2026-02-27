@@ -61,7 +61,7 @@ export default function Events() {
           placeholder="Search by customer or event ID..."
           value={search}
           onChange={(e) => { setSearch(e.target.value); setPage(0); }}
-          className="w-64 shrink-0 border-white/[0.08] bg-transparent pl-4 font-mono text-sm"
+          className="w-64 shrink-0 border-white/20 bg-transparent pl-4 font-mono text-sm"
         />
         <button
           onClick={() => { setTypeFilter(""); setPage(0); }}
@@ -97,7 +97,7 @@ export default function Events() {
       </div>
 
       {/* Event feed */}
-      <div className="border border-dotted border-white/10">
+      <div className="border border-dotted border-white/20">
         {paged.map((event) => {
           const cust = customerMap.get(event.customer_id);
           const isSelected = selectedId === event.id;
@@ -112,7 +112,7 @@ export default function Events() {
             <div
               key={event.id}
               onClick={() => setSelectedId(isSelected ? null : event.id)}
-              className={`grid grid-cols-[180px_1fr_200px] gap-4 items-start py-5 px-4 border-b border-dotted border-white/10 hover:bg-white/[0.02] cursor-pointer transition-colors last:border-b-0 ${isSelected ? "bg-white/[0.04] border-l-2 border-l-green-400" : ""}`}
+              className={`grid grid-cols-[180px_1fr_200px] gap-4 items-start py-5 px-4 border-b border-dotted border-white/15 hover:bg-white/[0.02] cursor-pointer transition-colors last:border-b-0 ${isSelected ? "bg-white/[0.04] border-l-2 border-l-green-400" : ""}`}
             >
               <div className="shrink-0">
                 <div className="font-mono text-xs text-white/40">{formatTimeParts(event.timestamp)}</div>
@@ -164,7 +164,7 @@ export default function Events() {
       </div>
 
       {totalPages > 1 && (
-        <div className="flex justify-end items-center gap-4 pt-4 mt-2 border-t border-dotted border-white/10">
+        <div className="flex justify-end items-center gap-4 pt-4 mt-2 border-t border-dotted border-white/20">
           <button disabled={page === 0} onClick={() => setPage(page - 1)} className="text-xs font-mono uppercase tracking-wide text-white/40 hover:text-white cursor-pointer disabled:text-white/15 disabled:pointer-events-none">← Previous</button>
           <button disabled={page >= totalPages - 1} onClick={() => setPage(page + 1)} className="text-xs font-mono uppercase tracking-wide text-white/40 hover:text-white cursor-pointer disabled:text-white/15 disabled:pointer-events-none">Next →</button>
         </div>

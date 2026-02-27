@@ -28,7 +28,7 @@ export function AppLayout() {
         </div>
 
         {/* Top Bar */}
-        <header className="h-12 border-b border-dotted border-white/[0.08] flex items-center justify-between px-10 shrink-0 bg-background">
+        <header className="h-12 border-b border-dotted border-white/20 flex items-center justify-between px-10 shrink-0 bg-background">
           <span className="font-space text-xs uppercase tracking-widest text-white/40">{pageTitle}</span>
           <div className="flex items-center gap-3">
             <span className="text-white/30 cursor-pointer">☽</span>

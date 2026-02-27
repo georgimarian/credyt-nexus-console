@@ -61,7 +61,7 @@ export function EditCustomerModal({ open, onClose, customer, onSaved }: EditCust
   return (
     <Dialog open={open} onOpenChange={(v) => !v && onClose()}>
       <DialogContent className="sm:max-w-lg p-0 gap-0">
-        <div className="border-b border-dotted border-white/[0.08] px-8 py-4">
+        <div className="border-b border-dotted border-white/20 px-8 py-4">
           <span className="font-space text-xs text-white/50">┌─ EDIT CUSTOMER ──────────────────────┐</span>
         </div>
 
@@ -86,7 +86,7 @@ export function EditCustomerModal({ open, onClose, customer, onSaved }: EditCust
             <input value={customer.wallet.accounts[0]?.asset_code || "USD"} readOnly className={readOnlyCls} />
           </div>
 
-          <div className="border-t border-dotted border-white/[0.08] pt-5">
+          <div className="border-t border-dotted border-white/20 pt-5">
             <div className="flex items-center justify-between">
               <label className="font-space text-xs uppercase tracking-wider text-white/40">Auto Top-up</label>
               <Switch checked={autoTopup} onCheckedChange={setAutoTopup} />
@@ -114,7 +114,7 @@ export function EditCustomerModal({ open, onClose, customer, onSaved }: EditCust
           </div>
         </div>
 
-        <div className="flex items-center justify-between border-t border-dotted border-white/[0.08] px-8 py-4">
+        <div className="flex items-center justify-between border-t border-dotted border-white/20 px-8 py-4">
           <button onClick={onClose} className="border border-white/30 bg-transparent px-4 py-2 font-space text-xs uppercase tracking-wide text-white hover:bg-white/5">Cancel</button>
           <button onClick={handleSave} className="bg-white text-black px-4 py-2 font-space text-xs uppercase tracking-wide hover:bg-white/90">Save Changes →</button>
         </div>

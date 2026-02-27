@@ -73,11 +73,11 @@ export default function ProductDetail() {
 
       {/* Prices — flat rows */}
       <div>
-        <div className="font-mono text-xs text-white/50 border-b border-dotted border-white/20 pb-3 mb-4">
+        <div className="font-mono text-xs text-white/50 border-b border-dotted border-white/30 pb-3 mb-4">
           ┌─ PRICES ──────────────────────────┐
         </div>
         {product.prices.map((price, idx) => (
-          <div key={price.id} className={idx < product.prices.length - 1 ? "border-b border-dotted border-white/10 py-4" : "py-4"}>
+          <div key={price.id} className={idx < product.prices.length - 1 ? "border-b border-dotted border-white/15 py-4" : "py-4"}>
             <div className="flex items-center gap-6 font-mono text-sm">
               <span className="font-medium">{price.event_type || "subscription"}</span>
               <span className="text-white/40">{price.usage_calculation || "fixed"}</span>
@@ -108,7 +108,7 @@ export default function ProductDetail() {
 
       {/* Usage Simulator */}
       <div>
-        <div className="font-mono text-xs text-white/50 border-b border-dotted border-white/20 pb-3 mb-4">
+        <div className="font-mono text-xs text-white/50 border-b border-dotted border-white/30 pb-3 mb-4">
           ┌─ USAGE SIMULATOR ──────────────────────────┐
         </div>
         <div className="grid grid-cols-2 gap-6">
@@ -117,13 +117,13 @@ export default function ProductDetail() {
             <textarea
               value={simPayload}
               onChange={(e) => setSimPayload(e.target.value)}
-              className="h-36 w-full border border-dotted border-white/10 bg-white/5 p-4 font-mono text-xs leading-relaxed focus:outline-none focus:border-white/30"
+              className="h-36 w-full border border-dotted border-white/20 bg-white/5 p-4 font-mono text-xs leading-relaxed focus:outline-none focus:border-white/30"
               spellCheck={false}
             />
           </div>
           <div>
             <label className="block font-mono text-xs uppercase tracking-wider text-white/40 mb-2">Result</label>
-            <pre className="h-36 overflow-auto border border-dotted border-white/10 bg-white/5 p-4 font-mono text-xs leading-relaxed text-white/60">
+            <pre className="h-36 overflow-auto border border-dotted border-white/20 bg-white/5 p-4 font-mono text-xs leading-relaxed text-white/60">
               {simResult || "$ run simulation to see calculated fees..."}
             </pre>
           </div>
@@ -135,7 +135,7 @@ export default function ProductDetail() {
 
       {/* Subscribers */}
       <div>
-        <div className="font-mono text-xs text-white/50 border-b border-dotted border-white/20 pb-3 mb-4">
+        <div className="font-mono text-xs text-white/50 border-b border-dotted border-white/30 pb-3 mb-4">
           ┌─ SUBSCRIBERS ({subscribers.length}) ──────────────────────────┐
         </div>
         {subscribers.length === 0 ? (
@@ -143,10 +143,10 @@ export default function ProductDetail() {
             <span className="terminal-cursor">$ no subscribers </span>
           </p>
         ) : (
-          <div className="border border-dotted border-white/10">
+          <div className="border border-dotted border-white/20">
             <table className="w-full table-fixed">
               <thead>
-                <tr className="border-b border-dotted border-white/20">
+                <tr className="border-b border-dotted border-white/30">
                   <th className="px-4 py-3 text-left font-mono text-xs uppercase tracking-wider text-white/40 whitespace-nowrap">Name</th>
                   <th className="px-4 py-3 text-left font-mono text-xs uppercase tracking-wider text-white/40 whitespace-nowrap">Email</th>
                   <th className="px-4 py-3 text-right font-mono text-xs uppercase tracking-wider text-white/40 whitespace-nowrap">External ID</th>
@@ -154,7 +154,7 @@ export default function ProductDetail() {
               </thead>
               <tbody>
                 {subscribers.map((c) => (
-                  <tr key={c.id} className="border-b border-dotted border-white/10 hover:bg-white/[0.02]">
+                  <tr key={c.id} className="border-b border-dotted border-white/15 hover:bg-white/[0.02]">
                     <td className="px-4 py-4">
                       <Link to={`/customers/${c.id}`} className="font-mono text-sm font-medium hover:text-green-400">{c.name}</Link>
                     </td>
