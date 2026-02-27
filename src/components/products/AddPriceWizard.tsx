@@ -215,7 +215,7 @@ export function AddPriceWizard({ product, onClose, onPriceAdded }: AddPriceWizar
                   </div>
                 )}
 
-                <div className="border-t border-dotted border-white/[0.08] pt-5">
+                <div className="border-t border-dotted border-white/20 pt-5">
                   <div className="grid grid-cols-2 gap-4">
                     <div>
                       <label className="block font-space text-xs uppercase tracking-wider text-white/40 mb-2">Unit Price</label>
@@ -224,7 +224,7 @@ export function AddPriceWizard({ product, onClose, onPriceAdded }: AddPriceWizar
                     </div>
                     <div>
                       <label className="block font-space text-xs uppercase tracking-wider text-white/40 mb-2">Asset</label>
-                      <select value={assetCode} onChange={(e) => setAssetCode(e.target.value)} className={`${inputCls} bg-card`}>
+                      <select value={assetCode} onChange={(e) => setAssetCode(e.target.value)} className={`${inputCls} bg-transparent`}>
                         <option value="USD">USD</option>
                         <option value="CREDITS">CREDITS</option>
                       </select>
@@ -279,7 +279,7 @@ export function AddPriceWizard({ product, onClose, onPriceAdded }: AddPriceWizar
         </ScrollArea>
 
         {/* Footer */}
-        <div className="flex items-center justify-between border-t border-dotted border-white/[0.08] px-8 py-4">
+        <div className="flex items-center justify-between border-t border-dotted border-white/20 px-8 py-4">
           {stepIndex > 0 ? (
             <button onClick={goBack} className="border border-white/30 bg-transparent px-4 py-2 font-space text-xs uppercase tracking-wide text-white hover:bg-white/5">Back</button>
           ) : (

@@ -43,7 +43,7 @@ export default function Assets() {
           const latestRate = asset.rates.length > 0 ? asset.rates[asset.rates.length - 1] : null;
 
           return (
-            <div key={asset.id} className="border border-dotted border-white/10 p-8 flex flex-col bg-card">
+            <div key={asset.id} className="border border-dotted border-white/20 p-8 flex flex-col">
               {/* Top */}
               <div className="flex items-start justify-between mb-1">
                 <div className="flex items-center gap-3">
@@ -74,7 +74,7 @@ export default function Assets() {
 
               {/* Exchange rates — custom assets only */}
               {!isFiat && latestRate && (
-                <div className="border-t border-dotted border-white/10 mt-6 pt-6">
+                <div className="border-t border-dotted border-white/[0.12] mt-6 pt-6">
                   <div className="font-mono text-xs uppercase tracking-wider text-white/40 mb-3">Exchange Rates</div>
                   <div className="font-mono text-sm">
                     <span className="text-white/50">1 USD = </span>
@@ -86,7 +86,7 @@ export default function Assets() {
 
               {/* Explanation block — custom only */}
               {!isFiat && (
-                <div className="bg-white/[0.03] p-4 font-mono text-xs text-white/40 mt-4">
+                <div className="border border-dotted border-white/[0.12] p-4 font-mono text-xs text-white/40 mt-4">
                   Customers top up in {latestRate?.from_asset || "USD"} → receive {asset.code} at configured rate. Used in product pricing as a billing unit.
                 </div>
               )}
@@ -107,7 +107,7 @@ export default function Assets() {
 
       {/* Quote Calculator */}
       <div>
-        <div className="font-mono text-xs text-white/50 border-b border-dotted border-white/20 pb-3 mb-4">
+        <div className="font-mono text-xs text-white/50 border-b border-dotted border-white/30 pb-3 mb-4">
           ┌─ QUOTE CALCULATOR ──────────────────────────┐
         </div>
         <div className="flex flex-wrap items-end gap-6 font-mono text-sm">
@@ -117,13 +117,13 @@ export default function Assets() {
               type="number"
               value={quoteInput}
               onChange={(e) => setQuoteInput(e.target.value)}
-              className="w-36 border border-dotted border-white/[0.08] bg-transparent px-3 py-2 text-sm font-mono focus:outline-none focus:border-teal-400"
+              className="w-36 border border-dotted border-white/20 bg-transparent px-3 py-2 text-sm font-mono focus:outline-none focus:border-teal-400"
             />
           </div>
           <div className="py-2 text-lg text-white/40">→</div>
           <div>
             <label className="block font-mono text-xs uppercase tracking-wider text-white/40 mb-2">CREDITS</label>
-            <div className="w-36 border border-dotted border-white/[0.06] bg-white/5 px-3 py-2 font-bold text-teal-400 font-mono">
+            <div className="w-36 border border-dotted border-white/20 bg-white/5 px-3 py-2 font-bold text-teal-400 font-mono">
               {quoteResult.toFixed(0)}
             </div>
           </div>

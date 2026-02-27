@@ -79,13 +79,13 @@ export default function Customers() {
         placeholder="Search by name, email, or external_id..."
         value={search}
         onChange={(e) => { setSearch(e.target.value); setPage(0); }}
-        className="border-white/[0.08] bg-transparent pl-4 font-mono text-sm"
+        className="border-white/20 bg-transparent pl-4 font-mono text-sm"
       />
 
-      <div className="border border-dotted border-white/10">
+      <div className="border border-dotted border-white/20">
         <table className="w-full table-fixed">
           <thead>
-            <tr className="border-b border-dotted border-white/20">
+            <tr className="border-b border-dotted border-white/30">
               <th className="w-[30%] px-4 py-3 text-left font-mono text-xs uppercase tracking-wider text-white/40 whitespace-nowrap">Customer</th>
               <th className="w-[18%] px-4 py-3 text-left font-mono text-xs uppercase tracking-wider text-white/40 whitespace-nowrap">Email</th>
               <th className="w-[8%] px-4 py-3 text-left font-mono text-xs uppercase tracking-wider text-white/40 whitespace-nowrap">Status</th>
@@ -103,7 +103,7 @@ export default function Customers() {
               const rDays = meta.runway;
               const rDisplay = rDays === null ? "—" : !isFinite(rDays as number) ? "∞" : `${rDays}d`;
               return (
-                <tr key={customer.id} className="border-b border-dotted border-white/10 hover:bg-white/[0.02] transition-colors">
+                <tr key={customer.id} className="border-b border-dotted border-white/15 hover:bg-white/[0.02] transition-colors">
                   <td className="px-4 py-4">
                     <Link to={`/customers/${customer.id}`} className="block hover:opacity-80">
                       <div className="font-mono text-sm font-medium">{customer.name}</div>
@@ -147,7 +147,7 @@ export default function Customers() {
       </div>
 
       {totalPages > 1 && (
-        <div className="flex justify-end items-center gap-4 pt-4 mt-2 border-t border-dotted border-white/10">
+        <div className="flex justify-end items-center gap-4 pt-4 mt-2 border-t border-dotted border-white/20">
           <button disabled={page === 0} onClick={() => setPage(page - 1)} className="text-xs font-mono uppercase tracking-wide text-white/40 hover:text-white cursor-pointer disabled:text-white/15 disabled:pointer-events-none">← Previous</button>
           <button disabled={page >= totalPages - 1} onClick={() => setPage(page + 1)} className="text-xs font-mono uppercase tracking-wide text-white/40 hover:text-white cursor-pointer disabled:text-white/15 disabled:pointer-events-none">Next →</button>
         </div>

@@ -161,7 +161,7 @@ export default function CustomerDetail() {
   );
 
   const fieldRow = (label: string, value: React.ReactNode) => (
-    <div className="flex items-center justify-between font-ibm-plex text-sm py-2.5 border-b border-dotted border-white/10">
+    <div className="flex items-center justify-between font-ibm-plex text-sm py-2.5 border-b border-dotted border-white/[0.12]">
       <span className="text-white/40">{label}</span>
       <span>{value}</span>
     </div>
@@ -203,7 +203,7 @@ export default function CustomerDetail() {
       </nav>
 
       {/* HEADER ROW */}
-      <div className="flex items-start justify-between border-b border-dotted border-white/[0.08] pb-6 mb-6">
+      <div className="flex items-start justify-between border-b border-dotted border-white/20 pb-6 mb-6">
         <div>
           <div className="flex items-center gap-3">
             <h1 className="font-space text-2xl font-bold tracking-wider">{customer.name}</h1>
@@ -219,23 +219,23 @@ export default function CustomerDetail() {
       </div>
 
       {/* STATS BAR — 4 cards matching overview style */}
-      <div className="grid grid-cols-4 gap-0 border border-dotted border-white/10 mb-8">
+      <div className="grid grid-cols-4 gap-0 border border-dotted border-white/20 mb-8">
         {/* BALANCE */}
-        <div className="px-6 py-5 border-r border-dotted border-white/10">
+        <div className="px-6 py-5 border-r border-dotted border-white/20">
           <div className="font-space text-xs uppercase text-white/40 tracking-wider mb-2">Balance</div>
           <div className="font-space text-2xl font-bold text-white">${balance.toFixed(2)} USD</div>
           {hasMultiAsset && tokAccount && <div className="font-space text-lg font-bold text-teal-400 mt-1">{tokBalance.toLocaleString()} TOK</div>}
           <div className="text-xs font-mono text-white/30 mt-1">${(primaryAccount?.pending_out || 0).toFixed(2)} reserved{hasMultiAsset ? " · 0 TOK reserved" : ""}</div>
         </div>
         {/* AVAILABLE */}
-        <div className="px-6 py-5 border-r border-dotted border-white/10">
+        <div className="px-6 py-5 border-r border-dotted border-white/20">
           <div className="font-space text-xs uppercase text-white/40 tracking-wider mb-2">Available</div>
           <div className="font-space text-2xl font-bold text-white">${(primaryAccount?.available || 0).toFixed(2)} USD</div>
           {hasMultiAsset && tokAccount && <div className="font-space text-lg font-bold text-teal-400 mt-1">{tokAccount.available.toLocaleString()} TOK</div>}
           <div className="text-xs font-mono text-white/30 mt-1">${(primaryAccount?.pending_in || 0).toFixed(2)} pending</div>
         </div>
         {/* THIS MONTH */}
-        <div className="px-6 py-5 border-r border-dotted border-white/10">
+        <div className="px-6 py-5 border-r border-dotted border-white/20">
           <div className="font-space text-xs uppercase text-white/40 tracking-wider mb-2">This Month</div>
           <div className="font-space text-2xl font-bold text-white">${totalSpend.toFixed(2)} spent</div>
           {hasMultiAsset && <div className="font-space text-lg font-bold text-teal-400 mt-1">{tokMonthSpend.toLocaleString()} TOK spent</div>}
@@ -252,7 +252,7 @@ export default function CustomerDetail() {
 
       {/* DETAILS section — always visible */}
       <div className="grid grid-cols-2 gap-8 mb-8">
-        <div className="border border-dotted border-white/10 p-5">
+        <div className="border border-dotted border-white/20 p-5">
           {asciiHeader("DETAILS")}
           {fieldRow("External ID", customer.external_id)}
           {fieldRow("Email", customer.email)}
@@ -261,7 +261,7 @@ export default function CustomerDetail() {
           {metadataEntries.length > 0 && <div className="my-2" />}
           {metadataEntries.map(([key, value]) => fieldRow(key, String(value)))}
         </div>
-        <div className="border border-dotted border-white/10 p-5">
+        <div className="border border-dotted border-white/20 p-5">
           {asciiHeader("AUTO TOP-UP")}
           {fieldRow("Status", (
             <span className={customer.auto_topup?.enabled ? "text-[#4ADE80]" : "text-white/40"}>
@@ -280,7 +280,7 @@ export default function CustomerDetail() {
       </div>
 
       {/* TAB BAR */}
-      <div className="flex gap-0 border-b border-dotted border-white/10 mb-6">
+      <div className="flex gap-0 border-b border-dotted border-white/20 mb-6">
         {tabs.map((tab) => (
           <button
             key={tab.key}
@@ -295,7 +295,7 @@ export default function CustomerDetail() {
       {/* ==================== OVERVIEW TAB ==================== */}
       {activeTab === "overview" && (
         <div className="space-y-0">
-          <div className="border border-dotted border-white/10 p-5 mb-4">
+          <div className="border border-dotted border-white/20 p-5 mb-4">
             {/* Chart header with asset switcher + period */}
             <div className="flex items-center justify-between mb-4">
               {asciiHeader("RECENT SPEND")}
@@ -333,7 +333,7 @@ export default function CustomerDetail() {
                   <CartesianGrid stroke="rgba(255,255,255,0.05)" strokeDasharray="3 3" />
                   <XAxis dataKey="day" tick={{ fontSize: 9, fontFamily: "IBM Plex Mono", fill: "rgba(255,255,255,0.3)" }} tickLine={false} axisLine={false} interval="preserveStartEnd" />
                   <YAxis tick={{ fontSize: 9, fontFamily: "IBM Plex Mono", fill: "rgba(255,255,255,0.3)" }} tickLine={false} axisLine={false} tickFormatter={(v: number) => chartAsset === "USD" ? `$${v}` : `${v}`} width={50} />
-                  <Tooltip contentStyle={{ fontFamily: "IBM Plex Mono", fontSize: 11, background: "#0D1117", border: "1px dotted rgba(255,255,255,0.08)", borderRadius: 0 }} formatter={(v: number) => [chartAsset === "USD" ? `$${v.toFixed(4)}` : `${v.toLocaleString()} ${chartAsset}`, chartAsset === "USD" ? "Spend" : "Balance"]} />
+                  <Tooltip contentStyle={{ fontFamily: "IBM Plex Mono", fontSize: 11, background: "#030712", border: "1px dotted rgba(255,255,255,0.20)", borderRadius: 0 }} formatter={(v: number) => [chartAsset === "USD" ? `$${v.toFixed(4)}` : `${v.toLocaleString()} ${chartAsset}`, chartAsset === "USD" ? "Spend" : "Balance"]} />
                   <Line type="monotone" dataKey="spend" stroke="#FAFAFA" strokeWidth={1.5} dot={{ r: 3, fill: "#FAFAFA" }} activeDot={{ r: 4, fill: "#FAFAFA" }} />
                 </LineChart>
               </ResponsiveContainer>
@@ -344,16 +344,16 @@ export default function CustomerDetail() {
             )}
           </div>
           {/* Mini stats */}
-          <div className="grid grid-cols-3 gap-4 pt-4 border-t border-dotted border-white/10">
-            <div className="border border-dotted border-white/10 px-4 py-3">
+          <div className="grid grid-cols-3 gap-4 pt-4 border-t border-dotted border-white/20">
+            <div className="border border-dotted border-white/20 px-4 py-3">
               <div className="font-space text-xs uppercase text-white/40 tracking-wider mb-1">Peak Day</div>
               <div className="font-ibm-plex text-sm font-bold">{peakDay ? `${peakDay.day} — $${peakDay.spend.toFixed(2)}` : "—"}</div>
             </div>
-            <div className="border border-dotted border-white/10 px-4 py-3">
+            <div className="border border-dotted border-white/20 px-4 py-3">
               <div className="font-space text-xs uppercase text-white/40 tracking-wider mb-1">Most Used Event</div>
               <div className="font-ibm-plex text-sm font-bold">{mostUsedType ? `${mostUsedType[0]} (${mostUsedType[1]})` : "—"}</div>
             </div>
-            <div className="border border-dotted border-white/10 px-4 py-3">
+            <div className="border border-dotted border-white/20 px-4 py-3">
               <div className="font-space text-xs uppercase text-white/40 tracking-wider mb-1">Avg Per Event</div>
               <div className="font-ibm-plex text-sm font-bold">${avgPerEvent.toFixed(4)}</div>
             </div>
@@ -363,7 +363,7 @@ export default function CustomerDetail() {
 
       {/* ==================== USAGE EVENTS TAB ==================== */}
       {activeTab === "events" && (
-        <div className="border border-dotted border-white/10 p-5">
+        <div className="border border-dotted border-white/20 p-5">
           <div className="flex items-center justify-between mb-4">
             {asciiHeader(`USAGE EVENTS (${filteredEvents.length})`)}
             <select
@@ -379,7 +379,7 @@ export default function CustomerDetail() {
           </div>
           <table className="w-full table-fixed">
             <thead>
-              <tr className="border-b border-dotted border-white/20">
+              <tr className="border-b border-dotted border-white/30">
                 <th className="w-[18%] px-4 py-3 text-left font-space text-xs uppercase tracking-wider text-white/40 whitespace-nowrap">Timestamp</th>
                 <th className="w-[16%] px-4 py-3 text-left font-space text-xs uppercase tracking-wider text-white/40 whitespace-nowrap">Event Type</th>
                 <th className="w-[28%] px-4 py-3 text-left font-space text-xs uppercase tracking-wider text-white/40 whitespace-nowrap">Dimensions</th>
@@ -397,7 +397,7 @@ export default function CustomerDetail() {
                 const feeAsset = fee?.asset_code || "USD";
                 const isTok = feeAsset === "TOK";
                 return (
-                  <tr key={event.id} className="border-b border-dotted border-white/10 hover:bg-white/[0.02] cursor-pointer" onClick={() => setSelectedEvent(selectedEvent === event.id ? null : event.id)}>
+                  <tr key={event.id} className="border-b border-dotted border-white/15 hover:bg-white/[0.02] cursor-pointer" onClick={() => setSelectedEvent(selectedEvent === event.id ? null : event.id)}>
                     <td className="px-4 py-4 font-ibm-plex text-xs text-white/60 whitespace-nowrap">{formatTime(event.timestamp)}</td>
                     <td className="px-4 py-4 font-ibm-plex text-sm font-medium whitespace-nowrap">{event.event_type}</td>
                     <td className="px-4 py-4">
@@ -426,7 +426,7 @@ export default function CustomerDetail() {
             </tbody>
           </table>
           {!eventsShowAll && filteredEvents.length > INITIAL_EVENT_COUNT2 && (
-            <div className="flex justify-center pt-4 mt-2 border-t border-dotted border-white/10">
+            <div className="flex justify-center pt-4 mt-2 border-t border-dotted border-white/20">
               <button onClick={() => setEventsShowAll(true)} className="text-xs font-mono uppercase tracking-wide text-white/40 hover:text-white cursor-pointer">Load More ({filteredEvents.length - INITIAL_EVENT_COUNT2} remaining)</button>
             </div>
           )}
@@ -447,7 +447,7 @@ export default function CustomerDetail() {
               const acctSpent = charges.filter((t) => t.asset_code === account.asset_code).reduce((s, t) => s + Math.abs(t.amount), 0);
 
               return (
-                <div key={account.asset_code} className={`border border-dotted p-5 ${isCustom ? "border-teal-400/20 bg-[#0d1f24]" : "border-white/10 bg-card"}`}>
+                <div key={account.asset_code} className={`border border-dotted p-5 ${isCustom ? "border-teal-400/20" : "border-white/20"}`}>
                   {/* Header */}
                   <div className="flex items-center justify-between mb-4">
                     <div className="flex items-center gap-2">
@@ -468,7 +468,7 @@ export default function CustomerDetail() {
                       { label: "Pending", value: formatVal(account.pending_in) },
                       { label: "Reserved", value: formatVal(account.pending_out) },
                     ].map(row => (
-                      <div key={row.label} className="flex justify-between py-1.5 border-b border-dotted border-white/8 text-sm font-mono">
+                      <div key={row.label} className="flex justify-between py-1.5 border-b border-dotted border-white/[0.12] text-sm font-mono">
                         <span className="text-white/40">{row.label}</span>
                         <span className="text-white">{row.value}</span>
                       </div>
@@ -476,7 +476,7 @@ export default function CustomerDetail() {
                   </div>
 
                   {/* Auto top-up */}
-                  <div className="text-xs font-mono mt-3 pt-3 border-t border-dotted border-white/8 space-y-1">
+                  <div className="text-xs font-mono mt-3 pt-3 border-t border-dotted border-white/[0.12] space-y-1">
                     <div>
                       <span className="text-white/40">Auto Top-up: </span>
                       {isFiat && customer.auto_topup?.enabled ? (
@@ -519,12 +519,12 @@ export default function CustomerDetail() {
           </div>
 
           {/* Top-up history */}
-          <div className="border border-dotted border-white/10 p-5">
+          <div className="border border-dotted border-white/20 p-5">
             {asciiHeader(`TOP-UP HISTORY (${topups.length})`)}
             {topups.length > 0 ? (
               <table className="w-full table-fixed">
                 <thead>
-                  <tr className="border-b border-dotted border-white/20">
+                 <tr className="border-b border-dotted border-white/30">
                     <th className="w-[30%] px-2 py-3 text-left font-space text-xs uppercase tracking-wider text-white/40 whitespace-nowrap">Date</th>
                     <th className="w-[25%] px-2 py-3 text-right font-space text-xs uppercase tracking-wider text-white/40 whitespace-nowrap">Amount</th>
                     <th className="w-[30%] px-2 py-3 text-left font-space text-xs uppercase tracking-wider text-white/40 whitespace-nowrap">Description</th>
@@ -533,7 +533,7 @@ export default function CustomerDetail() {
                 </thead>
                 <tbody>
                   {topups.map((tx) => (
-                    <tr key={tx.id} className="border-b border-dotted border-white/10 hover:bg-white/[0.02]">
+                    <tr key={tx.id} className="border-b border-dotted border-white/15 hover:bg-white/[0.02]">
                       <td className="px-2 py-3 font-ibm-plex text-xs text-white/60">{formatTime(tx.created_at)}</td>
                       <td className={`px-2 py-3 text-right font-ibm-plex text-sm ${tx.asset_code === "TOK" ? "text-teal-400" : "text-[#4ADE80]"}`}>+{tx.asset_code === "USD" ? `$${tx.amount.toFixed(2)}` : `${tx.amount.toLocaleString()} ${tx.asset_code}`}</td>
                       <td className="px-2 py-3 font-ibm-plex text-xs text-white/60">{tx.description}</td>
@@ -551,7 +551,7 @@ export default function CustomerDetail() {
 
       {/* ==================== SUBSCRIPTIONS TAB ==================== */}
       {activeTab === "subscriptions" && (
-        <div className="border border-dotted border-white/10 p-5">
+        <div className="border border-dotted border-white/20 p-5">
           <div className="flex items-center justify-between mb-4">
             {asciiHeader("SUBSCRIPTIONS")}
             <button className="bg-white text-black px-4 py-2 font-space text-xs uppercase tracking-wide hover:bg-white/90">+ Add Subscription</button>
@@ -559,7 +559,7 @@ export default function CustomerDetail() {
           {customer.subscriptions.length > 0 ? (
             <table className="w-full table-fixed">
               <thead>
-                <tr className="border-b border-dotted border-white/20">
+                <tr className="border-b border-dotted border-white/30">
                   <th className="w-[30%] px-4 py-3 text-left font-space text-xs uppercase tracking-wider text-white/40 whitespace-nowrap">Product</th>
                   <th className="w-[20%] px-4 py-3 text-left font-space text-xs uppercase tracking-wider text-white/40 whitespace-nowrap">Code</th>
                   <th className="w-[15%] px-4 py-3 text-left font-space text-xs uppercase tracking-wider text-white/40 whitespace-nowrap">Status</th>
@@ -573,7 +573,7 @@ export default function CustomerDetail() {
                   const isExpanded = expandedSub === sub.id;
                   return (
                     <React.Fragment key={sub.id}>
-                      <tr className="border-b border-dotted border-white/10 hover:bg-white/[0.02] cursor-pointer" onClick={() => setExpandedSub(isExpanded ? null : sub.id)}>
+                      <tr className="border-b border-dotted border-white/15 hover:bg-white/[0.02] cursor-pointer" onClick={() => setExpandedSub(isExpanded ? null : sub.id)}>
                         <td className="px-4 py-4 font-ibm-plex text-sm font-medium">
                           <span className={`text-white/20 text-xs mr-2 inline-block transition-transform duration-150 ${isExpanded ? "rotate-90" : ""}`}>›</span>
                           {sub.product_name}
@@ -592,7 +592,7 @@ export default function CustomerDetail() {
                       {isExpanded && product && (
                         <tr>
                           <td colSpan={5} className="px-4 pb-4">
-                            <div className="ml-8 border-t border-dotted border-white/8 pt-3 space-y-2">
+                            <div className="ml-8 border-t border-dotted border-white/[0.12] pt-3 space-y-2">
                               {product.prices.map((price) => (
                                 <div key={price.id} className="flex items-center gap-4 font-mono text-xs text-white/50">
                                   <span className="text-white/70 w-36">{price.event_type || "flat fee"}</span>

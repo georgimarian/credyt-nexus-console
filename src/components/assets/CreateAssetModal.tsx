@@ -82,7 +82,7 @@ export function CreateAssetModal({ open, onClose, onCreated }: CreateAssetModalP
   return (
     <Dialog open={open} onOpenChange={(v) => !v && handleClose()}>
       <DialogContent className="sm:max-w-lg p-0 gap-0">
-        <div className="border-b border-dotted border-white/[0.08] px-8 py-4">
+        <div className="border-b border-dotted border-white/20 px-8 py-4">
           <span className="font-space text-xs text-white/50">┌─ CREATE ASSET ───────────────────────┐</span>
         </div>
 
@@ -183,7 +183,7 @@ export function CreateAssetModal({ open, onClose, onCreated }: CreateAssetModalP
 
           {/* Exchange Rate section for CUSTOM only */}
           {assetType === "custom" && (
-            <div className="border-t border-dotted border-white/[0.08] pt-5 space-y-5">
+            <div className="border-t border-dotted border-white/20 pt-5 space-y-5">
               <div className="font-space text-xs uppercase tracking-wider text-white/40">Exchange Rate</div>
 
               <div className="grid grid-cols-2 gap-4">
@@ -234,7 +234,7 @@ export function CreateAssetModal({ open, onClose, onCreated }: CreateAssetModalP
         </div>
 
         {/* Footer */}
-        <div className="flex items-center justify-between border-t border-dotted border-white/[0.08] px-8 py-4">
+        <div className="flex items-center justify-between border-t border-dotted border-white/20 px-8 py-4">
           <button onClick={handleClose} className="border border-white/30 bg-transparent px-4 py-2 font-space text-xs uppercase tracking-wide text-white hover:bg-white/5">
             Cancel
           </button>

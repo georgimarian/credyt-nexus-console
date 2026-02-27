@@ -28,10 +28,10 @@ export default function Webhooks() {
         <button className="border border-dotted border-white/30 bg-transparent px-4 py-2 font-mono text-xs uppercase tracking-wide text-white hover:bg-white/5">+ New Endpoint</button>
       </div>
 
-      <div className="border border-dotted border-white/10">
+      <div className="border border-dotted border-white/20">
         <table className="w-full table-fixed">
           <thead>
-            <tr className="border-b border-dotted border-white/20">
+            <tr className="border-b border-dotted border-white/30">
               <th className="w-[40%] px-4 py-3 text-left font-mono text-xs uppercase tracking-wider text-white/40 whitespace-nowrap">Endpoint URL</th>
               <th className="w-[25%] px-4 py-3 text-left font-mono text-xs uppercase tracking-wider text-white/40 whitespace-nowrap">Events</th>
               <th className="w-[10%] px-4 py-3 text-left font-mono text-xs uppercase tracking-wider text-white/40 whitespace-nowrap">Status</th>
@@ -41,7 +41,7 @@ export default function Webhooks() {
           </thead>
           <tbody>
             {paged.map((wh) => (
-              <tr key={wh.id} className="border-b border-dotted border-white/10 hover:bg-white/[0.02] cursor-pointer" onClick={() => setExpandedId(expandedId === wh.id ? null : wh.id)}>
+              <tr key={wh.id} className="border-b border-dotted border-white/15 hover:bg-white/[0.02] cursor-pointer" onClick={() => setExpandedId(expandedId === wh.id ? null : wh.id)}>
                 <td className="px-4 py-4 font-mono text-sm font-light truncate">{wh.url}</td>
                 <td className="px-4 py-4 font-mono text-xs text-white/60">{wh.events.join(", ")}</td>
                 <td className="px-4 py-4"><StatusBadge status={wh.status} /></td>
@@ -60,7 +60,7 @@ export default function Webhooks() {
       </div>
 
       {totalPages > 1 && (
-        <div className="flex justify-end items-center gap-4 pt-4 mt-2 border-t border-dotted border-white/10">
+        <div className="flex justify-end items-center gap-4 pt-4 mt-2 border-t border-dotted border-white/20">
           <button disabled={page === 0} onClick={() => setPage(page - 1)} className="text-xs font-mono uppercase tracking-wide text-white/40 hover:text-white cursor-pointer disabled:text-white/15 disabled:pointer-events-none">← Previous</button>
           <button disabled={page >= totalPages - 1} onClick={() => setPage(page + 1)} className="text-xs font-mono uppercase tracking-wide text-white/40 hover:text-white cursor-pointer disabled:text-white/15 disabled:pointer-events-none">Next →</button>
         </div>
@@ -70,18 +70,18 @@ export default function Webhooks() {
         const wh = webhooks.find(w => w.id === expandedId);
         if (!wh) return null;
         return (
-          <div className="p-6 bg-white/[0.02]">
+          <div className="p-6">
             <div className="font-mono text-xs uppercase tracking-wider text-white/40 mb-3">Subscribed Events</div>
             <div className="flex flex-wrap gap-2 mb-6">
               {wh.events.map((evt) => (
-                <span key={evt} className="border border-dotted border-white/[0.08] px-3 py-1 font-mono text-xs">{evt}</span>
+                <span key={evt} className="border border-dotted border-white/20 px-3 py-1 font-mono text-xs">{evt}</span>
               ))}
             </div>
             <div className="font-mono text-xs uppercase tracking-wider text-white/40 mb-3">Recent Deliveries</div>
-            <div className="border border-dotted border-white/10">
+            <div className="border border-dotted border-white/20">
               <table className="w-full table-fixed">
                 <thead>
-                  <tr className="border-b border-dotted border-white/20">
+                  <tr className="border-b border-dotted border-white/30">
                     <th className="px-4 py-3 text-left font-mono text-xs uppercase tracking-wider text-white/40 whitespace-nowrap">Time</th>
                     <th className="px-4 py-3 text-left font-mono text-xs uppercase tracking-wider text-white/40 whitespace-nowrap">Status</th>
                     <th className="px-4 py-3 text-left font-mono text-xs uppercase tracking-wider text-white/40 whitespace-nowrap">Event</th>
@@ -90,7 +90,7 @@ export default function Webhooks() {
                 </thead>
                 <tbody>
                   {wh.deliveries.map((del) => (
-                    <tr key={del.id} className="border-b border-dotted border-white/10 hover:bg-white/[0.02]">
+                    <tr key={del.id} className="border-b border-dotted border-white/15 hover:bg-white/[0.02]">
                       <td className="px-4 py-4 font-mono text-xs text-white/60">{formatTime(del.delivered_at)}</td>
                       <td className={`px-4 py-4 font-mono text-xs font-medium ${del.status_code < 300 ? "text-green-400" : "text-red-400"}`}>{del.status_code}</td>
                       <td className="px-4 py-4 font-mono text-xs">{del.event_type}</td>
