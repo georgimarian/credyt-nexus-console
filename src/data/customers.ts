@@ -9,7 +9,10 @@ export const customers: Customer[] = [
     status: "active",
     metadata: { plan: "enterprise", industry: "fintech" },
     created_at: "2024-09-15T13:00:00Z",
-    auto_topup: { enabled: true, threshold: 50, amount: 500 },
+    auto_topup: {
+      USD: { enabled: true, threshold: 50, amount: 500 },
+      TOK: { enabled: false, threshold: 0, amount: 0 },
+    },
     subscriptions: [
       { id: "sub_01", product_id: "prod_03", product_name: "Enterprise", status: "active", start_date: "2024-09-15T13:00:00Z" },
     ],
@@ -43,7 +46,7 @@ export const customers: Customer[] = [
     external_id: "ts-002",
     status: "active",
     created_at: "2024-10-20T08:00:00Z",
-    auto_topup: { enabled: true, threshold: 10, amount: 25 },
+    auto_topup: { USD: { enabled: true, threshold: 10, amount: 25 } },
     subscriptions: [
       { id: "sub_02", product_id: "prod_01", product_name: "AI Agent PAYG", status: "active", start_date: "2024-10-20T08:00:00Z" },
     ],
@@ -90,7 +93,7 @@ export const customers: Customer[] = [
     external_id: "df-004",
     status: "active",
     created_at: "2024-12-01T09:00:00Z",
-    auto_topup: { enabled: true, threshold: 25, amount: 100 },
+    auto_topup: { USD: { enabled: true, threshold: 25, amount: 100 } },
     subscriptions: [
       { id: "sub_04", product_id: "prod_01", product_name: "AI Agent PAYG", status: "active", start_date: "2024-12-01T09:00:00Z" },
     ],
