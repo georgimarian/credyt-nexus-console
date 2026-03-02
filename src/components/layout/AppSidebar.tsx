@@ -14,6 +14,8 @@ const navItems = [
 
 const bottomItems = [
   { label: "Settings", path: "/settings", icon: Settings },
+  { label: "Team Mgmt", path: "/team", icon: Users2 },
+  { label: "Developers", path: "/developers", icon: Code2 },
 ];
 
 interface AppSidebarProps {
@@ -24,8 +26,14 @@ interface AppSidebarProps {
 export function AppSidebar({ collapsed, onToggle }: AppSidebarProps) {
   const location = useLocation();
 
-  const isActive = (path: string) =>
-    path === "/" ? location.pathname === "/" : location.pathname.startsWith(path);
+  const settingsPaths = ["/settings", "/team", "/developers"];
+  const isActive = (path: string) => {
+    if (path === "/") return location.pathname === "/";
+    if (settingsPaths.includes(path)) {
+      return location.pathname === path;
+    }
+    return location.pathname.startsWith(path);
+  };
 
   const renderNavItem = (item: typeof navItems[0]) => {
     const active = isActive(item.path);

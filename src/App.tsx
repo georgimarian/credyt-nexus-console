@@ -15,6 +15,8 @@ import Assets from "./pages/Assets";
 import Vendors from "./pages/Vendors";
 import Webhooks from "./pages/Webhooks";
 import Settings from "./pages/Settings";
+import Developers from "./pages/Developers";
+import TeamManagement from "./pages/TeamManagement";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -38,6 +40,8 @@ const App = () => (
               <Route path="/vendors" element={<Vendors />} />
               <Route path="/webhooks" element={<Webhooks />} />
               <Route path="/settings" element={<Settings />} />
+              <Route path="/developers" element={<Developers />} />
+              <Route path="/team" element={<TeamManagement />} />
             </Route>
             <Route path="*" element={<NotFound />} />
           </Routes>
