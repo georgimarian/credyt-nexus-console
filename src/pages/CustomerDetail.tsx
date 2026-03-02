@@ -3,6 +3,7 @@ import React, { useState, useMemo } from "react";
 import { StatusBadge } from "@/components/terminal/StatusBadge";
 import { customers as initialCustomers } from "@/data/customers";
 import { events } from "@/data/events";
+import { assets as allAssets } from "@/data/assets";
 import { products } from "@/data/products";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { EditCustomerModal } from "@/components/customers/EditCustomerModal";
@@ -263,27 +264,52 @@ export default function CustomerDetail() {
         </div>
         <div className="border border-dotted border-white/20 p-5">
           {asciiHeader("AUTO TOP-UP")}
-          {customer.auto_topup ? (
-            Object.entries(customer.auto_topup).map(([code, cfg]) => (
-              <div key={code} className="mb-2">
-                {fieldRow(code, (
-                  <span className={cfg.enabled ? "text-[#4ADE80]" : "text-white/40"}>
-                    {cfg.enabled ? "✓ ENABLED" : "OFF"}
-                  </span>
-                ))}
-                {cfg.enabled && (
-                  <>
-                    {fieldRow("Threshold", `below ${code === "USD" ? "$" : ""}${cfg.threshold.toFixed(code === "USD" ? 2 : 0)}${code !== "USD" ? ` ${code}` : ""}`)}
-                    {fieldRow("Top-up", `+${code === "USD" ? "$" : ""}${cfg.amount.toFixed(code === "USD" ? 2 : 0)}${code !== "USD" ? ` ${code}` : ""}`)}
-                  </>
-                )}
-              </div>
-            ))
-          ) : (
-            fieldRow("Status", <span className="text-white/40">OFF</span>)
-          )}
-          {fieldRow("Subscriptions", `${customer.subscriptions.length} active`)}
-          {customer.subscriptions.map((sub) => fieldRow(sub.product_name, <StatusBadge status={sub.status} />))}
+          <div className="space-y-3 mt-3">
+            {customer.auto_topup ? (
+              Object.entries(customer.auto_topup).map(([code, cfg]) => {
+                const isFiat = allAssets.find(a => a.code === code)?.type === "fiat";
+                const symbol = isFiat ? "$" : code.charAt(0);
+                const symbolColor = isFiat ? "text-white/40" : "text-teal-400/60";
+                const enabled = cfg.enabled;
+                return (
+                  <div key={code} className={`border border-dotted ${enabled ? "border-white/20" : "border-white/15"} p-3`}>
+                    <div className="flex items-center justify-between mb-2">
+                      <div className="flex items-center gap-1">
+                        <span className={`text-xs font-mono ${symbolColor}`}>{symbol}</span>
+                        <span className="text-xs font-mono font-bold text-white">{code}</span>
+                      </div>
+                      {enabled ? (
+                        <span className="text-xs font-mono text-[#4ADE80]">✓ ENABLED</span>
+                      ) : (
+                        <span className="text-xs font-mono text-white/30">✗ OFF</span>
+                      )}
+                    </div>
+                    {enabled ? (
+                      <>
+                        <div className="border-t border-dotted border-white/15 my-2" />
+                        <div className="flex justify-between py-1 text-xs font-mono">
+                          <span className="text-white/40">Threshold</span>
+                          <span className="text-white">below {isFiat ? "$" : ""}{cfg.threshold.toFixed(isFiat ? 2 : 0)}{!isFiat ? ` ${code}` : ""}</span>
+                        </div>
+                        <div className="flex justify-between py-1 text-xs font-mono">
+                          <span className="text-white/40">Top-up Amount</span>
+                          <span className="text-white">+{isFiat ? "$" : ""}{cfg.amount.toFixed(isFiat ? 2 : 0)}{!isFiat ? ` ${code}` : ""}</span>
+                        </div>
+                      </>
+                    ) : (
+                      <div className="text-xs text-white/20 font-mono mt-1">Auto top-up not configured</div>
+                    )}
+                  </div>
+                );
+              })
+            ) : (
+              <div className="text-xs font-mono text-white/30">No auto top-up configured</div>
+            )}
+          </div>
+          <div className="border-t border-dotted border-white/20 mt-4 pt-4">
+            {fieldRow("Subscriptions", `${customer.subscriptions.length} active`)}
+            {customer.subscriptions.map((sub) => fieldRow(sub.product_name, <StatusBadge status={sub.status} />))}
+          </div>
         </div>
       </div>
 
