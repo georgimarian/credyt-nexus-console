@@ -10,6 +10,8 @@ const pageTitles: Record<string, string> = {
   "/vendors": "Vendors",
   "/webhooks": "Webhooks",
   "/settings": "Settings",
+  "/team": "Team Management",
+  "/developers": "Developers",
 };
 
 export function AppLayout() {
