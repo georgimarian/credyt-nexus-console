@@ -56,11 +56,11 @@ export interface Customer {
   status: "active" | "suspended";
   metadata?: Record<string, string>;
   created_at: string;
-  auto_topup?: {
+  auto_topup?: Record<string, {
     enabled: boolean;
     threshold: number;
     amount: number;
-  };
+  }>;
   subscriptions: Subscription[];
   wallet: Wallet;
 }

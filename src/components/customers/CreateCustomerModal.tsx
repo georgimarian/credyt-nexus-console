@@ -68,7 +68,7 @@ export function CreateCustomerModal({ open, onClose, onCreated }: CreateCustomer
       status: "active",
       created_at: new Date().toISOString(),
       auto_topup: autoTopup
-        ? { enabled: true, threshold: parseFloat(threshold) || 0, amount: parseFloat(topupAmount) || 0 }
+        ? { [currency]: { enabled: true, threshold: parseFloat(threshold) || 0, amount: parseFloat(topupAmount) || 0 } }
         : undefined,
       subscriptions,
       wallet: {

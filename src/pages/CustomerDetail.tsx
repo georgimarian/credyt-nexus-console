@@ -263,16 +263,24 @@ export default function CustomerDetail() {
         </div>
         <div className="border border-dotted border-white/20 p-5">
           {asciiHeader("AUTO TOP-UP")}
-          {fieldRow("Status", (
-            <span className={customer.auto_topup?.enabled ? "text-[#4ADE80]" : "text-white/40"}>
-              {customer.auto_topup?.enabled ? "✓ ENABLED" : "OFF"}
-            </span>
-          ))}
-          {customer.auto_topup?.enabled && (
-            <>
-              {fieldRow("Threshold", `below $${customer.auto_topup.threshold.toFixed(2)}`)}
-              {fieldRow("Top-up Amount", `+$${customer.auto_topup.amount.toFixed(2)}`)}
-            </>
+          {customer.auto_topup ? (
+            Object.entries(customer.auto_topup).map(([code, cfg]) => (
+              <div key={code} className="mb-2">
+                {fieldRow(code, (
+                  <span className={cfg.enabled ? "text-[#4ADE80]" : "text-white/40"}>
+                    {cfg.enabled ? "✓ ENABLED" : "OFF"}
+                  </span>
+                ))}
+                {cfg.enabled && (
+                  <>
+                    {fieldRow("Threshold", `below ${code === "USD" ? "$" : ""}${cfg.threshold.toFixed(code === "USD" ? 2 : 0)}${code !== "USD" ? ` ${code}` : ""}`)}
+                    {fieldRow("Top-up", `+${code === "USD" ? "$" : ""}${cfg.amount.toFixed(code === "USD" ? 2 : 0)}${code !== "USD" ? ` ${code}` : ""}`)}
+                  </>
+                )}
+              </div>
+            ))
+          ) : (
+            fieldRow("Status", <span className="text-white/40">OFF</span>)
           )}
           {fieldRow("Subscriptions", `${customer.subscriptions.length} active`)}
           {customer.subscriptions.map((sub) => fieldRow(sub.product_name, <StatusBadge status={sub.status} />))}
@@ -477,26 +485,34 @@ export default function CustomerDetail() {
 
                   {/* Auto top-up */}
                   <div className="text-xs font-mono mt-3 pt-3 border-t border-dotted border-white/[0.12] space-y-1">
-                    <div>
-                      <span className="text-white/40">Auto Top-up: </span>
-                      {isFiat && customer.auto_topup?.enabled ? (
-                        <span className="text-[#4ADE80]">✓ ENABLED</span>
-                      ) : (
-                        <span className="text-[#F87171]">✗ OFF</span>
-                      )}
-                    </div>
-                    {isFiat && customer.auto_topup?.enabled && (
-                      <>
-                        <div>
-                          <span className="text-white/40">Threshold: </span>
-                          <span className="text-white">${customer.auto_topup.threshold.toFixed(2)}</span>
-                        </div>
-                        <div>
-                          <span className="text-white/40">Top-up Amount: </span>
-                          <span className="text-white">${customer.auto_topup.amount.toFixed(2)}</span>
-                        </div>
-                      </>
-                    )}
+                    {(() => {
+                      const cfg = customer.auto_topup?.[account.asset_code];
+                      const assetIsFiat = isFiat;
+                      return (
+                        <>
+                          <div>
+                            <span className="text-white/40">Auto Top-up: </span>
+                            {cfg?.enabled ? (
+                              <span className="text-[#4ADE80]">✓ ENABLED</span>
+                            ) : (
+                              <span className="text-[#F87171]">✗ OFF</span>
+                            )}
+                          </div>
+                          {cfg?.enabled && (
+                            <>
+                              <div>
+                                <span className="text-white/40">Threshold: </span>
+                                <span className="text-white">{assetIsFiat ? "$" : ""}{cfg.threshold.toFixed(assetIsFiat ? 2 : 0)}{!assetIsFiat ? ` ${account.asset_code}` : ""}</span>
+                              </div>
+                              <div>
+                                <span className="text-white/40">Top-up Amount: </span>
+                                <span className="text-white">+{assetIsFiat ? "$" : ""}{cfg.amount.toFixed(assetIsFiat ? 2 : 0)}{!assetIsFiat ? ` ${account.asset_code}` : ""}</span>
+                              </div>
+                            </>
+                          )}
+                        </>
+                      );
+                    })()}
                   </div>
 
                   {/* Exchange rate for custom assets */}

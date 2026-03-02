@@ -1,8 +1,14 @@
 import { useState, useEffect } from "react";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
-import { Switch } from "@/components/ui/switch";
 import { toast } from "@/hooks/use-toast";
 import type { Customer } from "@/data/types";
+import { assets as allAssets } from "@/data/assets";
+
+interface AssetTopupConfig {
+  enabled: boolean;
+  threshold: string;
+  amount: string;
+}
 
 interface EditCustomerModalProps {
   open: boolean;
@@ -14,28 +20,50 @@ interface EditCustomerModalProps {
 export function EditCustomerModal({ open, onClose, customer, onSaved }: EditCustomerModalProps) {
   const [name, setName] = useState(customer.name);
   const [email, setEmail] = useState(customer.email);
-  const [autoTopup, setAutoTopup] = useState(customer.auto_topup?.enabled || false);
-  const [threshold, setThreshold] = useState(customer.auto_topup?.threshold?.toString() || "");
-  const [topupAmount, setTopupAmount] = useState(customer.auto_topup?.amount?.toString() || "");
   const [errors, setErrors] = useState<Record<string, string>>({});
+  const [expanded, setExpanded] = useState(false);
+
+  // Build per-asset topup state from customer wallet accounts
+  const customerAssets = customer.wallet.accounts.map(a => a.asset_code);
+  const [topupConfigs, setTopupConfigs] = useState<Record<string, AssetTopupConfig>>({});
 
   useEffect(() => {
     setName(customer.name);
     setEmail(customer.email);
-    setAutoTopup(customer.auto_topup?.enabled || false);
-    setThreshold(customer.auto_topup?.threshold?.toString() || "");
-    setTopupAmount(customer.auto_topup?.amount?.toString() || "");
     setErrors({});
+
+    const configs: Record<string, AssetTopupConfig> = {};
+    for (const code of customerAssets) {
+      const existing = customer.auto_topup?.[code];
+      configs[code] = {
+        enabled: existing?.enabled || false,
+        threshold: existing?.threshold?.toString() || "",
+        amount: existing?.amount?.toString() || "",
+      };
+    }
+    setTopupConfigs(configs);
+
+    // Auto-expand if any are enabled
+    const anyEnabled = Object.values(configs).some(c => c.enabled);
+    setExpanded(anyEnabled || customerAssets.length <= 1);
   }, [customer, open]);
+
+  const updateConfig = (code: string, patch: Partial<AssetTopupConfig>) => {
+    setTopupConfigs(prev => ({ ...prev, [code]: { ...prev[code], ...patch } }));
+  };
+
+  const allOff = Object.values(topupConfigs).every(c => !c.enabled);
 
   const validate = () => {
     const errs: Record<string, string> = {};
     if (!name.trim()) errs.name = "Display name is required";
     if (!email.trim()) errs.email = "Email is required";
     else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) errs.email = "Invalid email format";
-    if (autoTopup) {
-      if (!threshold.trim()) errs.threshold = "Threshold is required";
-      if (!topupAmount.trim()) errs.topupAmount = "Top-up amount is required";
+    for (const [code, cfg] of Object.entries(topupConfigs)) {
+      if (cfg.enabled) {
+        if (!cfg.threshold.trim()) errs[`${code}_threshold`] = "Required";
+        if (!cfg.amount.trim()) errs[`${code}_amount`] = "Required";
+      }
     }
     setErrors(errs);
     return Object.keys(errs).length === 0;
@@ -43,19 +71,35 @@ export function EditCustomerModal({ open, onClose, customer, onSaved }: EditCust
 
   const handleSave = () => {
     if (!validate()) return;
+    const autoTopup: Record<string, { enabled: boolean; threshold: number; amount: number }> = {};
+    for (const [code, cfg] of Object.entries(topupConfigs)) {
+      autoTopup[code] = {
+        enabled: cfg.enabled,
+        threshold: parseFloat(cfg.threshold) || 0,
+        amount: parseFloat(cfg.amount) || 0,
+      };
+    }
     const updated: Customer = {
       ...customer,
       name: name.trim(),
       email: email.trim(),
-      auto_topup: autoTopup
-        ? { enabled: true, threshold: parseFloat(threshold) || 0, amount: parseFloat(topupAmount) || 0 }
-        : customer.auto_topup ? { ...customer.auto_topup, enabled: false } : undefined,
+      auto_topup: autoTopup,
     };
     onSaved(updated);
     toast({ title: "done: Customer updated" });
   };
 
-  const inputCls = "w-full border border-dotted border-white/20 bg-transparent px-3 py-2 font-ibm-plex text-sm placeholder:text-white/30 focus:outline-none focus:border-white/60";
+  const getAssetMeta = (code: string) => {
+    const asset = allAssets.find(a => a.code === code);
+    const isFiat = asset?.type === "fiat";
+    return {
+      symbol: asset?.symbol || code,
+      prefix: isFiat ? "$" : code,
+      prefixColor: isFiat ? "text-white/40" : "text-teal-400/60",
+    };
+  };
+
+  const inputCls = "w-full border border-dotted border-white/20 bg-transparent px-3 py-2 font-ibm-plex text-sm placeholder:text-white/30 focus:outline-none focus:border-white/50";
   const readOnlyCls = "w-full bg-white/5 px-3 py-2 font-ibm-plex text-sm text-white/40 border border-dotted border-white/10 cursor-not-allowed";
 
   return (
@@ -83,32 +127,83 @@ export function EditCustomerModal({ open, onClose, customer, onSaved }: EditCust
           </div>
           <div>
             <label className="block font-space text-xs uppercase tracking-wider text-white/40 mb-2">Currency</label>
-            <input value={customer.wallet.accounts[0]?.asset_code || "USD"} readOnly className={readOnlyCls} />
+            <input value={customer.wallet.accounts.map(a => a.asset_code).join(", ")} readOnly className={readOnlyCls} />
           </div>
 
+          {/* Per-asset auto top-up */}
           <div className="border-t border-dotted border-white/20 pt-5">
-            <div className="flex items-center justify-between">
-              <label className="font-space text-xs uppercase tracking-wider text-white/40">Auto Top-up</label>
-              <Switch checked={autoTopup} onCheckedChange={setAutoTopup} />
-            </div>
-            {autoTopup && (
-              <div className="mt-4 grid grid-cols-2 gap-4">
-                <div>
-                  <label className="block font-space text-xs uppercase tracking-wider text-white/40 mb-2">Threshold</label>
-                  <div className="relative">
-                    <span className="absolute left-3 top-1/2 -translate-y-1/2 font-ibm-plex text-sm text-white/40">$</span>
-                    <input type="number" step="any" value={threshold} onChange={(e) => setThreshold(e.target.value)} placeholder="10.00" className={`${inputCls} pl-7`} />
-                  </div>
-                  {errors.threshold && <p className="mt-1 font-ibm-plex text-xs text-[#F87171]">{errors.threshold}</p>}
-                </div>
-                <div>
-                  <label className="block font-space text-xs uppercase tracking-wider text-white/40 mb-2">Top-up Amount</label>
-                  <div className="relative">
-                    <span className="absolute left-3 top-1/2 -translate-y-1/2 font-ibm-plex text-sm text-white/40">+$</span>
-                    <input type="number" step="any" value={topupAmount} onChange={(e) => setTopupAmount(e.target.value)} placeholder="25.00" className={`${inputCls} pl-8`} />
-                  </div>
-                  {errors.topupAmount && <p className="mt-1 font-ibm-plex text-xs text-[#F87171]">{errors.topupAmount}</p>}
-                </div>
+            <label className="block font-space text-xs uppercase tracking-wider text-white/40 mb-3">Auto Top-up</label>
+
+            {/* Collapsed summary when all off and 2+ assets */}
+            {allOff && customerAssets.length >= 2 && !expanded ? (
+              <div className="flex items-center justify-between">
+                <span className="text-xs text-white/30 font-mono">Auto Top-up: OFF for all assets</span>
+                <button
+                  onClick={() => setExpanded(true)}
+                  className="text-xs font-mono text-white/50 hover:text-white/80 border-b border-dotted border-white/20"
+                >
+                  CONFIGURE →
+                </button>
+              </div>
+            ) : (
+              <div className="space-y-4">
+                {customerAssets.map(code => {
+                  const cfg = topupConfigs[code];
+                  if (!cfg) return null;
+                  const meta = getAssetMeta(code);
+                  return (
+                    <div key={code} className="border border-dotted border-white/15 p-4">
+                      {/* Block header */}
+                      <div className="flex items-center justify-between mb-3">
+                        <span className="text-xs font-mono font-bold text-white/70">{code}</span>
+                        <button
+                          type="button"
+                          onClick={() => updateConfig(code, { enabled: !cfg.enabled })}
+                          className={`w-10 h-5 relative transition-colors ${cfg.enabled ? "bg-[#4ADE80]" : "bg-white/20"}`}
+                        >
+                          <span
+                            className={`absolute top-0.5 w-4 h-4 bg-white transition-transform ${cfg.enabled ? "left-[22px]" : "left-0.5"}`}
+                          />
+                        </button>
+                      </div>
+
+                      {/* Fields */}
+                      <div className={cfg.enabled ? "" : "opacity-40 pointer-events-none"}>
+                        <div className="flex items-center justify-between py-2 border-b border-dotted border-white/10">
+                          <span className="text-xs text-white/40 font-mono">Threshold</span>
+                          <div className="flex items-center gap-1.5">
+                            <span className={`text-xs font-mono ${meta.prefixColor}`}>{meta.prefix}</span>
+                            <input
+                              type="number"
+                              step="any"
+                              value={cfg.threshold}
+                              onChange={(e) => updateConfig(code, { threshold: e.target.value })}
+                              placeholder="0"
+                              className="bg-transparent border border-dotted border-white/20 text-xs font-mono text-white px-2 py-1 w-28 text-right focus:outline-none focus:border-white/50"
+                            />
+                          </div>
+                        </div>
+                        {errors[`${code}_threshold`] && <p className="text-right font-ibm-plex text-xs text-[#F87171] mt-0.5">{errors[`${code}_threshold`]}</p>}
+
+                        <div className="flex items-center justify-between py-2">
+                          <span className="text-xs text-white/40 font-mono">Top-up Amount</span>
+                          <div className="flex items-center gap-1.5">
+                            <span className={`text-xs font-mono ${meta.prefixColor}`}>+{meta.prefix}</span>
+                            <input
+                              type="number"
+                              step="any"
+                              value={cfg.amount}
+                              onChange={(e) => updateConfig(code, { amount: e.target.value })}
+                              placeholder="0"
+                              className="bg-transparent border border-dotted border-white/20 text-xs font-mono text-white px-2 py-1 w-28 text-right focus:outline-none focus:border-white/50"
+                            />
+                          </div>
+                        </div>
+                        {errors[`${code}_amount`] && <p className="text-right font-ibm-plex text-xs text-[#F87171] mt-0.5">{errors[`${code}_amount`]}</p>}
+                      </div>
+                    </div>
+                  );
+                })}
               </div>
             )}
           </div>
