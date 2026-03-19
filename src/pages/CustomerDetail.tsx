@@ -157,12 +157,16 @@ export default function CustomerDetail() {
 
   const selectedEventObj = selectedEvent ? customerEvents.find((e) => e.id === selectedEvent) : null;
 
-  const asciiHeader = (label: string) => (
-    <div className="font-space text-xs text-white/50 mb-4">┌─ {label} ──────────────────────────┐</div>
+  const terminalHeader = (label: string) => (
+    <div className="font-mono text-[11px] text-white/30 mb-3 tracking-wide">├─ {label} ──────────────────────────</div>
   );
 
   const fieldRow = (label: string, value: React.ReactNode) => (
-    <div className="flex items-center justify-between font-ibm-plex text-sm py-2.5 border-b border-dotted border-white/[0.12]">
+    <div className="flex items-center justify-between font-mono text-[13px] py-2 border-b border-dashed border-[#1e1e1e]">
+      <span className="text-[#555]">{label}</span>
+      <span className="text-white">{value}</span>
+    </div>
+  );
       <span className="text-white/40">{label}</span>
       <span>{value}</span>
     </div>
