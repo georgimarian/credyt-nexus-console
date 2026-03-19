@@ -8,6 +8,7 @@ import { products } from "@/data/products";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { EditCustomerModal } from "@/components/customers/EditCustomerModal";
 import { EventDetailSheet } from "@/components/events/EventDetailSheet";
+import { ExternalLink, Copy, CheckCircle } from "lucide-react";
 import {
   LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid,
 } from "recharts";
@@ -23,7 +24,25 @@ function formatTime(ts: string) {
   return `${mo} ${day} ${h}:${m}:${s}`;
 }
 
-type TabKey = "overview" | "events" | "wallet" | "subscriptions";
+function truncateId(id: string) {
+  if (id.length <= 12) return id;
+  return `${id.slice(0, 8)}...${id.slice(-4)}`;
+}
+
+function CopyBtn({ text }: { text: string }) {
+  const [copied, setCopied] = useState(false);
+  return (
+    <button
+      onClick={(e) => { e.stopPropagation(); navigator.clipboard.writeText(text); setCopied(true); setTimeout(() => setCopied(false), 1500); }}
+      className="ml-1.5 text-[#444] hover:text-white/60 inline-flex items-center"
+      title="Copy"
+    >
+      {copied ? <CheckCircle size={11} className="text-[#4ADE80]" /> : <Copy size={11} />}
+    </button>
+  );
+}
+
+type TabKey = "events" | "subscriptions" | "autotopup";
 
 export default function CustomerDetail() {
   const { id } = useParams<{ id: string }>();
@@ -34,17 +53,14 @@ export default function CustomerDetail() {
   const [showEditModal, setShowEditModal] = useState(false);
   const [topupAmount, setTopupAmount] = useState("");
   const [selectedEvent, setSelectedEvent] = useState<string | null>(null);
-  const [activeTab, setActiveTab] = useState<TabKey>("overview");
-  const [eventPage, setEventPage] = useState(0);
+  const [activeTab, setActiveTab] = useState<TabKey>("events");
   const [chartAsset, setChartAsset] = useState("USD");
-  const [productFilter, setProductFilter] = useState("all");
   const [eventsShowAll, setEventsShowAll] = useState(false);
   const [expandedSub, setExpandedSub] = useState<string | null>(null);
 
   const customerEvents = customer ? events.filter((e) => e.customer_id === customer.id) : [];
   const allCharges = customer ? customer.wallet.transactions.filter((t) => t.type === "charge") : [];
 
-  // Generate chart data — for custom assets show balance rundown, for USD show spend
   const chartDays = parseInt(chartRange);
   const chartData = useMemo(() => {
     if (!customer) return [];
@@ -52,14 +68,11 @@ export default function CustomerDetail() {
     const isCustomAsset = chartAsset !== "USD";
     
     if (isCustomAsset) {
-      // Step-down balance chart for custom assets
       const account = customer.wallet.accounts.find(a => a.asset_code === chartAsset);
       if (!account) return [];
       const assetTxns = customer.wallet.transactions
         .filter(t => t.asset_code === chartAsset)
         .sort((a, b) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime());
-      
-      // Start from initial topup, then apply charges day by day
       const initialTopup = assetTxns.filter(t => t.type === "top_up").reduce((s, t) => s + t.amount, 0);
       
       return Array.from({ length: chartDays }, (_, i) => {
@@ -68,12 +81,9 @@ export default function CustomerDetail() {
         const dayStr = date.toISOString().split("T")[0];
         const mo = date.toLocaleString("en-US", { month: "short" });
         const dayLabel = `${mo} ${String(date.getDate()).padStart(2, "0")}`;
-        
-        // Sum all txns up to end of this day
         const spent = assetTxns
           .filter(t => t.type === "charge" && t.created_at.split("T")[0] <= dayStr)
           .reduce((s, t) => s + Math.abs(t.amount), 0);
-        
         return { day: dayLabel, spend: initialTopup - spent };
       });
     }
@@ -99,53 +109,29 @@ export default function CustomerDetail() {
   if (!customer) {
     return (
       <div className="flex min-h-[50vh] items-center justify-center">
-        <p className="font-ibm-plex text-white/40">Customer not found</p>
+        <p className="font-mono text-[#555]">Customer not found</p>
       </div>
     );
   }
 
   const topups = customer.wallet.transactions.filter((t) => t.type === "top_up");
   const primaryAccount = customer.wallet.accounts[0];
-  const balance = primaryAccount ? primaryAccount.available + primaryAccount.pending_out : 0;
-
-  const now = new Date();
-  const monthStart = new Date(now.getFullYear(), now.getMonth(), 1);
-  const charges = customer ? customer.wallet.transactions.filter((t) => t.type === "charge") : [];
-  const monthCharges = charges.filter((t) => new Date(t.created_at) >= monthStart);
-  const totalSpend = monthCharges.filter(t => t.asset_code === "USD").reduce((s, t) => s + Math.abs(t.amount), 0);
-  const daysElapsed = Math.max(1, Math.ceil((now.getTime() - monthStart.getTime()) / 86400000));
-  const avgDaily = totalSpend / daysElapsed;
-  const runway = avgDaily > 0 ? Math.round((primaryAccount?.available || 0) / avgDaily) : Infinity;
-  const monthEventCount = customerEvents.filter((e) => new Date(e.timestamp) >= monthStart).length;
-
-  const runwayColor = runway === Infinity ? "text-[#4ADE80]" : runway > 30 ? "text-[#4ADE80]" : runway >= 7 ? "text-[#FACC15]" : "text-[#F87171]";
-
-  // Multi-asset helpers
-  const hasMultiAsset = customer.wallet.accounts.length > 1;
-  const tokAccount = customer.wallet.accounts.find(a => a.asset_code === "TOK");
-  const tokBalance = tokAccount ? tokAccount.available + tokAccount.pending_out : 0;
-  const tokMonthSpend = monthCharges.filter(t => t.asset_code === "TOK").reduce((s, t) => s + Math.abs(t.amount), 0);
-  const formatAsset = (v: number, code: string) => code === "USD" ? `$${v.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}` : `${v.toLocaleString()} ${code}`;
+  const charges = customer.wallet.transactions.filter((t) => t.type === "charge");
+  const assetCodes = customer.wallet.accounts.map((a) => a.asset_code);
 
   const hasChartData = chartData.some((d) => d.spend > 0);
-  const metadataEntries = customer.metadata ? Object.entries(customer.metadata) : [];
 
-  // Overview tab mini stats
-  const peakDay = chartData.reduce((max, d) => d.spend > max.spend ? d : max, chartData[0]);
-  const eventTypeCounts: Record<string, number> = {};
-  customerEvents.forEach((e) => { eventTypeCounts[e.event_type] = (eventTypeCounts[e.event_type] || 0) + 1; });
-  const mostUsedType = Object.entries(eventTypeCounts).sort((a, b) => b[1] - a[1])[0];
-  const totalFees = customerEvents.reduce((s, e) => s + (e.fees?.[0]?.amount || 0), 0);
-  const avgPerEvent = customerEvents.length > 0 ? totalFees / customerEvents.length : 0;
+  // Last activity
+  const lastEvent = customerEvents.length > 0 ? customerEvents.sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime())[0] : null;
 
-  // Filtered events for events tab
-  const filteredEvents = productFilter === "all"
-    ? customerEvents
-    : customerEvents.filter((e) => {
-        const product = products.find((p) => p.code === productFilter);
-        if (!product) return false;
-        return product.prices.some((pr) => pr.event_type === e.event_type);
-      });
+  const INITIAL_EVENT_COUNT = 10;
+  const visibleEvents = eventsShowAll ? customerEvents : customerEvents.slice(0, INITIAL_EVENT_COUNT);
+
+  const selectedEventObj = selectedEvent ? customerEvents.find((e) => e.id === selectedEvent) : null;
+
+  const terminalHeader = (label: string) => (
+    <div className="font-mono text-[11px] text-[#444] mb-3 tracking-wide">├─ {label} ──────────────────────────</div>
+  );
 
   const handleTopup = () => {
     const amount = parseFloat(topupAmount);
@@ -155,41 +141,12 @@ export default function CustomerDetail() {
     setTopupAmount("");
   };
 
-  const selectedEventObj = selectedEvent ? customerEvents.find((e) => e.id === selectedEvent) : null;
-
-  const terminalHeader = (label: string) => (
-    <div className="font-mono text-[11px] text-white/30 mb-3 tracking-wide">├─ {label} ──────────────────────────</div>
-  );
-
-  const fieldRow = (label: string, value: React.ReactNode) => (
-    <div className="flex items-center justify-between font-mono text-[13px] py-2 border-b border-dashed border-[#1e1e1e]">
-      <span className="text-[#555]">{label}</span>
-      <span className="text-white">{value}</span>
-    </div>
-  );
-
-
-
-  const EVENTS_PER_PAGE = 10;
-  const INITIAL_EVENT_COUNT2 = 10;
-  const visibleEvents = eventsShowAll ? filteredEvents : filteredEvents.slice(0, INITIAL_EVENT_COUNT2);
-  const pagedEvents = visibleEvents;
-  const totalEventPages = Math.ceil(filteredEvents.length / EVENTS_PER_PAGE);
-
   const tabs: { key: TabKey; label: string }[] = [
-    { key: "overview", label: "Overview" },
     { key: "events", label: "Usage Events" },
-    { key: "wallet", label: "Wallet" },
     { key: "subscriptions", label: "Subscriptions" },
+    { key: "autotopup", label: "Auto Top-Up" },
   ];
 
-  // Wallet tab helpers
-  const totalTopups = topups.reduce((s, t) => s + t.amount, 0);
-  const totalSpentAll = charges.reduce((s, t) => s + Math.abs(t.amount), 0);
-  const assetCodes = customer.wallet.accounts.map((a) => a.asset_code);
-
-
-  // Period dropdown options
   const periodOptions = [
     { label: "Last 7 days", value: "7" },
     { label: "Last 30 days", value: "30" },
@@ -198,127 +155,168 @@ export default function CustomerDetail() {
 
   return (
     <div className="space-y-0">
-      {/* Breadcrumb */}
-      <nav className="font-mono text-[11px] text-[#666] mb-6">
-        <Link to="/customers" className="hover:text-white">CUSTOMERS</Link>
-        <span className="mx-2">{">"}</span>
-        <span className="text-[#666]">{customer.name}</span>
-      </nav>
-
-      {/* HEADER ROW */}
-      <div className="flex items-start justify-between border-b border-solid border-[#1e1e1e] pb-6 mb-6">
-        <div>
-          <div className="flex items-center gap-3">
-            <h1 className="font-mono text-2xl font-bold tracking-wider uppercase">{customer.name}</h1>
-            <span className="border border-solid border-[#4ADE80]/40 text-[#4ADE80] text-[10px] font-mono uppercase px-2 py-0.5">✓ {customer.status}</span>
-          </div>
-          <div className="mt-1.5 font-mono text-[11px] text-[#555]">{customer.external_id}</div>
+      {/* ===== HEADER ===== */}
+      <div className="flex items-center justify-between mb-6">
+        <div className="flex items-center gap-2 font-mono text-[13px] flex-wrap">
+          <Link to="/customers" className="text-[#555] hover:text-white">CUSTOMERS</Link>
+          <span className="text-[#333]">/</span>
+          <span className="text-white font-bold">{customer.name}</span>
+          <span className={`border text-[10px] px-1.5 py-0.5 font-mono uppercase ${customer.status === "active" ? "border-[#4ADE80]/40 text-[#4ADE80]" : "border-[#F87171]/40 text-[#F87171]"}`}>
+            {customer.status === "active" ? "✓" : "✗"} {customer.status}
+          </span>
+          <span className="text-[#333]">|</span>
+          <span className="text-[#555] text-[11px]">{customer.email}</span>
+          <span className="text-[#333]">|</span>
+          <span className="text-[#555] text-[11px]">{truncateId(customer.id)}</span>
+          <CopyBtn text={customer.id} />
+          <span className="text-[#333]">|</span>
+          <span className="text-[#555] text-[11px]">{customer.external_id}</span>
+          <CopyBtn text={customer.external_id} />
         </div>
-        <div className="flex items-center gap-2">
-          <button onClick={() => setShowEditModal(true)} className="border border-solid border-[#333] bg-transparent px-4 py-2 font-mono text-[11px] uppercase tracking-wide text-white hover:bg-white/5">Edit</button>
-          <button onClick={() => setShowTopupModal(true)} className="bg-white text-black px-4 py-2 font-mono text-[11px] uppercase tracking-wide hover:bg-white/90">Top Up Wallet</button>
-          <button className="border border-solid border-[#F87171]/30 text-[#F87171] bg-transparent px-4 py-2 font-mono text-[11px] uppercase tracking-wide hover:bg-[#F87171]/5">Suspend</button>
-        </div>
+        <button className="border border-solid border-[#333] bg-transparent px-4 py-2 font-mono text-[11px] uppercase tracking-wide text-white hover:bg-white/5 flex items-center gap-2 shrink-0">
+          Open Billing Portal <ExternalLink size={12} />
+        </button>
       </div>
 
-      {/* STATS BAR — 4 equal cards */}
-      <div className="grid grid-cols-4 gap-0 mb-8">
-        {/* BALANCE */}
-        <div className="border border-solid border-[#1e1e1e] px-5 py-4 border-r-0">
-          <div className="font-mono text-[11px] uppercase text-[#555] tracking-wider mb-2">Balance</div>
-          <div className="font-mono text-xl font-bold text-white">${balance.toFixed(2)} USD</div>
-          {hasMultiAsset && tokAccount && <div className="font-mono text-sm font-bold text-[#2dd4aa] mt-1">{tokBalance.toLocaleString()} TOK</div>}
-          <div className="text-[11px] font-mono text-[#444] mt-1">${(primaryAccount?.pending_out || 0).toFixed(2)} reserved</div>
-        </div>
-        {/* AVAILABLE */}
-        <div className="border border-solid border-[#1e1e1e] px-5 py-4 border-r-0">
-          <div className="font-mono text-[11px] uppercase text-[#555] tracking-wider mb-2">Available</div>
-          <div className="font-mono text-xl font-bold text-white">${(primaryAccount?.available || 0).toFixed(2)} USD</div>
-          {hasMultiAsset && tokAccount && <div className="font-mono text-sm font-bold text-[#2dd4aa] mt-1">{tokAccount.available.toLocaleString()} TOK</div>}
-          <div className="text-[11px] font-mono text-[#444] mt-1">${(primaryAccount?.pending_in || 0).toFixed(2)} pending</div>
-        </div>
-        {/* THIS MONTH */}
-        <div className="border border-solid border-[#1e1e1e] px-5 py-4 border-r-0">
-          <div className="font-mono text-[11px] uppercase text-[#555] tracking-wider mb-2">This Month</div>
-          <div className="font-mono text-xl font-bold text-white">${totalSpend.toFixed(2)} spent</div>
-          {hasMultiAsset && <div className="font-mono text-sm font-bold text-[#2dd4aa] mt-1">{tokMonthSpend.toLocaleString()} TOK spent</div>}
-          <div className="text-[11px] font-mono text-[#444] mt-1">{monthEventCount} events</div>
-        </div>
-        {/* RUNWAY */}
-        <div className="border border-solid border-[#1e1e1e] px-5 py-4">
-          <div className="font-mono text-[11px] uppercase text-[#555] tracking-wider mb-2">Runway</div>
-          <div className={`font-mono text-xl font-bold ${runwayColor}`}>{runway === Infinity ? "∞" : `${runway} days`}</div>
-          {hasMultiAsset && <div className="text-[11px] font-mono text-[#444] mt-1">≈ both assets</div>}
-          {!hasMultiAsset && <div className="text-[11px] font-mono text-[#444] mt-1">at current spend rate</div>}
-        </div>
-      </div>
+      {/* ===== BALANCE CARDS — 2 asset cards ===== */}
+      <div className="grid grid-cols-2 gap-4 mb-6">
+        {customer.wallet.accounts.map((account) => {
+          const isFiat = account.asset_code === "USD";
+          const symbol = isFiat ? "$" : account.asset_code[0];
+          const formatVal = (v: number) => isFiat ? `$${v.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}` : `${v.toLocaleString()} ${account.asset_code}`;
+          const acctTopups = topups.filter((t) => t.asset_code === account.asset_code).reduce((s, t) => s + t.amount, 0);
+          const acctSpent = charges.filter((t) => t.asset_code === account.asset_code).reduce((s, t) => s + Math.abs(t.amount), 0);
+          const totalBal = account.available + account.pending_out;
+          const balColor = totalBal >= 0 ? "text-[#2dd4aa]" : "text-[#ef4444]";
 
-      {/* DETAILS + AUTO TOP-UP — two columns */}
-      <div className="grid grid-cols-2 gap-6 mb-8">
-        <div className="bg-[#0d0d0d] border border-solid border-[#1a1a1a] p-5">
-          {terminalHeader("DETAILS")}
-          {fieldRow("External ID", customer.external_id)}
-          {fieldRow("Email", customer.email)}
-          {fieldRow("Currency", primaryAccount?.asset_code || "USD")}
-          {fieldRow("Created", formatTime(customer.created_at))}
-          {metadataEntries.map(([key, value]) => fieldRow(key, String(value)))}
-        </div>
-        <div className="bg-[#0d0d0d] border border-solid border-[#1a1a1a] p-5">
-          {terminalHeader("AUTO TOP-UP")}
-          <div className="space-y-3 mt-2">
-            {customer.auto_topup ? (
-              Object.entries(customer.auto_topup).map(([code, cfg], idx, arr) => {
-                const isFiat = allAssets.find(a => a.code === code)?.type === "fiat";
-                const symbol = isFiat ? "$" : code.charAt(0);
-                const enabled = cfg.enabled;
-                return (
-                  <div key={code}>
-                    <div className="flex items-center justify-between py-1.5">
-                      <div className="flex items-center gap-1">
-                        <span className={`text-[13px] font-mono ${isFiat ? "text-[#555]" : "text-[#2dd4aa]"}`}>{symbol}</span>
-                        <span className="text-[13px] font-mono font-bold text-white">{code}</span>
-                      </div>
-                      {enabled ? (
-                        <span className="text-[11px] font-mono text-[#4ADE80]">✓ ENABLED</span>
-                      ) : (
-                        <span className="text-[11px] font-mono text-[#555]">✗ OFF</span>
-                      )}
-                    </div>
-                    {enabled ? (
-                      <div className="ml-0 space-y-0">
-                        <div className="flex justify-between py-1 text-[13px] font-mono">
-                          <span className="text-[#555]">Threshold</span>
-                          <span className="text-white">below {isFiat ? "$" : ""}{cfg.threshold.toFixed(isFiat ? 2 : 0)}{!isFiat ? ` ${code}` : ""}</span>
-                        </div>
-                        <div className="flex justify-between py-1 text-[13px] font-mono">
-                          <span className="text-[#555]">Top-up Amount</span>
-                          <span className="text-white">+{isFiat ? "$" : ""}{cfg.amount.toFixed(isFiat ? 2 : 0)}{!isFiat ? ` ${code}` : ""}</span>
-                        </div>
-                      </div>
-                    ) : (
-                      <div className="text-[11px] text-[#333] font-mono mt-0.5">Auto top-up not configured</div>
-                    )}
-                    {idx < arr.length - 1 && <div className="border-t border-dashed border-[#1e1e1e] my-3" />}
+          return (
+            <div key={account.asset_code} className="bg-[#0d0d0d] border border-solid border-[#1a1a1a] p-5">
+              {/* Card header */}
+              <div className="flex items-center justify-between mb-4">
+                <div className="flex items-center gap-2.5">
+                  <div className="w-7 h-7 bg-[#1a1a1a] flex items-center justify-center font-mono text-[11px] text-[#555] font-bold">
+                    {symbol}
                   </div>
-                );
-              })
-            ) : (
-              <div className="text-[11px] font-mono text-[#555]">No auto top-up configured</div>
-            )}
-          </div>
-          <div className="border-t border-dashed border-[#1e1e1e] mt-4 pt-4">
-            {fieldRow("Subscriptions", `${customer.subscriptions.length} active`)}
-            {customer.subscriptions.map((sub) => fieldRow(sub.product_name, <StatusBadge status={sub.status} />))}
-          </div>
+                  <div>
+                    <div className="font-mono text-sm font-bold text-white">{account.asset_code}</div>
+                    <div className="font-mono text-[10px] text-[#444]">{isFiat ? "US Dollar" : account.asset_code}</div>
+                  </div>
+                </div>
+                <div className="text-right">
+                  <div className={`font-mono text-xl font-bold ${balColor}`}>{formatVal(totalBal)}</div>
+                  <div className="font-mono text-[10px] text-[#444]">Available</div>
+                </div>
+              </div>
+              {/* Divider */}
+              <div className="border-t border-solid border-[#1a1a1a] mb-3" />
+              {/* Breakdown rows */}
+              {[
+                { label: "Top-ups", value: formatVal(acctTopups) },
+                { label: "Spent", value: formatVal(acctSpent) },
+                ...(account.pending_in > 0 ? [{ label: "Pending", value: formatVal(account.pending_in) }] : []),
+                ...(account.pending_out > 0 ? [{ label: "Reserved", value: formatVal(account.pending_out) }] : []),
+              ].map(row => (
+                <div key={row.label} className="flex justify-between py-1.5 font-mono text-[13px]">
+                  <span className="text-[#555]">{row.label}</span>
+                  <span className="text-white">{row.value}</span>
+                </div>
+              ))}
+            </div>
+          );
+        })}
+      </div>
+
+      {/* ===== STATS ROW — 4 cards ===== */}
+      <div className="grid grid-cols-4 gap-0 mb-6">
+        {/* Last Activity */}
+        <div className="border border-solid border-[#1e1e1e] px-4 py-3 border-r-0">
+          <div className="font-mono text-[10px] uppercase text-[#555] tracking-wider mb-1">Last Activity</div>
+          <div className="font-mono text-[13px] text-white font-bold">{lastEvent ? formatTime(lastEvent.timestamp) : "—"}</div>
+        </div>
+        {/* Total Events */}
+        <div className="border border-solid border-[#1e1e1e] px-4 py-3 border-r-0">
+          <div className="font-mono text-[10px] uppercase text-[#555] tracking-wider mb-1">Total Events</div>
+          <div className="font-mono text-[13px] text-white font-bold">{customerEvents.length}</div>
+        </div>
+        {/* Subscriptions */}
+        <div className="border border-solid border-[#1e1e1e] px-4 py-3 border-r-0">
+          <div className="font-mono text-[10px] uppercase text-[#555] tracking-wider mb-1">Subscriptions</div>
+          <div className="font-mono text-[13px] text-white font-bold">{customer.subscriptions.length}</div>
+        </div>
+        {/* Auto Top-Up */}
+        <div className="border border-solid border-[#1e1e1e] px-4 py-3">
+          <div className="font-mono text-[10px] uppercase text-[#555] tracking-wider mb-1">Auto Top-Up</div>
+          {customer.auto_topup ? (
+            <div className="space-y-0.5">
+              {Object.entries(customer.auto_topup).map(([code, cfg]) => (
+                <div key={code} className="font-mono text-[11px]">
+                  <span className="text-white font-bold">{code}</span>
+                  <span className="mx-1 text-[#333]">·</span>
+                  <span className={cfg.enabled ? "text-[#4ADE80]" : "text-[#ef4444]"}>
+                    {cfg.enabled ? "Enabled" : "Disabled"}
+                  </span>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <div className="font-mono text-[11px] text-[#555]">Not configured</div>
+          )}
         </div>
       </div>
 
-      {/* TAB BAR */}
-      <div className="flex gap-0 border-b border-dashed border-[#1e1e1e] mb-6">
+      {/* ===== RECENT SPEND CHART ===== */}
+      <div className="bg-[#0d0d0d] border border-solid border-[#1a1a1a] p-5 mb-6">
+        <div className="flex items-center justify-between mb-4">
+          <div className="font-mono text-[11px] uppercase text-[#555] tracking-wider">Recent Spend</div>
+          <div className="flex items-center gap-2">
+            {assetCodes.length > 1 && (
+              <div className="flex gap-0">
+                {assetCodes.map((code) => (
+                  <button
+                    key={code}
+                    onClick={() => setChartAsset(code)}
+                    className={`text-[11px] px-3 py-1 font-mono border border-solid border-[#1e1e1e] ${chartAsset === code ? "bg-white text-black" : "text-[#555] hover:text-white/60"} ${code !== assetCodes[0] ? "-ml-px" : ""}`}
+                  >
+                    {code}
+                  </button>
+                ))}
+              </div>
+            )}
+            <select
+              value={chartRange}
+              onChange={(e) => setChartRange(e.target.value as "7" | "30" | "90")}
+              className="border border-solid border-[#1e1e1e] text-[#555] text-[11px] px-3 py-1 font-mono bg-transparent appearance-none cursor-pointer hover:text-white/60 focus:outline-none"
+            >
+              {periodOptions.map((opt) => (
+                <option key={opt.value} value={opt.value} className="bg-[#0d0d0d] text-white">{opt.label}</option>
+              ))}
+            </select>
+          </div>
+        </div>
+
+        {hasChartData ? (
+          <ResponsiveContainer width="100%" height={200}>
+            <LineChart data={chartData}>
+              <CartesianGrid stroke="rgba(255,255,255,0.03)" strokeDasharray="3 3" />
+              <XAxis dataKey="day" tick={{ fontSize: 9, fontFamily: "IBM Plex Mono", fill: "#444" }} tickLine={false} axisLine={false} interval="preserveStartEnd" />
+              <YAxis tick={{ fontSize: 9, fontFamily: "IBM Plex Mono", fill: "#444" }} tickLine={false} axisLine={false} tickFormatter={(v: number) => chartAsset === "USD" ? `$${v}` : `${v}`} width={50} />
+              <Tooltip contentStyle={{ fontFamily: "IBM Plex Mono", fontSize: 11, background: "#0d0d0d", border: "1px solid #1a1a1a", borderRadius: 0 }} formatter={(v: number) => [chartAsset === "USD" ? `$${v.toFixed(4)}` : `${v.toLocaleString()} ${chartAsset}`, chartAsset === "USD" ? "Spend" : "Balance"]} />
+              <Line type="monotone" dataKey="spend" stroke="#FAFAFA" strokeWidth={1.5} dot={{ r: 2, fill: "#FAFAFA" }} activeDot={{ r: 4, fill: "#FAFAFA" }} />
+            </LineChart>
+          </ResponsiveContainer>
+        ) : (
+          <div className="h-48 flex items-center justify-center">
+            <span className="font-mono text-sm text-[#555]">$ no usage data for this period <span className="animate-pulse">█</span></span>
+          </div>
+        )}
+      </div>
+
+      {/* ===== TAB BAR ===== */}
+      <div className="flex gap-0 border-b border-solid border-[#222] mb-6">
         {tabs.map((tab) => (
           <button
             key={tab.key}
-            onClick={() => { setActiveTab(tab.key); setEventPage(0); }}
+            onClick={() => setActiveTab(tab.key)}
             className={`px-5 py-2.5 text-[12px] font-mono uppercase tracking-[0.1em] cursor-pointer ${activeTab === tab.key ? "text-white border-b border-solid border-white -mb-px" : "text-[#555] hover:text-white/60"}`}
           >
             {tab.label}
@@ -326,340 +324,182 @@ export default function CustomerDetail() {
         ))}
       </div>
 
-      {/* ==================== OVERVIEW TAB ==================== */}
-      {activeTab === "overview" && (
-        <div className="space-y-0">
-          <div className="bg-[#0d0d0d] border border-solid border-[#1a1a1a] p-5 mb-4">
-            {/* Chart header with asset switcher + period */}
-            <div className="flex items-center justify-between mb-4">
-              {terminalHeader("RECENT SPEND")}
-              <div className="flex items-center gap-2">
-                {/* Asset switcher */}
-                {assetCodes.length > 1 && (
-                  <div className="flex gap-0">
-                    {assetCodes.map((code) => (
-                      <button
-                        key={code}
-                        onClick={() => setChartAsset(code)}
-                        className={`text-[11px] px-3 py-1 font-mono border border-solid border-[#1e1e1e] ${chartAsset === code ? "bg-white text-black" : "text-[#555] hover:text-white/60"} ${code !== assetCodes[0] ? "-ml-px" : ""}`}
-                      >
-                        {code}
-                      </button>
-                    ))}
-                  </div>
-                )}
-                {/* Period dropdown */}
-                <select
-                  value={chartRange}
-                  onChange={(e) => setChartRange(e.target.value as "7" | "30" | "90")}
-                  className="border border-solid border-[#1e1e1e] text-[#555] text-[11px] px-3 py-1 font-mono bg-transparent appearance-none cursor-pointer hover:text-white/60 focus:outline-none"
-                >
-                  {periodOptions.map((opt) => (
-                    <option key={opt.value} value={opt.value} className="bg-[#0d0d0d] text-white">{opt.label}</option>
-                  ))}
-                </select>
-              </div>
-            </div>
-
-            {hasChartData ? (
-              <ResponsiveContainer width="100%" height={224}>
-                <LineChart data={chartData}>
-                  <CartesianGrid stroke="rgba(255,255,255,0.04)" strokeDasharray="3 3" />
-                  <XAxis dataKey="day" tick={{ fontSize: 9, fontFamily: "IBM Plex Mono", fill: "#555" }} tickLine={false} axisLine={false} interval="preserveStartEnd" />
-                  <YAxis tick={{ fontSize: 9, fontFamily: "IBM Plex Mono", fill: "#555" }} tickLine={false} axisLine={false} tickFormatter={(v: number) => chartAsset === "USD" ? `$${v}` : `${v}`} width={50} />
-                  <Tooltip contentStyle={{ fontFamily: "IBM Plex Mono", fontSize: 11, background: "#0d0d0d", border: "1px solid #1a1a1a", borderRadius: 0 }} formatter={(v: number) => [chartAsset === "USD" ? `$${v.toFixed(4)}` : `${v.toLocaleString()} ${chartAsset}`, chartAsset === "USD" ? "Spend" : "Balance"]} />
-                  <Line type="monotone" dataKey="spend" stroke="#FAFAFA" strokeWidth={1.5} dot={{ r: 3, fill: "#FAFAFA" }} activeDot={{ r: 4, fill: "#FAFAFA" }} />
-                </LineChart>
-              </ResponsiveContainer>
-            ) : (
-              <div className="h-56 flex items-center justify-center">
-                <span className="font-mono text-sm text-[#555]">$ no usage data for this period <span className="animate-pulse">█</span></span>
-              </div>
-            )}
-          </div>
-          {/* Mini stats — no outer borders, just dividers */}
-          <div className="grid grid-cols-3 gap-0 pt-4">
-            <div className="px-4 py-3 border-r border-solid border-[#1e1e1e]">
-              <div className="font-mono text-[11px] uppercase text-[#555] tracking-wider mb-1">Peak Day</div>
-              <div className="font-mono text-[13px] text-white">{peakDay ? `${peakDay.day} — $${peakDay.spend.toFixed(2)}` : "—"}</div>
-            </div>
-            <div className="px-4 py-3 border-r border-solid border-[#1e1e1e]">
-              <div className="font-mono text-[11px] uppercase text-[#555] tracking-wider mb-1">Most Used Event</div>
-              <div className="font-mono text-[13px] text-white">{mostUsedType ? `${mostUsedType[0]} (${mostUsedType[1]})` : "—"}</div>
-            </div>
-            <div className="px-4 py-3">
-              <div className="font-mono text-[11px] uppercase text-[#555] tracking-wider mb-1">Avg Per Event</div>
-              <div className="font-mono text-[13px] text-white">${avgPerEvent.toFixed(4)}</div>
-            </div>
-          </div>
-        </div>
-      )}
-
       {/* ==================== USAGE EVENTS TAB ==================== */}
       {activeTab === "events" && (
-        <div className="bg-[#0d0d0d] border border-solid border-[#1a1a1a] p-5">
-          <div className="flex items-center justify-between mb-4">
-            {terminalHeader(`USAGE EVENTS (${filteredEvents.length})`)}
-            <select
-              value={productFilter}
-              onChange={(e) => { setProductFilter(e.target.value); setEventPage(0); }}
-              className="border border-solid border-[#1e1e1e] text-[#555] text-[11px] px-3 py-1 font-mono bg-transparent appearance-none cursor-pointer hover:text-white/60 focus:outline-none"
-            >
-              <option value="all" className="bg-card text-white">All Products</option>
-              {products.map((p) => (
-                <option key={p.code} value={p.code} className="bg-card text-white">{p.name}</option>
-              ))}
-            </select>
-          </div>
+        <div>
           <table className="w-full table-fixed">
             <thead>
-              <tr className="border-b border-dotted border-white/30">
-                <th className="w-[18%] px-4 py-3 text-left font-space text-xs uppercase tracking-wider text-white/40 whitespace-nowrap">Timestamp</th>
-                <th className="w-[16%] px-4 py-3 text-left font-space text-xs uppercase tracking-wider text-white/40 whitespace-nowrap">Event Type</th>
-                <th className="w-[28%] px-4 py-3 text-left font-space text-xs uppercase tracking-wider text-white/40 whitespace-nowrap">Dimensions</th>
-                <th className="w-[8%] px-4 py-3 text-left font-space text-xs uppercase tracking-wider text-white/40 whitespace-nowrap">Status</th>
-                <th className="w-[15%] px-4 py-3 text-right font-space text-xs uppercase tracking-wider text-white/40 whitespace-nowrap">Cost</th>
-                <th className="w-[10%] px-4 py-3 text-right font-space text-xs uppercase tracking-wider text-white/40 whitespace-nowrap">Asset</th>
+              <tr className="border-b border-solid border-[#222]">
+                <th className="w-[16%] px-3 py-2.5 text-left font-mono text-[10px] uppercase tracking-wider text-[#555] whitespace-nowrap">Timestamp</th>
+                <th className="w-[14%] px-3 py-2.5 text-left font-mono text-[10px] uppercase tracking-wider text-[#555] whitespace-nowrap">Event Type</th>
+                <th className="w-[16%] px-3 py-2.5 text-left font-mono text-[10px] uppercase tracking-wider text-[#555] whitespace-nowrap">Event ID</th>
+                <th className="w-[26%] px-3 py-2.5 text-left font-mono text-[10px] uppercase tracking-wider text-[#555] whitespace-nowrap">Description</th>
+                <th className="w-[8%] px-3 py-2.5 text-center font-mono text-[10px] uppercase tracking-wider text-[#555] whitespace-nowrap">Fee</th>
+                <th className="w-[12%] px-3 py-2.5 text-right font-mono text-[10px] uppercase tracking-wider text-[#555] whitespace-nowrap">Total Fees</th>
               </tr>
             </thead>
             <tbody>
-              {pagedEvents.map((event) => {
-                const dims = Object.entries(event.properties).filter(([k]) => k !== "event_type");
-                const visibleDims = dims.slice(0, 3);
-                const extraCount = dims.length - 3;
+              {visibleEvents.map((event) => {
                 const fee = event.fees?.[0];
                 const feeAsset = fee?.asset_code || "USD";
                 const isTok = feeAsset === "TOK";
+                const dims = Object.entries(event.properties).filter(([k]) => k !== "event_type");
+                const description = dims.length > 0 ? dims.map(([k, v]) => `${k}:${v}`).join(", ") : "—";
                 return (
-                  <tr key={event.id} className="border-b border-dotted border-white/15 hover:bg-white/[0.02] cursor-pointer" onClick={() => setSelectedEvent(selectedEvent === event.id ? null : event.id)}>
-                    <td className="px-4 py-4 font-ibm-plex text-xs text-white/60 whitespace-nowrap">{formatTime(event.timestamp)}</td>
-                    <td className="px-4 py-4 font-ibm-plex text-sm font-medium whitespace-nowrap">{event.event_type}</td>
-                    <td className="px-4 py-4">
-                      <div className="flex flex-wrap gap-1.5">
-                        {visibleDims.map(([k, v]) => (
-                          <span key={k} className="bg-white/5 px-1.5 py-0.5 font-ibm-plex text-xs text-white/50">{k}:{String(v)}</span>
-                        ))}
-                        {extraCount > 0 && <span className="font-ibm-plex text-xs text-white/20">+{extraCount} more</span>}
-                      </div>
+                  <tr key={event.id} className="border-b border-solid border-[#1a1a1a] hover:bg-white/[0.02] cursor-pointer" onClick={() => setSelectedEvent(selectedEvent === event.id ? null : event.id)}>
+                    <td className="px-3 py-3 font-mono text-[12px] text-white whitespace-nowrap">{formatTime(event.timestamp)}</td>
+                    <td className="px-3 py-3 font-mono text-[12px] text-white whitespace-nowrap">{event.event_type}</td>
+                    <td className="px-3 py-3 font-mono text-[11px] text-[#555] whitespace-nowrap">
+                      {truncateId(event.id)}
+                      <CopyBtn text={event.id} />
                     </td>
-                    <td className="px-4 py-4 whitespace-nowrap"><StatusBadge status={event.status} /></td>
-                    <td className="px-4 py-4 text-right font-ibm-plex text-sm whitespace-nowrap">
-                      {fee ? <span className={isTok ? "text-teal-400" : "text-[#4ADE80]"}>{isTok ? `${fee.amount.toLocaleString()} TOK` : `$${fee.amount.toFixed(4)}`}</span> : <span className="text-white/20">—</span>}
+                    <td className="px-3 py-3 font-mono text-[11px] text-[#555] truncate">{description}</td>
+                    <td className="px-3 py-3 text-center">
+                      {event.status === "processed" ? (
+                        <CheckCircle size={14} className="text-[#4ADE80] mx-auto" />
+                      ) : (
+                        <span className="text-[#ef4444] text-[11px] font-mono">✗</span>
+                      )}
                     </td>
-                    <td className="px-4 py-4 text-right">
-                      <span className={`text-xs font-mono ${isTok ? "text-teal-400" : "text-white/40"}`}>{feeAsset}</span>
+                    <td className="px-3 py-3 text-right font-mono text-[12px] text-white whitespace-nowrap">
+                      {fee ? (isTok ? `${fee.amount.toLocaleString()} TOK` : `$${fee.amount.toFixed(4)}`) : "—"}
                     </td>
                   </tr>
                 );
               })}
-              {pagedEvents.length === 0 && (
+              {visibleEvents.length === 0 && (
                 <tr>
-                  <td colSpan={6} className="px-4 py-8 text-center font-ibm-plex text-sm text-white/40">$ no events match filter <span className="animate-pulse">█</span></td>
+                  <td colSpan={6} className="px-3 py-8 text-center font-mono text-sm text-[#555]">$ no events <span className="animate-pulse">█</span></td>
                 </tr>
               )}
             </tbody>
           </table>
-          {!eventsShowAll && filteredEvents.length > INITIAL_EVENT_COUNT2 && (
-            <div className="flex justify-center pt-4 mt-2 border-t border-dotted border-white/20">
-              <button onClick={() => setEventsShowAll(true)} className="text-xs font-mono uppercase tracking-wide text-white/40 hover:text-white cursor-pointer">Load More ({filteredEvents.length - INITIAL_EVENT_COUNT2} remaining)</button>
+          {!eventsShowAll && customerEvents.length > INITIAL_EVENT_COUNT && (
+            <div className="flex justify-center pt-4 mt-2 border-t border-solid border-[#1a1a1a]">
+              <button onClick={() => setEventsShowAll(true)} className="text-[11px] font-mono uppercase tracking-wide text-[#555] hover:text-white cursor-pointer">Load More ({customerEvents.length - INITIAL_EVENT_COUNT} remaining)</button>
             </div>
           )}
-        </div>
-      )}
-
-      {/* ==================== WALLET TAB ==================== */}
-      {activeTab === "wallet" && (
-        <div className="space-y-6">
-          {/* Asset balance cards */}
-          <div className={`grid gap-4 ${customer.wallet.accounts.length > 2 ? "grid-cols-3" : customer.wallet.accounts.length === 2 ? "grid-cols-2" : "grid-cols-1 max-w-md"}`}>
-            {customer.wallet.accounts.map((account) => {
-              const isFiat = account.asset_code === "USD";
-              const isCustom = !isFiat;
-              const symbol = isFiat ? "$" : account.asset_code === "TOK" ? "T" : account.asset_code === "CREDITS" ? "CR" : account.asset_code[0];
-              const formatVal = (v: number) => isFiat ? `$${v.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}` : `${v.toLocaleString()} ${account.asset_code}`;
-              const acctTopups = topups.filter((t) => t.asset_code === account.asset_code).reduce((s, t) => s + t.amount, 0);
-              const acctSpent = charges.filter((t) => t.asset_code === account.asset_code).reduce((s, t) => s + Math.abs(t.amount), 0);
-
-              return (
-                <div key={account.asset_code} className={`border border-dotted p-5 ${isCustom ? "border-teal-400/20" : "border-white/20"}`}>
-                  {/* Header */}
-                  <div className="flex items-center justify-between mb-4">
-                    <div className="flex items-center gap-2">
-                      <span className="text-teal-400 font-bold font-mono text-lg">{symbol}</span>
-                      <span className="font-bold font-mono text-sm">{account.asset_code}</span>
-                    </div>
-                    <div className="text-right">
-                      <div className="text-[#4ADE80] font-bold text-lg font-mono">{formatVal(account.available)}</div>
-                      <div className="text-xs text-white/40">Available</div>
-                    </div>
-                  </div>
-
-                  {/* Field rows */}
-                  <div className="space-y-0">
-                    {[
-                      { label: "Top-ups", value: formatVal(acctTopups) },
-                      { label: "Spent", value: formatVal(acctSpent) },
-                      { label: "Pending", value: formatVal(account.pending_in) },
-                      { label: "Reserved", value: formatVal(account.pending_out) },
-                    ].map(row => (
-                      <div key={row.label} className="flex justify-between py-1.5 border-b border-dotted border-white/[0.12] text-sm font-mono">
-                        <span className="text-white/40">{row.label}</span>
-                        <span className="text-white">{row.value}</span>
-                      </div>
-                    ))}
-                  </div>
-
-                  {/* Auto top-up */}
-                  <div className="text-xs font-mono mt-3 pt-3 border-t border-dotted border-white/[0.12] space-y-1">
-                    {(() => {
-                      const cfg = customer.auto_topup?.[account.asset_code];
-                      const assetIsFiat = isFiat;
-                      return (
-                        <>
-                          <div>
-                            <span className="text-white/40">Auto Top-up: </span>
-                            {cfg?.enabled ? (
-                              <span className="text-[#4ADE80]">✓ ENABLED</span>
-                            ) : (
-                              <span className="text-[#F87171]">✗ OFF</span>
-                            )}
-                          </div>
-                          {cfg?.enabled && (
-                            <>
-                              <div>
-                                <span className="text-white/40">Threshold: </span>
-                                <span className="text-white">{assetIsFiat ? "$" : ""}{cfg.threshold.toFixed(assetIsFiat ? 2 : 0)}{!assetIsFiat ? ` ${account.asset_code}` : ""}</span>
-                              </div>
-                              <div>
-                                <span className="text-white/40">Top-up Amount: </span>
-                                <span className="text-white">+{assetIsFiat ? "$" : ""}{cfg.amount.toFixed(assetIsFiat ? 2 : 0)}{!assetIsFiat ? ` ${account.asset_code}` : ""}</span>
-                              </div>
-                            </>
-                          )}
-                        </>
-                      );
-                    })()}
-                  </div>
-
-                  {/* Exchange rate for custom assets */}
-                  {isCustom && account.asset_code === "TOK" && (
-                    <div className="text-xs text-teal-400/60 font-mono mt-1">
-                      Exchange Rate: 1 USD = 1,000 TOK
-                    </div>
-                  )}
-
-                  {/* Top Up button */}
-                  <button
-                    onClick={() => setShowTopupModal(true)}
-                    className="bg-white text-black w-full py-2 text-xs font-mono uppercase tracking-wide mt-4 hover:bg-white/90"
-                  >
-                    Top Up
-                  </button>
-                </div>
-              );
-            })}
-          </div>
-
-          {/* Top-up history */}
-          <div className="bg-[#0d0d0d] border border-solid border-[#1a1a1a] p-5">
-            {terminalHeader(`TOP-UP HISTORY (${topups.length})`)}
-            {topups.length > 0 ? (
-              <table className="w-full table-fixed">
-                <thead>
-                 <tr className="border-b border-dotted border-white/30">
-                    <th className="w-[30%] px-2 py-3 text-left font-space text-xs uppercase tracking-wider text-white/40 whitespace-nowrap">Date</th>
-                    <th className="w-[25%] px-2 py-3 text-right font-space text-xs uppercase tracking-wider text-white/40 whitespace-nowrap">Amount</th>
-                    <th className="w-[30%] px-2 py-3 text-left font-space text-xs uppercase tracking-wider text-white/40 whitespace-nowrap">Description</th>
-                    <th className="w-[15%] px-2 py-3 text-left font-space text-xs uppercase tracking-wider text-white/40 whitespace-nowrap">Status</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {topups.map((tx) => (
-                    <tr key={tx.id} className="border-b border-dotted border-white/15 hover:bg-white/[0.02]">
-                      <td className="px-2 py-3 font-ibm-plex text-xs text-white/60">{formatTime(tx.created_at)}</td>
-                      <td className={`px-2 py-3 text-right font-ibm-plex text-sm ${tx.asset_code === "TOK" ? "text-teal-400" : "text-[#4ADE80]"}`}>+{tx.asset_code === "USD" ? `$${tx.amount.toFixed(2)}` : `${tx.amount.toLocaleString()} ${tx.asset_code}`}</td>
-                      <td className="px-2 py-3 font-ibm-plex text-xs text-white/60">{tx.description}</td>
-                      <td className="px-2 py-3"><StatusBadge status="processed" /></td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            ) : (
-              <div className="py-8 text-center font-ibm-plex text-sm text-white/40">$ no top-ups <span className="animate-pulse">█</span></div>
-            )}
-          </div>
         </div>
       )}
 
       {/* ==================== SUBSCRIPTIONS TAB ==================== */}
       {activeTab === "subscriptions" && (
-        <div className="bg-[#0d0d0d] border border-solid border-[#1a1a1a] p-5">
+        <div>
           <div className="flex items-center justify-between mb-4">
-            {terminalHeader("SUBSCRIPTIONS")}
-            <button className="bg-white text-black px-4 py-2 font-mono text-[11px] uppercase tracking-wide hover:bg-white/90">+ Add Subscription</button>
+            <div />
+            <button className="border border-solid border-[#333] bg-transparent px-4 py-2 font-mono text-[11px] uppercase tracking-wide text-white hover:bg-white/5">+ Add Subscription</button>
           </div>
-          {customer.subscriptions.length > 0 ? (
-            <table className="w-full table-fixed">
-              <thead>
-                <tr className="border-b border-dotted border-white/30">
-                  <th className="w-[30%] px-4 py-3 text-left font-space text-xs uppercase tracking-wider text-white/40 whitespace-nowrap">Product</th>
-                  <th className="w-[20%] px-4 py-3 text-left font-space text-xs uppercase tracking-wider text-white/40 whitespace-nowrap">Code</th>
-                  <th className="w-[15%] px-4 py-3 text-left font-space text-xs uppercase tracking-wider text-white/40 whitespace-nowrap">Status</th>
-                  <th className="w-[20%] px-4 py-3 text-left font-space text-xs uppercase tracking-wider text-white/40 whitespace-nowrap">Start Date</th>
-                  <th className="w-[15%] px-4 py-3 text-right font-space text-xs uppercase tracking-wider text-white/40 whitespace-nowrap">Action</th>
-                </tr>
-              </thead>
-              <tbody>
-                {customer.subscriptions.map((sub) => {
-                  const product = products.find((p) => p.id === sub.product_id);
-                  const isExpanded = expandedSub === sub.id;
-                  return (
-                    <React.Fragment key={sub.id}>
-                      <tr className="border-b border-dotted border-white/15 hover:bg-white/[0.02] cursor-pointer" onClick={() => setExpandedSub(isExpanded ? null : sub.id)}>
-                        <td className="px-4 py-4 font-ibm-plex text-sm font-medium">
-                          <span className={`text-white/20 text-xs mr-2 inline-block transition-transform duration-150 ${isExpanded ? "rotate-90" : ""}`}>›</span>
-                          {sub.product_name}
-                        </td>
-                        <td className="px-4 py-4">
-                          <span className="border border-dotted border-white/20 text-white/60 text-xs px-1.5 py-0.5 font-mono">{product?.code || "—"}</span>
-                        </td>
-                        <td className="px-4 py-4"><StatusBadge status={sub.status} /></td>
-                        <td className="px-4 py-4 font-ibm-plex text-xs text-white/60">{formatTime(sub.start_date)}</td>
-                        <td className="px-4 py-4 text-right" onClick={(e) => e.stopPropagation()}>
-                          {sub.status === "active" && (
-                            <button className="border border-dotted border-[#F87171]/30 text-[#F87171] bg-transparent px-3 py-1 font-space text-xs uppercase tracking-wide hover:bg-[#F87171]/5">Unsubscribe</button>
-                          )}
+          <table className="w-full table-fixed">
+            <thead>
+              <tr className="border-b border-solid border-[#222]">
+                <th className="w-[20%] px-3 py-2.5 text-left font-mono text-[10px] uppercase tracking-wider text-[#555] whitespace-nowrap">ID</th>
+                <th className="w-[12%] px-3 py-2.5 text-left font-mono text-[10px] uppercase tracking-wider text-[#555] whitespace-nowrap">Status</th>
+                <th className="w-[16%] px-3 py-2.5 text-left font-mono text-[10px] uppercase tracking-wider text-[#555] whitespace-nowrap">Started</th>
+                <th className="w-[16%] px-3 py-2.5 text-left font-mono text-[10px] uppercase tracking-wider text-[#555] whitespace-nowrap">Renews</th>
+                <th className="w-[16%] px-3 py-2.5 text-left font-mono text-[10px] uppercase tracking-wider text-[#555] whitespace-nowrap">Products</th>
+                <th className="w-[8%] px-3 py-2.5 text-left font-mono text-[10px] uppercase tracking-wider text-[#555] whitespace-nowrap">Alerts</th>
+                <th className="w-[12%] px-3 py-2.5 text-right font-mono text-[10px] uppercase tracking-wider text-[#555] whitespace-nowrap">Action</th>
+              </tr>
+            </thead>
+            <tbody>
+              {customer.subscriptions.map((sub) => {
+                const product = products.find((p) => p.id === sub.product_id);
+                const isExpanded = expandedSub === sub.id;
+                return (
+                  <React.Fragment key={sub.id}>
+                    <tr className="border-b border-solid border-[#1a1a1a] hover:bg-white/[0.02] cursor-pointer" onClick={() => setExpandedSub(isExpanded ? null : sub.id)}>
+                      <td className="px-3 py-3 font-mono text-[11px] text-[#555] whitespace-nowrap">
+                        {truncateId(sub.id)}
+                        <CopyBtn text={sub.id} />
+                      </td>
+                      <td className="px-3 py-3">
+                        <span className={`border text-[10px] px-1.5 py-0.5 font-mono uppercase ${sub.status === "active" ? "border-[#4ADE80]/40 text-[#4ADE80]" : "border-[#FACC15]/40 text-[#FACC15]"}`}>
+                          {sub.status}
+                        </span>
+                      </td>
+                      <td className="px-3 py-3 font-mono text-[11px] text-white">{formatTime(sub.start_date)}</td>
+                      <td className="px-3 py-3 font-mono text-[11px] text-[#555]">—</td>
+                      <td className="px-3 py-3 font-mono text-[11px] text-white">
+                        {sub.product_name}
+                        <span className="text-[#333] ml-1 text-[10px]">{isExpanded ? "▾" : "▸"}</span>
+                      </td>
+                      <td className="px-3 py-3 font-mono text-[11px] text-[#555]">—</td>
+                      <td className="px-3 py-3 text-right" onClick={(e) => e.stopPropagation()}>
+                        {sub.status === "active" && (
+                          <button className="border border-solid border-[#ef4444]/30 text-[#ef4444] bg-transparent px-2.5 py-1 font-mono text-[10px] uppercase tracking-wide hover:bg-[#ef4444]/5">Unsubscribe</button>
+                        )}
+                      </td>
+                    </tr>
+                    {isExpanded && product && (
+                      <tr>
+                        <td colSpan={7} className="px-3 pb-3">
+                          <div className="ml-6 border-t border-solid border-[#1a1a1a] pt-3 space-y-1.5">
+                            {product.prices.map((price) => (
+                              <div key={price.id} className="flex items-center gap-4 font-mono text-[11px] text-[#555]">
+                                <span className="text-white/70 w-36">{price.event_type || "flat fee"}</span>
+                                <span className="text-[#444] w-20">{price.usage_calculation || "recurring"}</span>
+                                <span className="text-[#444] w-20">{price.billing_model}</span>
+                                <span className="text-[#4ADE80]">
+                                  {price.unit_price != null ? `$${price.unit_price} per ${price.volume_field || "event"}` : price.amount != null ? `$${price.amount.toFixed(2)}/month` : "—"}
+                                </span>
+                              </div>
+                            ))}
+                          </div>
                         </td>
                       </tr>
-                      {isExpanded && product && (
-                        <tr>
-                          <td colSpan={5} className="px-4 pb-4">
-                            <div className="ml-8 border-t border-dotted border-white/[0.12] pt-3 space-y-2">
-                              {product.prices.map((price) => (
-                                <div key={price.id} className="flex items-center gap-4 font-mono text-xs text-white/50">
-                                  <span className="text-white/70 w-36">{price.event_type || "flat fee"}</span>
-                                  <span className="text-white/30 w-20">{price.usage_calculation || "recurring"}</span>
-                                  <span className="text-white/30 w-20">{price.billing_model}</span>
-                                  <span className="text-[#4ADE80]">
-                                    {price.unit_price != null ? `$${price.unit_price} per ${price.volume_field || "event"}` : price.amount != null ? `$${price.amount.toFixed(2)}/month` : "—"}
-                                  </span>
-                                  {price.entitlements && price.entitlements.length > 0 && (
-                                    <span className="text-white/20 ml-2">(overage)</span>
-                                  )}
-                                </div>
-                              ))}
-                            </div>
-                          </td>
-                        </tr>
-                      )}
-                    </React.Fragment>
-                  );
-                })}
-              </tbody>
-            </table>
-          ) : (
-            <div className="py-8 text-center font-ibm-plex text-sm text-white/40">$ no subscriptions <span className="animate-pulse">█</span></div>
-          )}
+                    )}
+                  </React.Fragment>
+                );
+              })}
+              {customer.subscriptions.length === 0 && (
+                <tr>
+                  <td colSpan={7} className="px-3 py-8 text-center font-mono text-sm text-[#555]">$ no subscriptions <span className="animate-pulse">█</span></td>
+                </tr>
+              )}
+            </tbody>
+          </table>
+        </div>
+      )}
+
+      {/* ==================== AUTO TOP-UP TAB ==================== */}
+      {activeTab === "autotopup" && (
+        <div className="grid grid-cols-2 gap-4">
+          {customer.wallet.accounts.map((account) => {
+            const code = account.asset_code;
+            const cfg = customer.auto_topup?.[code];
+            const isFiat = allAssets.find(a => a.code === code)?.type === "fiat";
+            const enabled = cfg?.enabled || false;
+
+            return (
+              <div key={code} className="bg-[#0d0d0d] border border-solid border-[#1a1a1a] p-5">
+                {terminalHeader(`AUTO TOP-UP · ${code}`)}
+                <div className="space-y-0">
+                  <div className="flex justify-between py-2 font-mono text-[13px] border-b border-solid border-[#1a1a1a]">
+                    <span className="text-[#555]">Status</span>
+                    <span className={enabled ? "text-[#4ADE80]" : "text-[#ef4444]"}>
+                      {enabled ? "Enabled" : "Disabled"}
+                    </span>
+                  </div>
+                  <div className="flex justify-between py-2 font-mono text-[13px] border-b border-solid border-[#1a1a1a]">
+                    <span className="text-[#555]">Threshold</span>
+                    <span className="text-white">
+                      {enabled && cfg ? `${isFiat ? "$" : ""}${cfg.threshold.toFixed(isFiat ? 2 : 0)}${!isFiat ? ` ${code}` : ""}` : "Not configured"}
+                    </span>
+                  </div>
+                  <div className="flex justify-between py-2 font-mono text-[13px] border-b border-solid border-[#1a1a1a]">
+                    <span className="text-[#555]">Top-up Amount</span>
+                    <span className="text-white">
+                      {enabled && cfg ? `${isFiat ? "$" : ""}${cfg.amount.toFixed(isFiat ? 2 : 0)}${!isFiat ? ` ${code}` : ""}` : "Not configured"}
+                    </span>
+                  </div>
+                  <div className="flex justify-between py-2 font-mono text-[13px]">
+                    <span className="text-[#555]">Linked Subscriptions</span>
+                    <span className="text-white">{customer.subscriptions.filter(s => s.status === "active").length} active</span>
+                  </div>
+                </div>
+              </div>
+            );
+          })}
         </div>
       )}
 
@@ -674,23 +514,23 @@ export default function CustomerDetail() {
 
       {/* Top-up Modal */}
       <Dialog open={showTopupModal} onOpenChange={setShowTopupModal}>
-        <DialogContent className="border-dotted border-white/10 sm:max-w-sm p-0 gap-0 bg-card">
-          <div className="border-b border-dotted border-white/[0.08] px-8 py-4">
-            <span className="font-space text-xs text-white/50">┌─ TOP UP WALLET ──────────────────────┐</span>
+        <DialogContent className="border-solid border-[#1a1a1a] sm:max-w-sm p-0 gap-0 bg-[#0d0d0d]">
+          <div className="border-b border-solid border-[#1a1a1a] px-8 py-4">
+            <span className="font-mono text-[11px] text-[#444]">├─ TOP UP WALLET ──────────────────────</span>
           </div>
           <div className="space-y-4 px-8 py-6">
             <div>
-              <label className="block font-space text-xs uppercase tracking-wider text-white/40 mb-2">Amount</label>
+              <label className="block font-mono text-[10px] uppercase tracking-wider text-[#555] mb-2">Amount</label>
               <div className="relative">
-                <span className="absolute left-3 top-1/2 -translate-y-1/2 font-ibm-plex text-sm text-white/40">$</span>
+                <span className="absolute left-3 top-1/2 -translate-y-1/2 font-mono text-sm text-[#555]">$</span>
                 <input type="number" step="any" value={topupAmount} onChange={(e) => setTopupAmount(e.target.value)} placeholder="25.00" autoFocus
-                  className="w-full border border-dotted border-white/20 bg-transparent py-2 pl-7 pr-3 font-ibm-plex text-sm focus:outline-none focus:border-white/60" />
+                  className="w-full border border-solid border-[#1e1e1e] bg-transparent py-2 pl-7 pr-3 font-mono text-sm text-white focus:outline-none focus:border-[#333]" />
               </div>
             </div>
           </div>
-          <div className="flex items-center justify-between border-t border-dotted border-white/[0.08] px-8 py-4">
-            <button onClick={() => setShowTopupModal(false)} className="border border-dotted border-white/30 bg-transparent px-4 py-2 font-space text-xs uppercase tracking-wide text-white hover:bg-white/5">Cancel</button>
-            <button onClick={handleTopup} className="bg-white text-black px-4 py-2 font-space text-xs uppercase tracking-wide hover:bg-white/90">Confirm Top Up</button>
+          <div className="flex items-center justify-between border-t border-solid border-[#1a1a1a] px-8 py-4">
+            <button onClick={() => setShowTopupModal(false)} className="border border-solid border-[#333] bg-transparent px-4 py-2 font-mono text-[11px] uppercase tracking-wide text-white hover:bg-white/5">Cancel</button>
+            <button onClick={handleTopup} className="bg-white text-black px-4 py-2 font-mono text-[11px] uppercase tracking-wide hover:bg-white/90">Confirm Top Up</button>
           </div>
         </DialogContent>
       </Dialog>
