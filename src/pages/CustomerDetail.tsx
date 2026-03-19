@@ -167,10 +167,8 @@ export default function CustomerDetail() {
       <span className="text-white">{value}</span>
     </div>
   );
-      <span className="text-white/40">{label}</span>
-      <span>{value}</span>
-    </div>
-  );
+
+
 
   const EVENTS_PER_PAGE = 10;
   const INITIAL_EVENT_COUNT2 = 10;
