@@ -593,10 +593,10 @@ export default function CustomerDetail() {
 
       {/* ==================== SUBSCRIPTIONS TAB ==================== */}
       {activeTab === "subscriptions" && (
-        <div className="border border-dotted border-white/20 p-5">
+        <div className="bg-[#0d0d0d] border border-solid border-[#1a1a1a] p-5">
           <div className="flex items-center justify-between mb-4">
-            {asciiHeader("SUBSCRIPTIONS")}
-            <button className="bg-white text-black px-4 py-2 font-space text-xs uppercase tracking-wide hover:bg-white/90">+ Add Subscription</button>
+            {terminalHeader("SUBSCRIPTIONS")}
+            <button className="bg-white text-black px-4 py-2 font-mono text-[11px] uppercase tracking-wide hover:bg-white/90">+ Add Subscription</button>
           </div>
           {customer.subscriptions.length > 0 ? (
             <table className="w-full table-fixed">
