@@ -397,13 +397,13 @@ export default function CustomerDetail() {
 
       {/* ==================== USAGE EVENTS TAB ==================== */}
       {activeTab === "events" && (
-        <div className="border border-dotted border-white/20 p-5">
+        <div className="bg-[#0d0d0d] border border-solid border-[#1a1a1a] p-5">
           <div className="flex items-center justify-between mb-4">
-            {asciiHeader(`USAGE EVENTS (${filteredEvents.length})`)}
+            {terminalHeader(`USAGE EVENTS (${filteredEvents.length})`)}
             <select
               value={productFilter}
               onChange={(e) => { setProductFilter(e.target.value); setEventPage(0); }}
-              className="border border-dotted border-white/20 text-white/40 text-xs px-3 py-1 font-mono bg-transparent appearance-none cursor-pointer hover:text-white/60 focus:outline-none"
+              className="border border-solid border-[#1e1e1e] text-[#555] text-[11px] px-3 py-1 font-mono bg-transparent appearance-none cursor-pointer hover:text-white/60 focus:outline-none"
             >
               <option value="all" className="bg-card text-white">All Products</option>
               {products.map((p) => (
