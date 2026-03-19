@@ -561,8 +561,8 @@ export default function CustomerDetail() {
           </div>
 
           {/* Top-up history */}
-          <div className="border border-dotted border-white/20 p-5">
-            {asciiHeader(`TOP-UP HISTORY (${topups.length})`)}
+          <div className="bg-[#0d0d0d] border border-solid border-[#1a1a1a] p-5">
+            {terminalHeader(`TOP-UP HISTORY (${topups.length})`)}
             {topups.length > 0 ? (
               <table className="w-full table-fixed">
                 <thead>
