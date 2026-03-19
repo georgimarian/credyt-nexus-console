@@ -157,16 +157,18 @@ export default function CustomerDetail() {
 
   const selectedEventObj = selectedEvent ? customerEvents.find((e) => e.id === selectedEvent) : null;
 
-  const asciiHeader = (label: string) => (
-    <div className="font-space text-xs text-white/50 mb-4">┌─ {label} ──────────────────────────┐</div>
+  const terminalHeader = (label: string) => (
+    <div className="font-mono text-[11px] text-white/30 mb-3 tracking-wide">├─ {label} ──────────────────────────</div>
   );
 
   const fieldRow = (label: string, value: React.ReactNode) => (
-    <div className="flex items-center justify-between font-ibm-plex text-sm py-2.5 border-b border-dotted border-white/[0.12]">
-      <span className="text-white/40">{label}</span>
-      <span>{value}</span>
+    <div className="flex items-center justify-between font-mono text-[13px] py-2 border-b border-dashed border-[#1e1e1e]">
+      <span className="text-[#555]">{label}</span>
+      <span className="text-white">{value}</span>
     </div>
   );
+
+
 
   const EVENTS_PER_PAGE = 10;
   const INITIAL_EVENT_COUNT2 = 10;
@@ -197,116 +199,114 @@ export default function CustomerDetail() {
   return (
     <div className="space-y-0">
       {/* Breadcrumb */}
-      <nav className="font-ibm-plex text-xs text-white/40 mb-6">
+      <nav className="font-mono text-[11px] text-[#666] mb-6">
         <Link to="/customers" className="hover:text-white">CUSTOMERS</Link>
         <span className="mx-2">{">"}</span>
-        <span className="text-white">{customer.name}</span>
+        <span className="text-[#666]">{customer.name}</span>
       </nav>
 
       {/* HEADER ROW */}
-      <div className="flex items-start justify-between border-b border-dotted border-white/20 pb-6 mb-6">
+      <div className="flex items-start justify-between border-b border-solid border-[#1e1e1e] pb-6 mb-6">
         <div>
           <div className="flex items-center gap-3">
-            <h1 className="font-space text-2xl font-bold tracking-wider">{customer.name}</h1>
-            <StatusBadge status={customer.status} />
+            <h1 className="font-mono text-2xl font-bold tracking-wider uppercase">{customer.name}</h1>
+            <span className="border border-solid border-[#4ADE80]/40 text-[#4ADE80] text-[10px] font-mono uppercase px-2 py-0.5">✓ {customer.status}</span>
           </div>
-          <div className="mt-1 font-ibm-plex text-xs text-white/30">{customer.id}</div>
+          <div className="mt-1.5 font-mono text-[11px] text-[#555]">{customer.external_id}</div>
         </div>
         <div className="flex items-center gap-2">
-          <button onClick={() => setShowEditModal(true)} className="border border-dotted border-white/30 bg-transparent px-4 py-2 font-space text-xs uppercase tracking-wide text-white hover:bg-white/5">Edit</button>
-          <button onClick={() => setShowTopupModal(true)} className="bg-white text-black px-4 py-2 font-space text-xs uppercase tracking-wide hover:bg-white/90">Top Up Wallet</button>
-          <button className="border border-dotted border-[#F87171]/30 text-[#F87171] bg-transparent px-4 py-2 font-space text-xs uppercase tracking-wide hover:bg-[#F87171]/5">Suspend</button>
+          <button onClick={() => setShowEditModal(true)} className="border border-solid border-[#333] bg-transparent px-4 py-2 font-mono text-[11px] uppercase tracking-wide text-white hover:bg-white/5">Edit</button>
+          <button onClick={() => setShowTopupModal(true)} className="bg-white text-black px-4 py-2 font-mono text-[11px] uppercase tracking-wide hover:bg-white/90">Top Up Wallet</button>
+          <button className="border border-solid border-[#F87171]/30 text-[#F87171] bg-transparent px-4 py-2 font-mono text-[11px] uppercase tracking-wide hover:bg-[#F87171]/5">Suspend</button>
         </div>
       </div>
 
-      {/* STATS BAR — 4 cards matching overview style */}
-      <div className="grid grid-cols-4 gap-0 border border-dotted border-white/20 mb-8">
+      {/* STATS BAR — 4 equal cards */}
+      <div className="grid grid-cols-4 gap-0 mb-8">
         {/* BALANCE */}
-        <div className="px-6 py-5 border-r border-dotted border-white/20">
-          <div className="font-space text-xs uppercase text-white/40 tracking-wider mb-2">Balance</div>
-          <div className="font-space text-2xl font-bold text-white">${balance.toFixed(2)} USD</div>
-          {hasMultiAsset && tokAccount && <div className="font-space text-lg font-bold text-teal-400 mt-1">{tokBalance.toLocaleString()} TOK</div>}
-          <div className="text-xs font-mono text-white/30 mt-1">${(primaryAccount?.pending_out || 0).toFixed(2)} reserved{hasMultiAsset ? " · 0 TOK reserved" : ""}</div>
+        <div className="border border-solid border-[#1e1e1e] px-5 py-4 border-r-0">
+          <div className="font-mono text-[11px] uppercase text-[#555] tracking-wider mb-2">Balance</div>
+          <div className="font-mono text-xl font-bold text-white">${balance.toFixed(2)} USD</div>
+          {hasMultiAsset && tokAccount && <div className="font-mono text-sm font-bold text-[#2dd4aa] mt-1">{tokBalance.toLocaleString()} TOK</div>}
+          <div className="text-[11px] font-mono text-[#444] mt-1">${(primaryAccount?.pending_out || 0).toFixed(2)} reserved</div>
         </div>
         {/* AVAILABLE */}
-        <div className="px-6 py-5 border-r border-dotted border-white/20">
-          <div className="font-space text-xs uppercase text-white/40 tracking-wider mb-2">Available</div>
-          <div className="font-space text-2xl font-bold text-white">${(primaryAccount?.available || 0).toFixed(2)} USD</div>
-          {hasMultiAsset && tokAccount && <div className="font-space text-lg font-bold text-teal-400 mt-1">{tokAccount.available.toLocaleString()} TOK</div>}
-          <div className="text-xs font-mono text-white/30 mt-1">${(primaryAccount?.pending_in || 0).toFixed(2)} pending</div>
+        <div className="border border-solid border-[#1e1e1e] px-5 py-4 border-r-0">
+          <div className="font-mono text-[11px] uppercase text-[#555] tracking-wider mb-2">Available</div>
+          <div className="font-mono text-xl font-bold text-white">${(primaryAccount?.available || 0).toFixed(2)} USD</div>
+          {hasMultiAsset && tokAccount && <div className="font-mono text-sm font-bold text-[#2dd4aa] mt-1">{tokAccount.available.toLocaleString()} TOK</div>}
+          <div className="text-[11px] font-mono text-[#444] mt-1">${(primaryAccount?.pending_in || 0).toFixed(2)} pending</div>
         </div>
         {/* THIS MONTH */}
-        <div className="px-6 py-5 border-r border-dotted border-white/20">
-          <div className="font-space text-xs uppercase text-white/40 tracking-wider mb-2">This Month</div>
-          <div className="font-space text-2xl font-bold text-white">${totalSpend.toFixed(2)} spent</div>
-          {hasMultiAsset && <div className="font-space text-lg font-bold text-teal-400 mt-1">{tokMonthSpend.toLocaleString()} TOK spent</div>}
-          <div className="text-xs font-mono text-white/30 mt-1">{monthEventCount} events</div>
+        <div className="border border-solid border-[#1e1e1e] px-5 py-4 border-r-0">
+          <div className="font-mono text-[11px] uppercase text-[#555] tracking-wider mb-2">This Month</div>
+          <div className="font-mono text-xl font-bold text-white">${totalSpend.toFixed(2)} spent</div>
+          {hasMultiAsset && <div className="font-mono text-sm font-bold text-[#2dd4aa] mt-1">{tokMonthSpend.toLocaleString()} TOK spent</div>}
+          <div className="text-[11px] font-mono text-[#444] mt-1">{monthEventCount} events</div>
         </div>
         {/* RUNWAY */}
-        <div className="px-6 py-5">
-          <div className="font-space text-xs uppercase text-white/40 tracking-wider mb-2">Runway</div>
-          <div className={`font-space text-2xl font-bold ${runwayColor}`}>{runway === Infinity ? "∞" : `${runway} days`}</div>
-          {hasMultiAsset && <div className="text-xs font-mono text-white/30 mt-1">∞ both assets</div>}
-          {!hasMultiAsset && <div className="text-xs font-mono text-white/30 mt-1">at current spend rate</div>}
+        <div className="border border-solid border-[#1e1e1e] px-5 py-4">
+          <div className="font-mono text-[11px] uppercase text-[#555] tracking-wider mb-2">Runway</div>
+          <div className={`font-mono text-xl font-bold ${runwayColor}`}>{runway === Infinity ? "∞" : `${runway} days`}</div>
+          {hasMultiAsset && <div className="text-[11px] font-mono text-[#444] mt-1">≈ both assets</div>}
+          {!hasMultiAsset && <div className="text-[11px] font-mono text-[#444] mt-1">at current spend rate</div>}
         </div>
       </div>
 
-      {/* DETAILS section — always visible */}
-      <div className="grid grid-cols-2 gap-8 mb-8">
-        <div className="border border-dotted border-white/20 p-5">
-          {asciiHeader("DETAILS")}
+      {/* DETAILS + AUTO TOP-UP — two columns */}
+      <div className="grid grid-cols-2 gap-6 mb-8">
+        <div className="bg-[#0d0d0d] border border-solid border-[#1a1a1a] p-5">
+          {terminalHeader("DETAILS")}
           {fieldRow("External ID", customer.external_id)}
           {fieldRow("Email", customer.email)}
           {fieldRow("Currency", primaryAccount?.asset_code || "USD")}
           {fieldRow("Created", formatTime(customer.created_at))}
-          {metadataEntries.length > 0 && <div className="my-2" />}
           {metadataEntries.map(([key, value]) => fieldRow(key, String(value)))}
         </div>
-        <div className="border border-dotted border-white/20 p-5">
-          {asciiHeader("AUTO TOP-UP")}
-          <div className="space-y-3 mt-3">
+        <div className="bg-[#0d0d0d] border border-solid border-[#1a1a1a] p-5">
+          {terminalHeader("AUTO TOP-UP")}
+          <div className="space-y-3 mt-2">
             {customer.auto_topup ? (
-              Object.entries(customer.auto_topup).map(([code, cfg]) => {
+              Object.entries(customer.auto_topup).map(([code, cfg], idx, arr) => {
                 const isFiat = allAssets.find(a => a.code === code)?.type === "fiat";
                 const symbol = isFiat ? "$" : code.charAt(0);
-                const symbolColor = isFiat ? "text-white/40" : "text-teal-400/60";
                 const enabled = cfg.enabled;
                 return (
-                  <div key={code} className={`border border-dotted ${enabled ? "border-white/20" : "border-white/15"} p-3`}>
-                    <div className="flex items-center justify-between mb-2">
+                  <div key={code}>
+                    <div className="flex items-center justify-between py-1.5">
                       <div className="flex items-center gap-1">
-                        <span className={`text-xs font-mono ${symbolColor}`}>{symbol}</span>
-                        <span className="text-xs font-mono font-bold text-white">{code}</span>
+                        <span className={`text-[13px] font-mono ${isFiat ? "text-[#555]" : "text-[#2dd4aa]"}`}>{symbol}</span>
+                        <span className="text-[13px] font-mono font-bold text-white">{code}</span>
                       </div>
                       {enabled ? (
-                        <span className="text-xs font-mono text-[#4ADE80]">✓ ENABLED</span>
+                        <span className="text-[11px] font-mono text-[#4ADE80]">✓ ENABLED</span>
                       ) : (
-                        <span className="text-xs font-mono text-white/30">✗ OFF</span>
+                        <span className="text-[11px] font-mono text-[#555]">✗ OFF</span>
                       )}
                     </div>
                     {enabled ? (
-                      <>
-                        <div className="border-t border-dotted border-white/15 my-2" />
-                        <div className="flex justify-between py-1 text-xs font-mono">
-                          <span className="text-white/40">Threshold</span>
+                      <div className="ml-0 space-y-0">
+                        <div className="flex justify-between py-1 text-[13px] font-mono">
+                          <span className="text-[#555]">Threshold</span>
                           <span className="text-white">below {isFiat ? "$" : ""}{cfg.threshold.toFixed(isFiat ? 2 : 0)}{!isFiat ? ` ${code}` : ""}</span>
                         </div>
-                        <div className="flex justify-between py-1 text-xs font-mono">
-                          <span className="text-white/40">Top-up Amount</span>
+                        <div className="flex justify-between py-1 text-[13px] font-mono">
+                          <span className="text-[#555]">Top-up Amount</span>
                           <span className="text-white">+{isFiat ? "$" : ""}{cfg.amount.toFixed(isFiat ? 2 : 0)}{!isFiat ? ` ${code}` : ""}</span>
                         </div>
-                      </>
+                      </div>
                     ) : (
-                      <div className="text-xs text-white/20 font-mono mt-1">Auto top-up not configured</div>
+                      <div className="text-[11px] text-[#333] font-mono mt-0.5">Auto top-up not configured</div>
                     )}
+                    {idx < arr.length - 1 && <div className="border-t border-dashed border-[#1e1e1e] my-3" />}
                   </div>
                 );
               })
             ) : (
-              <div className="text-xs font-mono text-white/30">No auto top-up configured</div>
+              <div className="text-[11px] font-mono text-[#555]">No auto top-up configured</div>
             )}
           </div>
-          <div className="border-t border-dotted border-white/20 mt-4 pt-4">
+          <div className="border-t border-dashed border-[#1e1e1e] mt-4 pt-4">
             {fieldRow("Subscriptions", `${customer.subscriptions.length} active`)}
             {customer.subscriptions.map((sub) => fieldRow(sub.product_name, <StatusBadge status={sub.status} />))}
           </div>
@@ -314,12 +314,12 @@ export default function CustomerDetail() {
       </div>
 
       {/* TAB BAR */}
-      <div className="flex gap-0 border-b border-dotted border-white/20 mb-6">
+      <div className="flex gap-0 border-b border-dashed border-[#1e1e1e] mb-6">
         {tabs.map((tab) => (
           <button
             key={tab.key}
             onClick={() => { setActiveTab(tab.key); setEventPage(0); }}
-            className={`px-5 py-2.5 text-xs font-mono uppercase tracking-wide cursor-pointer ${activeTab === tab.key ? "text-white border-b-2 border-white -mb-px" : "text-white/30 hover:text-white/60"}`}
+            className={`px-5 py-2.5 text-[12px] font-mono uppercase tracking-[0.1em] cursor-pointer ${activeTab === tab.key ? "text-white border-b border-solid border-white -mb-px" : "text-[#555] hover:text-white/60"}`}
           >
             {tab.label}
           </button>
@@ -329,19 +329,19 @@ export default function CustomerDetail() {
       {/* ==================== OVERVIEW TAB ==================== */}
       {activeTab === "overview" && (
         <div className="space-y-0">
-          <div className="border border-dotted border-white/20 p-5 mb-4">
+          <div className="bg-[#0d0d0d] border border-solid border-[#1a1a1a] p-5 mb-4">
             {/* Chart header with asset switcher + period */}
             <div className="flex items-center justify-between mb-4">
-              {asciiHeader("RECENT SPEND")}
-              <div className="flex items-center gap-3">
+              {terminalHeader("RECENT SPEND")}
+              <div className="flex items-center gap-2">
                 {/* Asset switcher */}
                 {assetCodes.length > 1 && (
-                  <div className="flex gap-1">
+                  <div className="flex gap-0">
                     {assetCodes.map((code) => (
                       <button
                         key={code}
                         onClick={() => setChartAsset(code)}
-                        className={`text-xs px-3 py-1 font-mono ${chartAsset === code ? "bg-white text-black" : "border border-dotted border-white/20 text-white/40 hover:text-white/60"}`}
+                        className={`text-[11px] px-3 py-1 font-mono border border-solid border-[#1e1e1e] ${chartAsset === code ? "bg-white text-black" : "text-[#555] hover:text-white/60"} ${code !== assetCodes[0] ? "-ml-px" : ""}`}
                       >
                         {code}
                       </button>
@@ -352,10 +352,10 @@ export default function CustomerDetail() {
                 <select
                   value={chartRange}
                   onChange={(e) => setChartRange(e.target.value as "7" | "30" | "90")}
-                  className="border border-dotted border-white/20 text-white/40 text-xs px-3 py-1 font-mono bg-transparent appearance-none cursor-pointer hover:text-white/60 focus:outline-none"
+                  className="border border-solid border-[#1e1e1e] text-[#555] text-[11px] px-3 py-1 font-mono bg-transparent appearance-none cursor-pointer hover:text-white/60 focus:outline-none"
                 >
                   {periodOptions.map((opt) => (
-                    <option key={opt.value} value={opt.value} className="bg-card text-white">{opt.label}</option>
+                    <option key={opt.value} value={opt.value} className="bg-[#0d0d0d] text-white">{opt.label}</option>
                   ))}
                 </select>
               </div>
@@ -364,32 +364,32 @@ export default function CustomerDetail() {
             {hasChartData ? (
               <ResponsiveContainer width="100%" height={224}>
                 <LineChart data={chartData}>
-                  <CartesianGrid stroke="rgba(255,255,255,0.05)" strokeDasharray="3 3" />
-                  <XAxis dataKey="day" tick={{ fontSize: 9, fontFamily: "IBM Plex Mono", fill: "rgba(255,255,255,0.3)" }} tickLine={false} axisLine={false} interval="preserveStartEnd" />
-                  <YAxis tick={{ fontSize: 9, fontFamily: "IBM Plex Mono", fill: "rgba(255,255,255,0.3)" }} tickLine={false} axisLine={false} tickFormatter={(v: number) => chartAsset === "USD" ? `$${v}` : `${v}`} width={50} />
-                  <Tooltip contentStyle={{ fontFamily: "IBM Plex Mono", fontSize: 11, background: "#030712", border: "1px dotted rgba(255,255,255,0.20)", borderRadius: 0 }} formatter={(v: number) => [chartAsset === "USD" ? `$${v.toFixed(4)}` : `${v.toLocaleString()} ${chartAsset}`, chartAsset === "USD" ? "Spend" : "Balance"]} />
+                  <CartesianGrid stroke="rgba(255,255,255,0.04)" strokeDasharray="3 3" />
+                  <XAxis dataKey="day" tick={{ fontSize: 9, fontFamily: "IBM Plex Mono", fill: "#555" }} tickLine={false} axisLine={false} interval="preserveStartEnd" />
+                  <YAxis tick={{ fontSize: 9, fontFamily: "IBM Plex Mono", fill: "#555" }} tickLine={false} axisLine={false} tickFormatter={(v: number) => chartAsset === "USD" ? `$${v}` : `${v}`} width={50} />
+                  <Tooltip contentStyle={{ fontFamily: "IBM Plex Mono", fontSize: 11, background: "#0d0d0d", border: "1px solid #1a1a1a", borderRadius: 0 }} formatter={(v: number) => [chartAsset === "USD" ? `$${v.toFixed(4)}` : `${v.toLocaleString()} ${chartAsset}`, chartAsset === "USD" ? "Spend" : "Balance"]} />
                   <Line type="monotone" dataKey="spend" stroke="#FAFAFA" strokeWidth={1.5} dot={{ r: 3, fill: "#FAFAFA" }} activeDot={{ r: 4, fill: "#FAFAFA" }} />
                 </LineChart>
               </ResponsiveContainer>
             ) : (
               <div className="h-56 flex items-center justify-center">
-                <span className="font-ibm-plex text-sm text-white/40">$ no usage data for this period <span className="animate-pulse">█</span></span>
+                <span className="font-mono text-sm text-[#555]">$ no usage data for this period <span className="animate-pulse">█</span></span>
               </div>
             )}
           </div>
-          {/* Mini stats */}
-          <div className="grid grid-cols-3 gap-4 pt-4 border-t border-dotted border-white/20">
-            <div className="border border-dotted border-white/20 px-4 py-3">
-              <div className="font-space text-xs uppercase text-white/40 tracking-wider mb-1">Peak Day</div>
-              <div className="font-ibm-plex text-sm font-bold">{peakDay ? `${peakDay.day} — $${peakDay.spend.toFixed(2)}` : "—"}</div>
+          {/* Mini stats — no outer borders, just dividers */}
+          <div className="grid grid-cols-3 gap-0 pt-4">
+            <div className="px-4 py-3 border-r border-solid border-[#1e1e1e]">
+              <div className="font-mono text-[11px] uppercase text-[#555] tracking-wider mb-1">Peak Day</div>
+              <div className="font-mono text-[13px] text-white">{peakDay ? `${peakDay.day} — $${peakDay.spend.toFixed(2)}` : "—"}</div>
             </div>
-            <div className="border border-dotted border-white/20 px-4 py-3">
-              <div className="font-space text-xs uppercase text-white/40 tracking-wider mb-1">Most Used Event</div>
-              <div className="font-ibm-plex text-sm font-bold">{mostUsedType ? `${mostUsedType[0]} (${mostUsedType[1]})` : "—"}</div>
+            <div className="px-4 py-3 border-r border-solid border-[#1e1e1e]">
+              <div className="font-mono text-[11px] uppercase text-[#555] tracking-wider mb-1">Most Used Event</div>
+              <div className="font-mono text-[13px] text-white">{mostUsedType ? `${mostUsedType[0]} (${mostUsedType[1]})` : "—"}</div>
             </div>
-            <div className="border border-dotted border-white/20 px-4 py-3">
-              <div className="font-space text-xs uppercase text-white/40 tracking-wider mb-1">Avg Per Event</div>
-              <div className="font-ibm-plex text-sm font-bold">${avgPerEvent.toFixed(4)}</div>
+            <div className="px-4 py-3">
+              <div className="font-mono text-[11px] uppercase text-[#555] tracking-wider mb-1">Avg Per Event</div>
+              <div className="font-mono text-[13px] text-white">${avgPerEvent.toFixed(4)}</div>
             </div>
           </div>
         </div>
@@ -397,13 +397,13 @@ export default function CustomerDetail() {
 
       {/* ==================== USAGE EVENTS TAB ==================== */}
       {activeTab === "events" && (
-        <div className="border border-dotted border-white/20 p-5">
+        <div className="bg-[#0d0d0d] border border-solid border-[#1a1a1a] p-5">
           <div className="flex items-center justify-between mb-4">
-            {asciiHeader(`USAGE EVENTS (${filteredEvents.length})`)}
+            {terminalHeader(`USAGE EVENTS (${filteredEvents.length})`)}
             <select
               value={productFilter}
               onChange={(e) => { setProductFilter(e.target.value); setEventPage(0); }}
-              className="border border-dotted border-white/20 text-white/40 text-xs px-3 py-1 font-mono bg-transparent appearance-none cursor-pointer hover:text-white/60 focus:outline-none"
+              className="border border-solid border-[#1e1e1e] text-[#555] text-[11px] px-3 py-1 font-mono bg-transparent appearance-none cursor-pointer hover:text-white/60 focus:outline-none"
             >
               <option value="all" className="bg-card text-white">All Products</option>
               {products.map((p) => (
@@ -561,8 +561,8 @@ export default function CustomerDetail() {
           </div>
 
           {/* Top-up history */}
-          <div className="border border-dotted border-white/20 p-5">
-            {asciiHeader(`TOP-UP HISTORY (${topups.length})`)}
+          <div className="bg-[#0d0d0d] border border-solid border-[#1a1a1a] p-5">
+            {terminalHeader(`TOP-UP HISTORY (${topups.length})`)}
             {topups.length > 0 ? (
               <table className="w-full table-fixed">
                 <thead>
@@ -593,10 +593,10 @@ export default function CustomerDetail() {
 
       {/* ==================== SUBSCRIPTIONS TAB ==================== */}
       {activeTab === "subscriptions" && (
-        <div className="border border-dotted border-white/20 p-5">
+        <div className="bg-[#0d0d0d] border border-solid border-[#1a1a1a] p-5">
           <div className="flex items-center justify-between mb-4">
-            {asciiHeader("SUBSCRIPTIONS")}
-            <button className="bg-white text-black px-4 py-2 font-space text-xs uppercase tracking-wide hover:bg-white/90">+ Add Subscription</button>
+            {terminalHeader("SUBSCRIPTIONS")}
+            <button className="bg-white text-black px-4 py-2 font-mono text-[11px] uppercase tracking-wide hover:bg-white/90">+ Add Subscription</button>
           </div>
           {customer.subscriptions.length > 0 ? (
             <table className="w-full table-fixed">
