@@ -1,8 +1,10 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { customers } from "@/data/customers";
 import { events } from "@/data/events";
 import { useProductStore } from "@/stores/productStore";
+import OnboardingWizard from "@/components/onboarding/OnboardingWizard";
+import { loadOnboardingState } from "@/components/onboarding/onboardingState";
 import {
   AreaChart, Area, XAxis, Tooltip, ResponsiveContainer,
 } from "recharts";
@@ -74,6 +76,12 @@ const powerUserBreakdowns: Record<string, { type: string; events: number; amount
 export default function Overview() {
   const [expandedUser, setExpandedUser] = useState<string | null>(null);
   const navigate = useNavigate();
+  const onboardingState = loadOnboardingState();
+  const [showWizard, setShowWizard] = useState(!onboardingState.dismissed);
+
+  if (showWizard) {
+    return <OnboardingWizard onDismiss={() => setShowWizard(false)} />;
+  }
 
   return (
     <div className="space-y-10">
