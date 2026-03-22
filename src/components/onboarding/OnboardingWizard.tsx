@@ -65,7 +65,6 @@ export default function OnboardingWizard({ onDismiss }: Props) {
     persist(fresh);
   };
 
-  // When moving to review step, pre-fill defaults
   const goToReview = () => {
     const defaults = getReviewDefaults(state.selections.useCase);
     const newState = {
@@ -83,14 +82,14 @@ export default function OnboardingWizard({ onDismiss }: Props) {
   const step = state.currentStep;
 
   return (
-    <div style={{ backgroundColor: "#f5f5f0", minHeight: "100vh", padding: "40px 0" }}>
+    <div className="py-10">
       <div className="max-w-2xl mx-auto px-6">
         {/* Page heading */}
         <div className="mb-8">
-          <h1 className="font-mono text-[22px] font-bold text-[#111] mb-2">
+          <h1 className="font-mono text-[22px] font-bold text-white mb-2">
             Welcome — let's get your first product live.
           </h1>
-          <p className="font-mono text-[13px] text-[#888] leading-relaxed">
+          <p className="font-mono text-[13px] text-[#555] leading-relaxed">
             This takes about 5 minutes.
             <br />
             Doing it yourself, one endpoint at a time, is totally possible. This is just faster.
@@ -99,8 +98,8 @@ export default function OnboardingWizard({ onDismiss }: Props) {
 
         {/* Wizard card */}
         <div
-          className="bg-white p-8 mb-6"
-          style={{ border: "1px dashed #ccc", borderRadius: "4px" }}
+          className="p-8 mb-6"
+          style={{ backgroundColor: "#0d0d0d", border: "1px dashed #2a2a2a" }}
         >
           {step === 1 && (
             <Step1UseCase
@@ -144,11 +143,11 @@ export default function OnboardingWizard({ onDismiss }: Props) {
 
         {/* Bottom links */}
         <div className="flex items-center justify-center gap-6">
-          <button onClick={handleSkip} className="font-mono text-[13px] text-[#999] underline underline-offset-2 hover:text-[#666] transition-colors">
+          <button onClick={handleSkip} className="font-mono text-[13px] text-[#444] underline underline-offset-2 hover:text-[#666] transition-colors">
             Skip for now
           </button>
           {step > 1 && (
-            <button onClick={handleStartOver} className="font-mono text-[13px] text-[#999] underline underline-offset-2 hover:text-[#666] transition-colors">
+            <button onClick={handleStartOver} className="font-mono text-[13px] text-[#444] underline underline-offset-2 hover:text-[#666] transition-colors">
               Start over
             </button>
           )}

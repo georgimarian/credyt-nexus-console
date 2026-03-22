@@ -20,17 +20,17 @@ interface Props {
 }
 
 function statusBadge(status: StepStatus) {
-  const styles: Record<StepStatus, { bg: string; text: string; label: string }> = {
-    idle: { bg: "#f3f4f6", text: "#6b7280", label: "IDLE" },
-    running: { bg: "#dbeafe", text: "#1e40af", label: "RUNNING" },
-    success: { bg: "#dcfce7", text: "#166534", label: "SUCCESS" },
-    failed: { bg: "#fee2e2", text: "#991b1b", label: "FAILED" },
+  const styles: Record<StepStatus, { bg: string; text: string; border: string; label: string }> = {
+    idle: { bg: "transparent", text: "#6b7280", border: "#333", label: "IDLE" },
+    running: { bg: "#0c1929", text: "#60a5fa", border: "#1e40af44", label: "RUNNING" },
+    success: { bg: "#0d2420", text: "#2dd4aa", border: "#2dd4aa44", label: "SUCCESS" },
+    failed: { bg: "#1f0a0a", text: "#ef4444", border: "#ef444444", label: "FAILED" },
   };
   const s = styles[status];
   return (
     <span
       className="font-mono text-[10px] uppercase tracking-wider px-2 py-0.5 inline-flex items-center gap-1"
-      style={{ backgroundColor: s.bg, color: s.text, borderRadius: "2px", border: `1px solid ${s.text}22` }}
+      style={{ backgroundColor: s.bg, color: s.text, border: `1px solid ${s.border}` }}
     >
       {status === "running" && <Loader2 size={10} className="animate-spin" />}
       {status === "success" && <CheckCircle2 size={10} />}
@@ -50,7 +50,7 @@ export default function RunSetupStep({ state, onStateUpdate, onBack }: Props) {
   const allSuccess = SETUP_STEPS.every((s) => state.runSetup.stepStates[s.key] === "success");
 
   const inputStyle: React.CSSProperties = {
-    borderBottom: "1px dashed #bbb",
+    borderBottom: "1px dashed #333",
     borderTop: "none",
     borderLeft: "none",
     borderRight: "none",
@@ -59,13 +59,12 @@ export default function RunSetupStep({ state, onStateUpdate, onBack }: Props) {
     fontFamily: "monospace",
     fontSize: "14px",
     padding: "4px 0",
-    color: "#111",
+    color: "#e0e0e0",
     width: "100%",
   };
 
   const simulateStep = useCallback(
     async (key: string, idx: number): Promise<boolean> => {
-      // Build simulated request/response based on step
       const { review, selections } = state;
       let request: any = {};
       let response: any = {};
@@ -159,7 +158,6 @@ export default function RunSetupStep({ state, onStateUpdate, onBack }: Props) {
         continue;
       }
 
-      // Set running
       const runningState = { ...state, runSetup: { ...state.runSetup, stepStates: { ...state.runSetup.stepStates, [step.key]: "running" as StepStatus } } };
       onStateUpdate(runningState);
       saveOnboardingState(runningState);
@@ -171,7 +169,6 @@ export default function RunSetupStep({ state, onStateUpdate, onBack }: Props) {
         const successState = { ...state, runSetup: { ...state.runSetup, stepStates: { ...state.runSetup.stepStates, [step.key]: "success" as StepStatus } } };
         onStateUpdate(successState);
         saveOnboardingState(successState);
-        // Update state for next iteration
         state.runSetup.stepStates[step.key] = "success";
       } catch {
         const failedState = { ...state, runSetup: { ...state.runSetup, stepStates: { ...state.runSetup.stepStates, [step.key]: "failed" as StepStatus } } };
@@ -192,18 +189,18 @@ export default function RunSetupStep({ state, onStateUpdate, onBack }: Props) {
   return (
     <div>
       <div className="flex items-center gap-2 mb-2">
-        <span className="text-green-600 text-lg">✅</span>
-        <span className="font-mono text-[15px] font-bold text-green-700">Configuration saved — running setup</span>
+        <span className="text-[#2dd4aa] text-lg">✓</span>
+        <span className="font-mono text-[15px] font-bold text-[#2dd4aa]">Configuration saved — running setup</span>
       </div>
-      <p className="font-mono text-[13px] text-[#888] mb-6">
+      <p className="font-mono text-[13px] text-[#666] mb-6">
         Hit Run Setup and watch each API call fire in sequence — this is exactly what you'd do manually, one endpoint at a time.
       </p>
 
       {/* Resume options */}
-      <div className="border border-dashed border-[#ccc] p-4 bg-[#f9f9f5] mb-6" style={{ borderRadius: "4px" }}>
+      <div className="border border-dashed border-[#1e1e1e] p-4 bg-[#080808] mb-6">
         <div className="grid grid-cols-3 gap-4">
           <div>
-            <label className="font-mono text-[11px] uppercase tracking-wider text-[#999] block mb-2">Start from step</label>
+            <label className="font-mono text-[10px] uppercase tracking-wider text-[#555] block mb-2">Start from step</label>
             <input
               style={inputStyle}
               type="number"
@@ -217,7 +214,7 @@ export default function RunSetupStep({ state, onStateUpdate, onBack }: Props) {
             />
           </div>
           <div>
-            <label className="font-mono text-[11px] uppercase tracking-wider text-[#999] block mb-2">Customer 1 ID</label>
+            <label className="font-mono text-[10px] uppercase tracking-wider text-[#555] block mb-2">Customer 1 ID</label>
             <input
               style={inputStyle}
               value={state.runSetup.customer1Id}
@@ -229,7 +226,7 @@ export default function RunSetupStep({ state, onStateUpdate, onBack }: Props) {
             />
           </div>
           <div>
-            <label className="font-mono text-[11px] uppercase tracking-wider text-[#999] block mb-2">Customer 2 ID</label>
+            <label className="font-mono text-[10px] uppercase tracking-wider text-[#555] block mb-2">Customer 2 ID</label>
             <input
               style={inputStyle}
               value={state.runSetup.customer2Id}
@@ -247,8 +244,8 @@ export default function RunSetupStep({ state, onStateUpdate, onBack }: Props) {
       <button
         onClick={runSetup}
         disabled={isRunning}
-        className="w-full font-mono text-[13px] font-bold px-6 py-3 bg-[#111] text-white hover:bg-[#222] transition-colors mb-6 flex items-center justify-center gap-2"
-        style={{ borderRadius: "4px", opacity: isRunning ? 0.7 : 1 }}
+        className="w-full font-mono text-[13px] font-bold px-6 py-3 bg-white text-black hover:bg-white/90 transition-colors mb-6 flex items-center justify-center gap-2"
+        style={{ opacity: isRunning ? 0.7 : 1 }}
       >
         {isRunning && <Loader2 size={14} className="animate-spin" />}
         {isRunning ? "Running…" : "Run Setup"}
@@ -262,28 +259,28 @@ export default function RunSetupStep({ state, onStateUpdate, onBack }: Props) {
           const result = stepResults[step.key];
 
           return (
-            <div key={step.key} className="border border-dashed border-[#ccc]" style={{ borderRadius: "4px" }}>
+            <div key={step.key} className="border border-dashed border-[#2a2a2a]" style={{ backgroundColor: "#0a0a0a" }}>
               <button
                 onClick={() => setExpandedStep(isExpanded ? null : step.key)}
-                className="w-full flex items-center justify-between p-3 hover:bg-[#f9f9f5] transition-colors"
+                className="w-full flex items-center justify-between p-3 hover:bg-white/[0.02] transition-colors"
               >
                 <div className="flex items-center gap-2">
-                  {isExpanded ? <ChevronDown size={12} className="text-[#999]" /> : <ChevronRight size={12} className="text-[#999]" />}
-                  <span className="font-mono text-[13px] text-[#333]">{step.label}</span>
+                  {isExpanded ? <ChevronDown size={12} className="text-[#555]" /> : <ChevronRight size={12} className="text-[#555]" />}
+                  <span className="font-mono text-[13px] text-[#e0e0e0]">{step.label}</span>
                 </div>
                 {statusBadge(status)}
               </button>
               {isExpanded && result && (
-                <div className="border-t border-dashed border-[#ccc] p-3">
+                <div className="border-t border-dashed border-[#2a2a2a] p-3">
                   <div className="mb-2">
-                    <span className="font-mono text-[10px] uppercase tracking-wider text-[#999]">Request</span>
-                    <pre className="bg-[#1a1a1a] text-[#e5e5e5] p-3 font-mono text-[11px] mt-1 overflow-x-auto" style={{ borderRadius: "2px" }}>
+                    <span className="font-mono text-[10px] uppercase tracking-wider text-[#555]">Request</span>
+                    <pre className="bg-[#050505] text-[#888] p-3 font-mono text-[11px] mt-1 overflow-x-auto">
                       {JSON.stringify(result.request, null, 2)}
                     </pre>
                   </div>
                   <div>
-                    <span className="font-mono text-[10px] uppercase tracking-wider text-[#999]">Response</span>
-                    <pre className="bg-[#1a1a1a] text-[#e5e5e5] p-3 font-mono text-[11px] mt-1 overflow-x-auto" style={{ borderRadius: "2px" }}>
+                    <span className="font-mono text-[10px] uppercase tracking-wider text-[#555]">Response</span>
+                    <pre className="bg-[#050505] text-[#888] p-3 font-mono text-[11px] mt-1 overflow-x-auto">
                       {JSON.stringify(result.response, null, 2)}
                     </pre>
                   </div>
@@ -296,15 +293,14 @@ export default function RunSetupStep({ state, onStateUpdate, onBack }: Props) {
 
       {/* Success state */}
       {allSuccess && (
-        <div className="mt-6 p-5 border border-solid border-green-300 bg-[#f0fdf4]" style={{ borderRadius: "4px" }}>
-          <div className="font-mono text-[14px] font-bold text-green-800 mb-1">✓ All checks passed — your billing is live.</div>
-          <p className="font-mono text-[12px] text-green-700 mb-4">
+        <div className="mt-6 p-5 border border-solid border-[#2dd4aa] bg-[#0d2420]">
+          <div className="font-mono text-[14px] font-bold text-[#2dd4aa] mb-1">✓ All checks passed — your billing is live.</div>
+          <p className="font-mono text-[12px] text-[#2dd4aa]/70 mb-4">
             Your events are live. Go see how your fees are tracking.
           </p>
           <button
             onClick={handleGoToEvents}
-            className="w-full font-mono text-[13px] font-bold px-6 py-2.5 bg-green-700 text-white hover:bg-green-800 transition-colors"
-            style={{ borderRadius: "4px" }}
+            className="w-full font-mono text-[13px] font-bold px-6 py-2.5 bg-[#2dd4aa] text-black hover:bg-[#2dd4aa]/90 transition-colors"
           >
             Go to Events →
           </button>
@@ -312,7 +308,7 @@ export default function RunSetupStep({ state, onStateUpdate, onBack }: Props) {
       )}
 
       <div className="flex justify-start mt-6">
-        <button onClick={onBack} className="font-mono text-[13px] px-4 py-2 border border-dashed border-[#bbb] text-[#888] bg-transparent" style={{ borderRadius: "4px" }}>
+        <button onClick={onBack} className="font-mono text-[13px] px-4 py-2 border border-dashed border-[#333] text-[#555] bg-transparent">
           ← Back
         </button>
       </div>

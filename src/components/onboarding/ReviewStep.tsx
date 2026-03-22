@@ -9,7 +9,7 @@ interface Props {
 
 export default function ReviewStep({ review, onUpdate, onBack, onConfigure }: Props) {
   const inputStyle: React.CSSProperties = {
-    borderBottom: "1px dashed #bbb",
+    borderBottom: "1px dashed #333",
     borderTop: "none",
     borderLeft: "none",
     borderRight: "none",
@@ -19,7 +19,7 @@ export default function ReviewStep({ review, onUpdate, onBack, onConfigure }: Pr
     fontSize: "14px",
     padding: "4px 0",
     width: "100%",
-    color: "#111",
+    color: "#e0e0e0",
   };
 
   const slugify = (s: string) => s.toLowerCase().replace(/[^a-z0-9]+/g, "_").replace(/^_|_$/g, "");
@@ -27,19 +27,19 @@ export default function ReviewStep({ review, onUpdate, onBack, onConfigure }: Pr
   return (
     <div>
       <div className="flex items-center gap-2 mb-2">
-        <span className="text-green-600 text-lg">✅</span>
-        <span className="font-mono text-[15px] font-bold text-green-700">Billing config ready</span>
+        <span className="text-[#2dd4aa] text-lg">✓</span>
+        <span className="font-mono text-[15px] font-bold text-[#2dd4aa]">Billing config ready</span>
       </div>
-      <p className="font-mono text-[13px] text-[#888] mb-6">
+      <p className="font-mono text-[13px] text-[#666] mb-6">
         The fields below are yours to adjust — nothing gets created until you hit Configure.
       </p>
 
-      <div className="border border-dashed border-[#ccc] p-5 bg-[#f9f9f5] mb-6" style={{ borderRadius: "4px" }}>
-        <div className="font-mono text-[11px] uppercase tracking-wider text-[#999] mb-4">Customise names</div>
+      <div className="border border-dashed border-[#2a2a2a] p-5 bg-[#080808] mb-6">
+        <div className="font-mono text-[10px] uppercase tracking-wider text-[#555] mb-4">Customise names</div>
 
         <div className="grid grid-cols-2 gap-4 mb-4">
           <div>
-            <label className="font-mono text-[11px] uppercase tracking-wider text-[#999] block mb-2">Product name</label>
+            <label className="font-mono text-[10px] uppercase tracking-wider text-[#555] block mb-2">Product name</label>
             <input
               style={inputStyle}
               value={review.productName}
@@ -52,25 +52,24 @@ export default function ReviewStep({ review, onUpdate, onBack, onConfigure }: Pr
             />
           </div>
           <div>
-            <label className="font-mono text-[11px] uppercase tracking-wider text-[#999] block mb-2">Product code</label>
+            <label className="font-mono text-[10px] uppercase tracking-wider text-[#555] block mb-2">Product code</label>
             <input style={inputStyle} value={review.productCode} onChange={(e) => onUpdate({ productCode: e.target.value })} />
           </div>
         </div>
 
         <div>
-          <label className="font-mono text-[11px] uppercase tracking-wider text-[#999] block mb-2">Event type</label>
+          <label className="font-mono text-[10px] uppercase tracking-wider text-[#555] block mb-2">Event type</label>
           <input style={inputStyle} value={review.eventType} onChange={(e) => onUpdate({ eventType: e.target.value })} />
         </div>
       </div>
 
       <div className="flex justify-between">
-        <button onClick={onBack} className="font-mono text-[13px] px-4 py-2 border border-dashed border-[#bbb] text-[#888] bg-transparent" style={{ borderRadius: "4px" }}>
+        <button onClick={onBack} className="font-mono text-[13px] px-4 py-2 border border-dashed border-[#333] text-[#555] bg-transparent">
           ← Back
         </button>
         <button
           onClick={onConfigure}
-          className="font-mono text-[13px] font-bold px-6 py-2.5 bg-[#111] text-white w-full ml-4 hover:bg-[#222] transition-colors"
-          style={{ borderRadius: "4px" }}
+          className="font-mono text-[13px] font-bold px-6 py-2.5 bg-white text-black w-full ml-4 hover:bg-white/90 transition-colors"
         >
           Configure →
         </button>
