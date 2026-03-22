@@ -621,16 +621,15 @@ export default function CustomerDetail() {
       <Dialog open={showConfigureModal} onOpenChange={setShowConfigureModal}>
         <DialogContent className="border-solid border-[#1a1a1a] sm:max-w-md p-0 gap-0 bg-[#0d0d0d]">
           {(() => {
-            const primaryCode = customer.wallet.accounts[0]?.asset_code || "USD";
-            const cfg = customer.auto_topup?.[primaryCode];
+            const cfg = customer.auto_topup?.[configAsset];
             const enabled = cfg?.enabled || false;
-            const isFiat = allAssets.find(a => a.code === primaryCode)?.type === "fiat";
-            const symbol = isFiat ? "$" : primaryCode[0];
+            const isFiat = allAssets.find(a => a.code === configAsset)?.type === "fiat";
+            const symbol = isFiat ? "$" : configAsset[0];
 
             return (
               <>
                 <div className="border-b border-solid border-[#1a1a1a] px-8 py-4">
-                  <div className="font-mono text-[11px] text-[#444]">├─ CONFIGURE AUTO TOP-UP - {primaryCode} ──────────</div>
+                  <div className="font-mono text-[11px] text-[#444]">├─ CONFIGURE AUTO TOP-UP - {configAsset} ──────────</div>
                   <div className="font-mono text-[10px] text-[#555] mt-1">
                     Auto Top-Up {enabled ? "Enabled" : "Disabled"}
                   </div>
