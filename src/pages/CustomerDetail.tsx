@@ -523,8 +523,25 @@ export default function CustomerDetail() {
             })()}
           </div>
           <div className="flex items-center gap-3 mt-4">
-            <button className="border border-solid border-[#333] bg-transparent px-4 py-2 font-mono text-[11px] uppercase tracking-wide text-white hover:bg-white/5">Configure auto top-up</button>
-            <button className="border border-solid border-[#333] bg-transparent px-4 py-2 font-mono text-[11px] uppercase tracking-wide text-white hover:bg-white/5" onClick={() => setShowTopupModal(true)}>+ Add funds manually</button>
+            <button
+              className="border border-solid border-[#333] bg-transparent px-4 py-2 font-mono text-[11px] uppercase tracking-wide text-white hover:bg-white/5"
+              onClick={() => {
+                const primaryCode = customer.wallet.accounts[0]?.asset_code || "USD";
+                const cfg = customer.auto_topup?.[primaryCode];
+                setConfigThreshold(cfg?.enabled ? String(cfg.threshold) : "");
+                setConfigAmount(cfg?.enabled ? String(cfg.amount) : "");
+                setShowConfigureModal(true);
+              }}
+            >Configure auto top-up</button>
+            <button
+              className="border border-solid border-[#333] bg-transparent px-4 py-2 font-mono text-[11px] uppercase tracking-wide text-white hover:bg-white/5"
+              onClick={() => {
+                const primaryCode = customer.wallet.accounts[0]?.asset_code || "USD";
+                setInlineTopupAsset(inlineTopupAsset === primaryCode ? null : primaryCode);
+                setInlineTopupValue("20.00");
+                setInlineTopupStatus("idle");
+              }}
+            >+ Add funds manually</button>
           </div>
         </div>
       )}
