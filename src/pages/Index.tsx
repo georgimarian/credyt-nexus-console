@@ -76,6 +76,15 @@ const powerUserBreakdowns: Record<string, { type: string; events: number; amount
 export default function Overview() {
   const [expandedUser, setExpandedUser] = useState<string | null>(null);
   const navigate = useNavigate();
+  const products = useProductStore((s) => s.products);
+  const onboardingState = loadOnboardingState();
+  const [showWizard, setShowWizard] = useState(
+    !onboardingState.dismissed && products.length === 0
+  );
+
+  if (showWizard) {
+    return <OnboardingWizard onDismiss={() => setShowWizard(false)} />;
+  }
 
   return (
     <div className="space-y-10">
