@@ -66,6 +66,12 @@ export default function CustomerDetail() {
   const [eventsShowAll, setEventsShowAll] = useState(false);
   const [expandedSub, setExpandedSub] = useState<string | null>(null);
   const [walletPeriod, setWalletPeriod] = useState("30");
+  const [showConfigureModal, setShowConfigureModal] = useState(false);
+  const [configThreshold, setConfigThreshold] = useState("");
+  const [configAmount, setConfigAmount] = useState("");
+  const [inlineTopupAsset, setInlineTopupAsset] = useState<string | null>(null);
+  const [inlineTopupValue, setInlineTopupValue] = useState("20.00");
+  const [inlineTopupStatus, setInlineTopupStatus] = useState<"idle" | "done">("idle");
 
   const customerEvents = customer ? events.filter((e) => e.customer_id === customer.id) : [];
   const allCharges = customer ? customer.wallet.transactions.filter((t) => t.type === "charge") : [];
@@ -235,6 +241,49 @@ export default function CustomerDetail() {
                   <div className="font-mono text-[12px] text-white">{formatVal(acctSpent)}</div>
                 </div>
               </div>
+              {/* Inline top-up row */}
+              {inlineTopupAsset === account.asset_code && (
+                <div className="border-t border-solid border-white/[0.06] pt-3 mt-3">
+                  <div className="flex items-center gap-2 mb-2">
+                    <span className="font-mono text-[10px] text-white font-bold">Auto Top-up:</span>
+                    <span className="font-mono text-[10px] text-[#ef4444] font-bold">OFF</span>
+                  </div>
+                  <div className="flex items-stretch">
+                    <div className="flex-1 flex items-center border border-solid border-[#333] bg-[#0a0a0a]">
+                      <span className="font-mono text-[12px] text-[#4ADE80] pl-2.5 select-none">{isFiat ? "$" : account.asset_code[0]}</span>
+                      <input
+                        type="number"
+                        step="any"
+                        value={inlineTopupValue}
+                        onChange={(e) => setInlineTopupValue(e.target.value)}
+                        className="flex-1 bg-transparent font-mono text-[12px] text-white px-2 py-2 focus:outline-none"
+                        placeholder="20.00"
+                      />
+                      {inlineTopupValue && (
+                        <button
+                          onClick={() => setInlineTopupValue("")}
+                          className="text-[#555] hover:text-white/60 pr-2 font-mono text-[12px]"
+                        >×</button>
+                      )}
+                    </div>
+                    <button
+                      onClick={() => {
+                        const amount = parseFloat(inlineTopupValue);
+                        if (!amount || amount <= 0) return;
+                        setInlineTopupStatus("done");
+                        toast({ title: "done: Top-up processed", description: `${isFiat ? "$" : ""}${amount.toFixed(isFiat ? 2 : 0)}${!isFiat ? ` ${account.asset_code}` : ""} added to wallet.` });
+                        setTimeout(() => {
+                          setInlineTopupStatus("idle");
+                          setInlineTopupValue("");
+                        }, 2000);
+                      }}
+                      className={`font-mono text-[11px] font-bold uppercase tracking-wide px-4 py-2 ${inlineTopupStatus === "done" ? "bg-[#4ADE80] text-black" : "bg-[#16a34a] text-black hover:bg-[#15803d]"}`}
+                    >
+                      {inlineTopupStatus === "done" ? "✓ DONE" : "TOP UP"}
+                    </button>
+                  </div>
+                </div>
+              )}
             </div>
           );
         })}
@@ -517,8 +566,25 @@ export default function CustomerDetail() {
             })()}
           </div>
           <div className="flex items-center gap-3 mt-4">
-            <button className="border border-solid border-[#333] bg-transparent px-4 py-2 font-mono text-[11px] uppercase tracking-wide text-white hover:bg-white/5">Configure auto top-up</button>
-            <button className="border border-solid border-[#333] bg-transparent px-4 py-2 font-mono text-[11px] uppercase tracking-wide text-white hover:bg-white/5" onClick={() => setShowTopupModal(true)}>+ Add funds manually</button>
+            <button
+              className="border border-solid border-[#333] bg-transparent px-4 py-2 font-mono text-[11px] uppercase tracking-wide text-white hover:bg-white/5"
+              onClick={() => {
+                const primaryCode = customer.wallet.accounts[0]?.asset_code || "USD";
+                const cfg = customer.auto_topup?.[primaryCode];
+                setConfigThreshold(cfg?.enabled ? String(cfg.threshold) : "");
+                setConfigAmount(cfg?.enabled ? String(cfg.amount) : "");
+                setShowConfigureModal(true);
+              }}
+            >Configure auto top-up</button>
+            <button
+              className="border border-solid border-[#333] bg-transparent px-4 py-2 font-mono text-[11px] uppercase tracking-wide text-white hover:bg-white/5"
+              onClick={() => {
+                const primaryCode = customer.wallet.accounts[0]?.asset_code || "USD";
+                setInlineTopupAsset(inlineTopupAsset === primaryCode ? null : primaryCode);
+                setInlineTopupValue("20.00");
+                setInlineTopupStatus("idle");
+              }}
+            >+ Add funds manually</button>
           </div>
         </div>
       )}
@@ -552,6 +618,70 @@ export default function CustomerDetail() {
             <button onClick={() => setShowTopupModal(false)} className="border border-solid border-[#333] bg-transparent px-4 py-2 font-mono text-[11px] uppercase tracking-wide text-white hover:bg-white/5">Cancel</button>
             <button onClick={handleTopup} className="bg-white text-black px-4 py-2 font-mono text-[11px] uppercase tracking-wide hover:bg-white/90">Confirm Top Up</button>
           </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Configure Auto Top-Up Modal */}
+      <Dialog open={showConfigureModal} onOpenChange={setShowConfigureModal}>
+        <DialogContent className="border-solid border-[#1a1a1a] sm:max-w-md p-0 gap-0 bg-[#0d0d0d]">
+          {(() => {
+            const primaryCode = customer.wallet.accounts[0]?.asset_code || "USD";
+            const cfg = customer.auto_topup?.[primaryCode];
+            const enabled = cfg?.enabled || false;
+            const isFiat = allAssets.find(a => a.code === primaryCode)?.type === "fiat";
+            const symbol = isFiat ? "$" : primaryCode[0];
+
+            return (
+              <>
+                <div className="border-b border-solid border-[#1a1a1a] px-8 py-4">
+                  <div className="font-mono text-[11px] text-[#444]">├─ CONFIGURE AUTO TOP-UP - {primaryCode} ──────────</div>
+                  <div className="font-mono text-[10px] text-[#555] mt-1">
+                    Auto Top-Up {enabled ? "Enabled" : "Disabled"}
+                  </div>
+                </div>
+                <div className="space-y-5 px-8 py-6">
+                  <div>
+                    <label className="block font-mono text-[10px] uppercase tracking-wider text-[#555] mb-2">When balance falls below</label>
+                    <div className="relative">
+                      <span className="absolute left-3 top-1/2 -translate-y-1/2 font-mono text-sm text-[#ef4444]">{symbol}</span>
+                      <input
+                        type="number" step="any" value={configThreshold}
+                        onChange={(e) => setConfigThreshold(e.target.value)}
+                        placeholder="10"
+                        className="w-full border border-solid border-[#1e1e1e] bg-transparent py-2 pl-7 pr-3 font-mono text-sm text-white focus:outline-none focus:border-[#333]"
+                      />
+                    </div>
+                  </div>
+                  <div>
+                    <label className="block font-mono text-[10px] uppercase tracking-wider text-[#555] mb-2">Automatically top up</label>
+                    <div className="relative">
+                      <span className="absolute left-3 top-1/2 -translate-y-1/2 font-mono text-sm text-[#4ADE80]">{symbol}</span>
+                      <input
+                        type="number" step="any" value={configAmount}
+                        onChange={(e) => setConfigAmount(e.target.value)}
+                        placeholder="20"
+                        className="w-full border border-solid border-[#1e1e1e] bg-transparent py-2 pl-7 pr-3 font-mono text-sm text-white focus:outline-none focus:border-[#333]"
+                      />
+                    </div>
+                  </div>
+                  <div>
+                    <label className="block font-mono text-[10px] uppercase tracking-wider text-[#555] mb-2">Payment method</label>
+                    <div className="border border-dashed border-[#333] p-4 flex items-center justify-center">
+                      <span className="font-mono text-[12px] text-[#555]">⊕ ADD CARD</span>
+                    </div>
+                    <div className="font-mono text-[9px] text-[#444] mt-1.5">To enable auto top-up, please add a card first</div>
+                  </div>
+                </div>
+                <div className="flex items-center justify-between border-t border-solid border-[#1a1a1a] px-8 py-4">
+                  <button onClick={() => setShowConfigureModal(false)} className="border border-solid border-[#333] bg-transparent px-4 py-2 font-mono text-[11px] uppercase tracking-wide text-white hover:bg-white/5">Cancel</button>
+                  <button
+                    disabled
+                    className="bg-[#16a34a] text-white px-4 py-2 font-mono text-[11px] uppercase tracking-wide font-bold opacity-40 cursor-not-allowed"
+                  >Enable</button>
+                </div>
+              </>
+            );
+          })()}
         </DialogContent>
       </Dialog>
 
