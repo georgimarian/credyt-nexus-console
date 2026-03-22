@@ -66,6 +66,12 @@ export default function CustomerDetail() {
   const [eventsShowAll, setEventsShowAll] = useState(false);
   const [expandedSub, setExpandedSub] = useState<string | null>(null);
   const [walletPeriod, setWalletPeriod] = useState("30");
+  const [showConfigureModal, setShowConfigureModal] = useState(false);
+  const [configThreshold, setConfigThreshold] = useState("");
+  const [configAmount, setConfigAmount] = useState("");
+  const [inlineTopupAsset, setInlineTopupAsset] = useState<string | null>(null);
+  const [inlineTopupValue, setInlineTopupValue] = useState("20.00");
+  const [inlineTopupStatus, setInlineTopupStatus] = useState<"idle" | "done">("idle");
 
   const customerEvents = customer ? events.filter((e) => e.customer_id === customer.id) : [];
   const allCharges = customer ? customer.wallet.transactions.filter((t) => t.type === "charge") : [];
