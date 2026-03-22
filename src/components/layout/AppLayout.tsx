@@ -1,5 +1,6 @@
 import { Outlet, useLocation } from "react-router-dom";
 import { AppSidebar } from "./AppSidebar";
+import { ThemeToggle } from "./ThemeToggle";
 
 const pageTitles: Record<string, string> = {
   "/": "Overview",
@@ -33,7 +34,7 @@ export function AppLayout() {
         <header className="h-12 border-b border-dotted border-white/20 flex items-center justify-between px-10 shrink-0 bg-background">
           <span className="font-space text-xs uppercase tracking-widest text-white/40">{pageTitle}</span>
           <div className="flex items-center gap-3">
-            <span className="text-white/30 cursor-pointer">☽</span>
+            <ThemeToggle />
             <span className="font-space text-sm text-white/60">John Doe</span>
             <div className="flex h-7 w-7 items-center justify-center bg-white/10 font-space text-xs text-white">
               JD

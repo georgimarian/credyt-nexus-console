@@ -36,25 +36,24 @@ export default function Step3Pricing({ selections, onUpdate, onBack, onContinue 
         onClick={() => onUpdate({ pricingType: key })}
         className="w-full text-left p-4 flex items-start gap-3 transition-all mb-3"
         style={{
-          border: isSelected ? "1px solid #222" : "1px dashed #bbb",
-          backgroundColor: isSelected ? "#f5f5f5" : "white",
-          borderRadius: "4px",
+          border: isSelected ? "1px solid #2dd4aa" : "1px dashed #2a2a2a",
+          backgroundColor: isSelected ? "#0d2420" : "#0a0a0a",
         }}
       >
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-1">
-            <span className="font-mono text-[13px] font-medium text-[#111]">{title}</span>
-            <HelpCircle size={14} className="text-[#bbb]" />
+            <span className={`font-mono text-[13px] font-medium ${isSelected ? "text-white" : "text-[#e0e0e0]"}`}>{title}</span>
+            <HelpCircle size={14} className="text-[#444]" />
           </div>
-          <div className="font-mono text-[11px] text-[#999] mt-0.5">{desc}</div>
+          <div className="font-mono text-[11px] text-[#666] mt-0.5">{desc}</div>
         </div>
-        {isSelected && <span className="font-mono text-[13px] text-[#222] shrink-0">✓</span>}
+        {isSelected && <span className="font-mono text-[13px] text-[#2dd4aa] shrink-0">✓</span>}
       </button>
     );
   };
 
   const inputStyle: React.CSSProperties = {
-    borderBottom: "1px dashed #bbb",
+    borderBottom: "1px dashed #333",
     borderTop: "none",
     borderLeft: "none",
     borderRight: "none",
@@ -64,14 +63,14 @@ export default function Step3Pricing({ selections, onUpdate, onBack, onContinue 
     fontSize: "14px",
     padding: "4px 0",
     width: "100%",
-    color: "#111",
+    color: "#e0e0e0",
   };
 
   return (
     <div>
       <StepIndicator current={3} total={3} />
-      <h2 className="font-mono text-lg font-bold text-[#111] mb-1">How is each {label} measured?</h2>
-      <p className="font-mono text-[13px] text-[#888] mb-6">
+      <h2 className="font-mono text-lg font-bold text-[#e0e0e0] mb-1">How is each {label} measured?</h2>
+      <p className="font-mono text-[13px] text-[#666] mb-6">
         Credyt reads your usage events to calculate charges.
       </p>
 
@@ -81,11 +80,11 @@ export default function Step3Pricing({ selections, onUpdate, onBack, onContinue 
 
       {pt && (
         <>
-          <div className="border-t border-dashed border-[#ccc] my-6" />
+          <div className="border-t border-dashed border-[#2a2a2a] my-6" />
 
           {showVolumeFields && (
             <div className="mb-5">
-              <label className="font-mono text-[11px] uppercase tracking-wider text-[#999] block mb-2">
+              <label className="font-mono text-[10px] uppercase tracking-wider text-[#555] block mb-2">
                 What field in your event carries the quantity?
               </label>
               <input
@@ -94,7 +93,7 @@ export default function Step3Pricing({ selections, onUpdate, onBack, onContinue 
                 onChange={(e) => onUpdate({ volumeField: e.target.value })}
                 placeholder="e.g. results"
               />
-              <p className="font-mono text-[11px] text-[#aaa] mt-1">
+              <p className="font-mono text-[11px] text-[#444] mt-1">
                 This becomes the "volume_field" in your product's usage_calculation config. Your app must include this field with a numeric value in every usage event it sends.
               </p>
               <div className="flex gap-1.5 mt-2 flex-wrap">
@@ -102,15 +101,14 @@ export default function Step3Pricing({ selections, onUpdate, onBack, onContinue 
                   <button
                     key={ex}
                     onClick={() => onUpdate({ volumeField: ex })}
-                    className="font-mono text-[11px] px-2 py-0.5 border border-dashed border-[#ccc] text-[#888] bg-transparent hover:bg-[#f5f5f0] transition-colors"
-                    style={{ borderRadius: "4px" }}
+                    className="font-mono text-[11px] px-2 py-0.5 border border-dashed border-[#333] text-[#666] bg-transparent hover:bg-white/5 transition-colors"
                   >
                     {ex}
                   </button>
                 ))}
               </div>
 
-              <label className="font-mono text-[11px] uppercase tracking-wider text-[#999] block mb-2 mt-5">
+              <label className="font-mono text-[10px] uppercase tracking-wider text-[#555] block mb-2 mt-5">
                 Rate per unit (in USD)
               </label>
               <input
@@ -121,7 +119,7 @@ export default function Step3Pricing({ selections, onUpdate, onBack, onContinue 
                 type="number"
                 step="any"
               />
-              <p className="font-mono text-[11px] text-[#aaa] mt-1">
+              <p className="font-mono text-[11px] text-[#444] mt-1">
                 Amount charged for each unit reported in the event.
               </p>
             </div>
@@ -129,7 +127,7 @@ export default function Step3Pricing({ selections, onUpdate, onBack, onContinue 
 
           {showFlatField && (
             <div className="mb-5">
-              <label className="font-mono text-[11px] uppercase tracking-wider text-[#999] block mb-2">
+              <label className="font-mono text-[10px] uppercase tracking-wider text-[#555] block mb-2">
                 Flat charge per {unit} (USD)
               </label>
               <input
@@ -140,7 +138,7 @@ export default function Step3Pricing({ selections, onUpdate, onBack, onContinue 
                 type="number"
                 step="any"
               />
-              <p className="font-mono text-[11px] text-[#aaa] mt-1">
+              <p className="font-mono text-[11px] text-[#444] mt-1">
                 Fixed amount deducted every time this event fires.
               </p>
             </div>
@@ -150,13 +148,13 @@ export default function Step3Pricing({ selections, onUpdate, onBack, onContinue 
           <div className="mt-4">
             <button
               onClick={() => setShowDimensions(!showDimensions)}
-              className="font-mono text-[13px] text-[#888] hover:text-[#555] transition-colors"
+              className="font-mono text-[13px] text-[#666] hover:text-[#999] transition-colors"
             >
               {showDimensions ? "▼" : "▶"} Pricing varies by quality, speed, or type
             </button>
             {showDimensions && (
-              <div className="mt-3 p-4 border border-dashed border-[#ccc] bg-[#f9f9f5]" style={{ borderRadius: "4px" }}>
-                <label className="font-mono text-[11px] uppercase tracking-wider text-[#999] block mb-2">
+              <div className="mt-3 p-4 border border-dashed border-[#2a2a2a] bg-[#080808]">
+                <label className="font-mono text-[10px] uppercase tracking-wider text-[#555] block mb-2">
                   Tier field name
                 </label>
                 <input
@@ -169,14 +167,14 @@ export default function Step3Pricing({ selections, onUpdate, onBack, onContinue 
                   }
                   placeholder="e.g. tier"
                 />
-                <p className="font-mono text-[11px] text-[#aaa] mt-1 mb-4">
+                <p className="font-mono text-[11px] text-[#444] mt-1 mb-4">
                   Field in event data holding the tier string.
                 </p>
 
                 {selections.dimensions.tiers.map((tier, i) => (
                   <div key={i} className="flex items-center gap-3 mb-2">
                     <div className="flex-1">
-                      <label className="font-mono text-[11px] uppercase tracking-wider text-[#999] block mb-1">When field =</label>
+                      <label className="font-mono text-[10px] uppercase tracking-wider text-[#555] block mb-1">When field =</label>
                       <input
                         style={inputStyle}
                         value={tier.value}
@@ -189,7 +187,7 @@ export default function Step3Pricing({ selections, onUpdate, onBack, onContinue 
                       />
                     </div>
                     <div className="flex-1">
-                      <label className="font-mono text-[11px] uppercase tracking-wider text-[#999] block mb-1">Rate per unit (USD)</label>
+                      <label className="font-mono text-[10px] uppercase tracking-wider text-[#555] block mb-1">Rate per unit (USD)</label>
                       <input
                         style={inputStyle}
                         value={tier.rate}
@@ -208,7 +206,7 @@ export default function Step3Pricing({ selections, onUpdate, onBack, onContinue 
                         const tiers = selections.dimensions.tiers.filter((_, j) => j !== i);
                         onUpdate({ dimensions: { ...selections.dimensions, tiers } });
                       }}
-                      className="font-mono text-[13px] text-[#999] hover:text-[#555] mt-4"
+                      className="font-mono text-[13px] text-[#555] hover:text-[#999] mt-4"
                     >
                       ×
                     </button>
@@ -220,8 +218,7 @@ export default function Step3Pricing({ selections, onUpdate, onBack, onContinue 
                     const tiers = [...selections.dimensions.tiers, { value: "", rate: "" }];
                     onUpdate({ dimensions: { ...selections.dimensions, tiers } });
                   }}
-                  className="font-mono text-[11px] px-3 py-1.5 border border-dashed border-[#ccc] text-[#888] bg-transparent hover:bg-[#f0f0eb] transition-colors mt-2"
-                  style={{ borderRadius: "4px" }}
+                  className="font-mono text-[11px] px-3 py-1.5 border border-dashed border-[#333] text-[#666] bg-transparent hover:bg-white/5 transition-colors mt-2"
                 >
                   + Add tier
                 </button>
@@ -232,18 +229,16 @@ export default function Step3Pricing({ selections, onUpdate, onBack, onContinue 
       )}
 
       <div className="flex justify-between mt-6">
-        <button onClick={onBack} className="font-mono text-[13px] px-4 py-2 border border-dashed border-[#bbb] text-[#888] bg-transparent" style={{ borderRadius: "4px" }}>
+        <button onClick={onBack} className="font-mono text-[13px] px-4 py-2 border border-dashed border-[#333] text-[#555] bg-transparent">
           ← Back
         </button>
         <button
           onClick={onContinue}
           disabled={!canContinue}
-          className="font-mono text-[13px] px-4 py-2 border transition-all"
+          className="font-mono text-[13px] px-4 py-2 border transition-all bg-transparent"
           style={{
-            borderColor: canContinue ? "#222" : "#d4d4d4",
-            color: canContinue ? "#111" : "#bbb",
-            backgroundColor: "transparent",
-            borderRadius: "4px",
+            borderColor: canContinue ? "#e0e0e0" : "#222",
+            color: canContinue ? "#e0e0e0" : "#333",
             cursor: canContinue ? "pointer" : "default",
             opacity: canContinue ? 1 : 0.5,
           }}
