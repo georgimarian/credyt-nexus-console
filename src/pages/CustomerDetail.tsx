@@ -242,49 +242,6 @@ export default function CustomerDetail() {
                   <div className="font-mono text-[12px] text-white">{formatVal(acctSpent)}</div>
                 </div>
               </div>
-              {/* Inline top-up row */}
-              {inlineTopupAsset === account.asset_code && (
-                <div className="border-t border-solid border-white/[0.06] pt-3 mt-3">
-                  <div className="flex items-center gap-2 mb-2">
-                    <span className="font-mono text-[10px] text-white font-bold">Auto Top-up:</span>
-                    <span className="font-mono text-[10px] text-[#ef4444] font-bold">OFF</span>
-                  </div>
-                  <div className="flex items-stretch">
-                    <div className="flex-1 flex items-center border border-solid border-[#333] bg-[#0a0a0a]">
-                      <span className="font-mono text-[12px] text-[#4ADE80] pl-2.5 select-none">{isFiat ? "$" : account.asset_code[0]}</span>
-                      <input
-                        type="number"
-                        step="any"
-                        value={inlineTopupValue}
-                        onChange={(e) => setInlineTopupValue(e.target.value)}
-                        className="flex-1 bg-transparent font-mono text-[12px] text-white px-2 py-2 focus:outline-none"
-                        placeholder="20.00"
-                      />
-                      {inlineTopupValue && (
-                        <button
-                          onClick={() => setInlineTopupValue("")}
-                          className="text-[#555] hover:text-white/60 pr-2 font-mono text-[12px]"
-                        >×</button>
-                      )}
-                    </div>
-                    <button
-                      onClick={() => {
-                        const amount = parseFloat(inlineTopupValue);
-                        if (!amount || amount <= 0) return;
-                        setInlineTopupStatus("done");
-                        toast({ title: "done: Top-up processed", description: `${isFiat ? "$" : ""}${amount.toFixed(isFiat ? 2 : 0)}${!isFiat ? ` ${account.asset_code}` : ""} added to wallet.` });
-                        setTimeout(() => {
-                          setInlineTopupStatus("idle");
-                          setInlineTopupValue("");
-                        }, 2000);
-                      }}
-                      className={`font-mono text-[11px] font-bold uppercase tracking-wide px-4 py-2 ${inlineTopupStatus === "done" ? "bg-[#4ADE80] text-black" : "bg-[#16a34a] text-black hover:bg-[#15803d]"}`}
-                    >
-                      {inlineTopupStatus === "done" ? "✓ DONE" : "TOP UP"}
-                    </button>
-                  </div>
-                </div>
-              )}
             </div>
           );
         })}
