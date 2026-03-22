@@ -67,6 +67,7 @@ export default function CustomerDetail() {
   const [expandedSub, setExpandedSub] = useState<string | null>(null);
   const [walletPeriod, setWalletPeriod] = useState("30");
   const [showConfigureModal, setShowConfigureModal] = useState(false);
+  const [configAsset, setConfigAsset] = useState("USD");
   const [configThreshold, setConfigThreshold] = useState("");
   const [configAmount, setConfigAmount] = useState("");
   const [inlineTopupAsset, setInlineTopupAsset] = useState<string | null>(null);
