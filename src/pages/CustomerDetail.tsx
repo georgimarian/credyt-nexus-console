@@ -24,6 +24,14 @@ function formatTime(ts: string) {
   return `${mo} ${day} ${h}:${m}:${s}`;
 }
 
+function formatDateShort(ts: string) {
+  const d = new Date(ts);
+  const mo = d.toLocaleString("en-US", { month: "short" });
+  const day = d.getDate();
+  const yr = d.getFullYear();
+  return `${mo} ${day}, ${yr}`;
+}
+
 function truncateId(id: string) {
   if (id.length <= 12) return id;
   return `${id.slice(0, 8)}...${id.slice(-4)}`;
@@ -57,6 +65,7 @@ export default function CustomerDetail() {
   const [chartAsset, setChartAsset] = useState("USD");
   const [eventsShowAll, setEventsShowAll] = useState(false);
   const [expandedSub, setExpandedSub] = useState<string | null>(null);
+  const [walletPeriod, setWalletPeriod] = useState("30");
 
   const customerEvents = customer ? events.filter((e) => e.customer_id === customer.id) : [];
   const allCharges = customer ? customer.wallet.transactions.filter((t) => t.type === "charge") : [];
@@ -115,23 +124,17 @@ export default function CustomerDetail() {
   }
 
   const topups = customer.wallet.transactions.filter((t) => t.type === "top_up");
-  const primaryAccount = customer.wallet.accounts[0];
   const charges = customer.wallet.transactions.filter((t) => t.type === "charge");
   const assetCodes = customer.wallet.accounts.map((a) => a.asset_code);
 
   const hasChartData = chartData.some((d) => d.spend > 0);
 
-  // Last activity
   const lastEvent = customerEvents.length > 0 ? customerEvents.sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime())[0] : null;
 
   const INITIAL_EVENT_COUNT = 10;
   const visibleEvents = eventsShowAll ? customerEvents : customerEvents.slice(0, INITIAL_EVENT_COUNT);
 
   const selectedEventObj = selectedEvent ? customerEvents.find((e) => e.id === selectedEvent) : null;
-
-  const terminalHeader = (label: string) => (
-    <div className="font-mono text-[11px] text-[#444] mb-3 tracking-wide">├─ {label} ──────────────────────────</div>
-  );
 
   const handleTopup = () => {
     const amount = parseFloat(topupAmount);
@@ -147,11 +150,8 @@ export default function CustomerDetail() {
     { key: "autotopup", label: "Auto Top-Up" },
   ];
 
-  const periodOptions = [
-    { label: "Last 7 days", value: "7" },
-    { label: "Last 30 days", value: "30" },
-    { label: "Last 90 days", value: "90" },
-  ];
+  // Auto top-up: any enabled?
+  const anyTopupEnabled = customer.auto_topup ? Object.values(customer.auto_topup).some(c => c.enabled) : false;
 
   return (
     <div className="space-y-0">
@@ -178,8 +178,20 @@ export default function CustomerDetail() {
         </button>
       </div>
 
-      {/* ===== BALANCE CARDS — 2 asset cards ===== */}
-      <div className="grid grid-cols-2 gap-4 mb-6">
+      {/* ===== WALLET CARDS — 2 side-by-side ===== */}
+      <div className="flex items-center justify-between mb-3">
+        <div className="font-mono text-[10px] uppercase text-[#555] tracking-wider">Wallet</div>
+        <select
+          value={walletPeriod}
+          onChange={(e) => setWalletPeriod(e.target.value)}
+          className="border border-solid border-[#1e1e1e] text-[#555] text-[10px] px-2.5 py-1 font-mono bg-transparent appearance-none cursor-pointer hover:text-white/60 focus:outline-none"
+        >
+          <option value="month" className="bg-[#0d0d0d] text-white">This month</option>
+          <option value="30" className="bg-[#0d0d0d] text-white">Last 30 days</option>
+          <option value="all" className="bg-[#0d0d0d] text-white">All time</option>
+        </select>
+      </div>
+      <div className="grid grid-cols-2 gap-3 mb-6">
         {customer.wallet.accounts.map((account) => {
           const isFiat = account.asset_code === "USD";
           const symbol = isFiat ? "$" : account.asset_code[0];
@@ -187,137 +199,157 @@ export default function CustomerDetail() {
           const acctTopups = topups.filter((t) => t.asset_code === account.asset_code).reduce((s, t) => s + t.amount, 0);
           const acctSpent = charges.filter((t) => t.asset_code === account.asset_code).reduce((s, t) => s + Math.abs(t.amount), 0);
           const totalBal = account.available + account.pending_out;
-          const balColor = totalBal >= 0 ? "text-[#2dd4aa]" : "text-[#ef4444]";
+          const balColor = totalBal >= 0 ? "text-[#4ADE80]" : "text-[#ef4444]";
 
           return (
-            <div key={account.asset_code} className="bg-[#0d0d0d] border border-solid border-[#1a1a1a] p-5">
-              {/* Card header */}
-              <div className="flex items-center justify-between mb-4">
-                <div className="flex items-center gap-2.5">
-                  <div className="w-7 h-7 bg-[#1a1a1a] flex items-center justify-center font-mono text-[11px] text-[#555] font-bold">
+            <div key={account.asset_code} className="border border-solid border-white/[0.08] p-4">
+              {/* Header row */}
+              <div className="flex items-center justify-between mb-3">
+                <div className="flex items-center gap-2">
+                  <div className="w-6 h-6 bg-white/[0.05] flex items-center justify-center font-mono text-[10px] text-[#555] font-bold">
                     {symbol}
                   </div>
                   <div>
-                    <div className="font-mono text-sm font-bold text-white">{account.asset_code}</div>
-                    <div className="font-mono text-[10px] text-[#444]">{isFiat ? "US Dollar" : account.asset_code}</div>
+                    <div className="font-mono text-xs font-bold text-white">{isFiat ? "US Dollar" : account.asset_code}</div>
+                    <div className="font-mono text-[9px] text-[#444]">{account.asset_code}</div>
                   </div>
                 </div>
                 <div className="text-right">
-                  <div className={`font-mono text-xl font-bold ${balColor}`}>{formatVal(totalBal)}</div>
-                  <div className="font-mono text-[10px] text-[#444]">Available</div>
+                  <div className={`font-mono text-lg font-bold ${balColor}`}>{formatVal(totalBal)}</div>
+                  <div className="font-mono text-[9px] text-[#444]">Available</div>
                 </div>
               </div>
-              {/* Divider */}
-              <div className="border-t border-solid border-[#1a1a1a] mb-3" />
-              {/* Breakdown rows */}
-              {[
-                { label: "Top-ups", value: formatVal(acctTopups) },
-                { label: "Spent", value: formatVal(acctSpent) },
-                ...(account.pending_in > 0 ? [{ label: "Pending", value: formatVal(account.pending_in) }] : []),
-                ...(account.pending_out > 0 ? [{ label: "Reserved", value: formatVal(account.pending_out) }] : []),
-              ].map(row => (
-                <div key={row.label} className="flex justify-between py-1.5 font-mono text-[13px]">
-                  <span className="text-[#555]">{row.label}</span>
-                  <span className="text-white">{row.value}</span>
+              {/* Stats row */}
+              <div className="border-t border-solid border-white/[0.06] pt-3 grid grid-cols-3 gap-2">
+                <div>
+                  <div className="font-mono text-[9px] uppercase text-[#444] tracking-wider mb-0.5">Available</div>
+                  <div className="font-mono text-[12px] text-white">{formatVal(account.available)}</div>
+                  <div className="font-mono text-[9px] text-[#333] mt-0.5">{isFiat ? `$${account.pending_out.toFixed(2)} reserved` : `${account.pending_out} reserved`}</div>
                 </div>
-              ))}
+                <div>
+                  <div className="font-mono text-[9px] uppercase text-[#444] tracking-wider mb-0.5">Top-ups</div>
+                  <div className="font-mono text-[12px] text-white">{formatVal(acctTopups)}</div>
+                </div>
+                <div>
+                  <div className="font-mono text-[9px] uppercase text-[#444] tracking-wider mb-0.5">Spent</div>
+                  <div className="font-mono text-[12px] text-white">{formatVal(acctSpent)}</div>
+                </div>
+              </div>
             </div>
           );
         })}
       </div>
 
-      {/* ===== STATS ROW — 4 cards ===== */}
-      <div className="grid grid-cols-4 gap-0 mb-6">
-        {/* Last Activity */}
-        <div className="border border-solid border-[#1e1e1e] px-4 py-3 border-r-0">
+      {/* ===== STATS ROW — 4 columns with dividers ===== */}
+      <div className="grid grid-cols-4 mb-6">
+        <div className="pr-4 py-3">
           <div className="font-mono text-[10px] uppercase text-[#555] tracking-wider mb-1">Last Activity</div>
           <div className="font-mono text-[13px] text-white font-bold">{lastEvent ? formatTime(lastEvent.timestamp) : "—"}</div>
         </div>
-        {/* Total Events */}
-        <div className="border border-solid border-[#1e1e1e] px-4 py-3 border-r-0">
+        <div className="px-4 py-3 border-l border-solid border-white/[0.06]">
           <div className="font-mono text-[10px] uppercase text-[#555] tracking-wider mb-1">Total Events</div>
           <div className="font-mono text-[13px] text-white font-bold">{customerEvents.length}</div>
         </div>
-        {/* Subscriptions */}
-        <div className="border border-solid border-[#1e1e1e] px-4 py-3 border-r-0">
-          <div className="font-mono text-[10px] uppercase text-[#555] tracking-wider mb-1">Subscriptions</div>
-          <div className="font-mono text-[13px] text-white font-bold">{customer.subscriptions.length}</div>
+        <div className="px-4 py-3 border-l border-solid border-white/[0.06]">
+          <div className="font-mono text-[10px] uppercase text-[#555] tracking-wider mb-1">Subscription</div>
+          <div className="font-mono text-[13px] text-white font-bold">{customer.subscriptions.filter(s => s.status === "active").length} active</div>
         </div>
-        {/* Auto Top-Up */}
-        <div className="border border-solid border-[#1e1e1e] px-4 py-3">
+        <div className="pl-4 py-3 border-l border-solid border-white/[0.06]">
           <div className="font-mono text-[10px] uppercase text-[#555] tracking-wider mb-1">Auto Top-Up</div>
-          {customer.auto_topup ? (
-            <div className="space-y-0.5">
-              {Object.entries(customer.auto_topup).map(([code, cfg]) => (
-                <div key={code} className="font-mono text-[11px]">
-                  <span className="text-white font-bold">{code}</span>
-                  <span className="mx-1 text-[#333]">·</span>
-                  <span className={cfg.enabled ? "text-[#4ADE80]" : "text-[#ef4444]"}>
-                    {cfg.enabled ? "Enabled" : "Disabled"}
-                  </span>
-                </div>
-              ))}
-            </div>
-          ) : (
-            <div className="font-mono text-[11px] text-[#555]">Not configured</div>
-          )}
+          <div className={`font-mono text-[13px] font-bold ${anyTopupEnabled ? "text-[#4ADE80]" : "text-[#ef4444]"}`}>
+            {anyTopupEnabled ? "Enabled" : "Disabled"}
+          </div>
         </div>
       </div>
 
-      {/* ===== RECENT SPEND CHART ===== */}
-      <div className="bg-[#0d0d0d] border border-solid border-[#1a1a1a] p-5 mb-6">
-        <div className="flex items-center justify-between mb-4">
-          <div className="font-mono text-[11px] uppercase text-[#555] tracking-wider">Recent Spend</div>
-          <div className="flex items-center gap-2">
-            {assetCodes.length > 1 && (
-              <div className="flex gap-0">
-                {assetCodes.map((code) => (
-                  <button
-                    key={code}
-                    onClick={() => setChartAsset(code)}
-                    className={`text-[11px] px-3 py-1 font-mono border border-solid border-[#1e1e1e] ${chartAsset === code ? "bg-white text-black" : "text-[#555] hover:text-white/60"} ${code !== assetCodes[0] ? "-ml-px" : ""}`}
-                  >
-                    {code}
-                  </button>
-                ))}
-              </div>
-            )}
-            <select
-              value={chartRange}
-              onChange={(e) => setChartRange(e.target.value as "7" | "30" | "90")}
-              className="border border-solid border-[#1e1e1e] text-[#555] text-[11px] px-3 py-1 font-mono bg-transparent appearance-none cursor-pointer hover:text-white/60 focus:outline-none"
-            >
-              {periodOptions.map((opt) => (
-                <option key={opt.value} value={opt.value} className="bg-[#0d0d0d] text-white">{opt.label}</option>
-              ))}
-            </select>
+      {/* ===== RECENT SPEND + SUBSCRIBED PRODUCTS (side by side) ===== */}
+      <div className="grid grid-cols-4 gap-4 mb-6">
+        {/* Chart — 3/4 width */}
+        <div className="col-span-3 border border-solid border-white/[0.08] p-5">
+          <div className="flex items-center justify-between mb-4">
+            <div className="font-mono text-[10px] uppercase text-[#555] tracking-wider">Recent Spend</div>
+            <div className="flex items-center gap-2">
+              {assetCodes.length > 1 && (
+                <div className="flex gap-0">
+                  {assetCodes.map((code) => (
+                    <button
+                      key={code}
+                      onClick={() => setChartAsset(code)}
+                      className={`text-[10px] px-2.5 py-1 font-mono border border-solid border-white/[0.08] ${chartAsset === code ? "bg-white text-black" : "text-[#555] hover:text-white/60"} ${code !== assetCodes[0] ? "-ml-px" : ""}`}
+                    >
+                      {code}
+                    </button>
+                  ))}
+                </div>
+              )}
+              <select
+                value={chartRange}
+                onChange={(e) => setChartRange(e.target.value as "7" | "30" | "90")}
+                className="border border-solid border-white/[0.08] text-[#555] text-[10px] px-2.5 py-1 font-mono bg-transparent appearance-none cursor-pointer hover:text-white/60 focus:outline-none"
+              >
+                <option value="7" className="bg-[#0d0d0d] text-white">7 days</option>
+                <option value="30" className="bg-[#0d0d0d] text-white">30 days</option>
+                <option value="90" className="bg-[#0d0d0d] text-white">90 days</option>
+              </select>
+            </div>
           </div>
+
+          {hasChartData ? (
+            <ResponsiveContainer width="100%" height={200}>
+              <LineChart data={chartData}>
+                <CartesianGrid stroke="rgba(255,255,255,0.03)" strokeDasharray="3 3" />
+                <XAxis dataKey="day" tick={{ fontSize: 9, fontFamily: "IBM Plex Mono", fill: "#444" }} tickLine={false} axisLine={false} interval="preserveStartEnd" />
+                <YAxis tick={{ fontSize: 9, fontFamily: "IBM Plex Mono", fill: "#444" }} tickLine={false} axisLine={false} tickFormatter={(v: number) => chartAsset === "USD" ? `$${v}` : `${v}`} width={50} />
+                <Tooltip contentStyle={{ fontFamily: "IBM Plex Mono", fontSize: 11, background: "#0d0d0d", border: "1px solid #1a1a1a", borderRadius: 0 }} formatter={(v: number) => [chartAsset === "USD" ? `$${v.toFixed(4)}` : `${v.toLocaleString()} ${chartAsset}`, chartAsset === "USD" ? "Spend" : "Balance"]} />
+                <Line type="monotone" dataKey="spend" stroke="#FAFAFA" strokeWidth={1.5} dot={{ r: 2, fill: "#FAFAFA" }} activeDot={{ r: 4, fill: "#FAFAFA" }} />
+              </LineChart>
+            </ResponsiveContainer>
+          ) : (
+            <div className="h-48 flex items-center justify-center">
+              <span className="font-mono text-sm text-[#555]">$ no usage data for this period <span className="animate-pulse">█</span></span>
+            </div>
+          )}
         </div>
 
-        {hasChartData ? (
-          <ResponsiveContainer width="100%" height={200}>
-            <LineChart data={chartData}>
-              <CartesianGrid stroke="rgba(255,255,255,0.03)" strokeDasharray="3 3" />
-              <XAxis dataKey="day" tick={{ fontSize: 9, fontFamily: "IBM Plex Mono", fill: "#444" }} tickLine={false} axisLine={false} interval="preserveStartEnd" />
-              <YAxis tick={{ fontSize: 9, fontFamily: "IBM Plex Mono", fill: "#444" }} tickLine={false} axisLine={false} tickFormatter={(v: number) => chartAsset === "USD" ? `$${v}` : `${v}`} width={50} />
-              <Tooltip contentStyle={{ fontFamily: "IBM Plex Mono", fontSize: 11, background: "#0d0d0d", border: "1px solid #1a1a1a", borderRadius: 0 }} formatter={(v: number) => [chartAsset === "USD" ? `$${v.toFixed(4)}` : `${v.toLocaleString()} ${chartAsset}`, chartAsset === "USD" ? "Spend" : "Balance"]} />
-              <Line type="monotone" dataKey="spend" stroke="#FAFAFA" strokeWidth={1.5} dot={{ r: 2, fill: "#FAFAFA" }} activeDot={{ r: 4, fill: "#FAFAFA" }} />
-            </LineChart>
-          </ResponsiveContainer>
-        ) : (
-          <div className="h-48 flex items-center justify-center">
-            <span className="font-mono text-sm text-[#555]">$ no usage data for this period <span className="animate-pulse">█</span></span>
+        {/* Subscribed Products — 1/4 width */}
+        <div className="col-span-1 border border-solid border-white/[0.08] p-4">
+          <div className="font-mono text-[10px] uppercase text-[#555] tracking-wider mb-3">Subscribed Products</div>
+          <div className="space-y-3">
+            {customer.subscriptions.map((sub) => {
+              const product = products.find((p) => p.id === sub.product_id);
+              const price = product?.prices?.[0];
+              return (
+                <div key={sub.id} className="border border-solid border-white/[0.06] p-3">
+                  <div className="flex items-center justify-between mb-1">
+                    <span className="font-mono text-[11px] text-white font-bold">{sub.product_name}</span>
+                    <span className={`text-[9px] font-mono uppercase ${sub.status === "active" ? "text-[#4ADE80]" : "text-[#FACC15]"}`}>
+                      {sub.status}
+                    </span>
+                  </div>
+                  {price && (
+                    <div className="font-mono text-[9px] text-[#444]">
+                      {price.billing_model === "recurring" ? "Recurring" : "Per-event"} · ${price.unit_price || price.amount || 0} / {price.event_type || "month"}
+                    </div>
+                  )}
+                  <div className="font-mono text-[9px] text-[#333] mt-1">Since {formatDateShort(sub.start_date)}</div>
+                </div>
+              );
+            })}
+            {customer.subscriptions.length === 0 && (
+              <div className="font-mono text-[10px] text-[#444]">No subscriptions</div>
+            )}
           </div>
-        )}
+          <button className="mt-3 font-mono text-[10px] text-[#555] hover:text-white cursor-pointer">+ Add subscription</button>
+        </div>
       </div>
 
       {/* ===== TAB BAR ===== */}
-      <div className="flex gap-0 border-b border-solid border-[#222] mb-6">
+      <div className="flex gap-0 border-b border-solid border-white/[0.06] mb-6">
         {tabs.map((tab) => (
           <button
             key={tab.key}
             onClick={() => setActiveTab(tab.key)}
-            className={`px-5 py-2.5 text-[12px] font-mono uppercase tracking-[0.1em] cursor-pointer ${activeTab === tab.key ? "text-white border-b border-solid border-white -mb-px" : "text-[#555] hover:text-white/60"}`}
+            className={`px-5 py-2.5 text-[11px] font-mono uppercase tracking-[0.1em] cursor-pointer ${activeTab === tab.key ? "text-white border-b-2 border-solid border-white -mb-px font-bold" : "text-[#555] hover:text-white/60"}`}
           >
             {tab.label}
           </button>
@@ -329,13 +361,13 @@ export default function CustomerDetail() {
         <div>
           <table className="w-full table-fixed">
             <thead>
-              <tr className="border-b border-solid border-[#222]">
+              <tr className="border-b border-solid border-white/[0.08]">
                 <th className="w-[16%] px-3 py-2.5 text-left font-mono text-[10px] uppercase tracking-wider text-[#555] whitespace-nowrap">Timestamp</th>
                 <th className="w-[14%] px-3 py-2.5 text-left font-mono text-[10px] uppercase tracking-wider text-[#555] whitespace-nowrap">Event Type</th>
                 <th className="w-[16%] px-3 py-2.5 text-left font-mono text-[10px] uppercase tracking-wider text-[#555] whitespace-nowrap">Event ID</th>
                 <th className="w-[26%] px-3 py-2.5 text-left font-mono text-[10px] uppercase tracking-wider text-[#555] whitespace-nowrap">Description</th>
                 <th className="w-[8%] px-3 py-2.5 text-center font-mono text-[10px] uppercase tracking-wider text-[#555] whitespace-nowrap">Fee</th>
-                <th className="w-[12%] px-3 py-2.5 text-right font-mono text-[10px] uppercase tracking-wider text-[#555] whitespace-nowrap">Total Fees</th>
+                <th className="w-[12%] px-3 py-2.5 text-right font-mono text-[10px] uppercase tracking-wider text-[#555] whitespace-nowrap">Total</th>
               </tr>
             </thead>
             <tbody>
@@ -346,7 +378,7 @@ export default function CustomerDetail() {
                 const dims = Object.entries(event.properties).filter(([k]) => k !== "event_type");
                 const description = dims.length > 0 ? dims.map(([k, v]) => `${k}:${v}`).join(", ") : "—";
                 return (
-                  <tr key={event.id} className="border-b border-solid border-[#1a1a1a] hover:bg-white/[0.02] cursor-pointer" onClick={() => setSelectedEvent(selectedEvent === event.id ? null : event.id)}>
+                  <tr key={event.id} className="border-b border-solid border-white/[0.06] hover:bg-white/[0.02] cursor-pointer" onClick={() => setSelectedEvent(selectedEvent === event.id ? null : event.id)}>
                     <td className="px-3 py-3 font-mono text-[12px] text-white whitespace-nowrap">{formatTime(event.timestamp)}</td>
                     <td className="px-3 py-3 font-mono text-[12px] text-white whitespace-nowrap">{event.event_type}</td>
                     <td className="px-3 py-3 font-mono text-[11px] text-[#555] whitespace-nowrap">
@@ -356,7 +388,7 @@ export default function CustomerDetail() {
                     <td className="px-3 py-3 font-mono text-[11px] text-[#555] truncate">{description}</td>
                     <td className="px-3 py-3 text-center">
                       {event.status === "processed" ? (
-                        <CheckCircle size={14} className="text-[#4ADE80] mx-auto" />
+                        <CheckCircle size={13} className="text-[#4ADE80] mx-auto" />
                       ) : (
                         <span className="text-[#ef4444] text-[11px] font-mono">✗</span>
                       )}
@@ -375,7 +407,7 @@ export default function CustomerDetail() {
             </tbody>
           </table>
           {!eventsShowAll && customerEvents.length > INITIAL_EVENT_COUNT && (
-            <div className="flex justify-center pt-4 mt-2 border-t border-solid border-[#1a1a1a]">
+            <div className="flex justify-center pt-4 mt-2 border-t border-solid border-white/[0.06]">
               <button onClick={() => setEventsShowAll(true)} className="text-[11px] font-mono uppercase tracking-wide text-[#555] hover:text-white cursor-pointer">Load More ({customerEvents.length - INITIAL_EVENT_COUNT} remaining)</button>
             </div>
           )}
@@ -385,121 +417,109 @@ export default function CustomerDetail() {
       {/* ==================== SUBSCRIPTIONS TAB ==================== */}
       {activeTab === "subscriptions" && (
         <div>
-          <div className="flex items-center justify-between mb-4">
-            <div />
+          <div className="flex items-center justify-end mb-4">
             <button className="border border-solid border-[#333] bg-transparent px-4 py-2 font-mono text-[11px] uppercase tracking-wide text-white hover:bg-white/5">+ Add Subscription</button>
           </div>
-          <table className="w-full table-fixed">
-            <thead>
-              <tr className="border-b border-solid border-[#222]">
-                <th className="w-[20%] px-3 py-2.5 text-left font-mono text-[10px] uppercase tracking-wider text-[#555] whitespace-nowrap">ID</th>
-                <th className="w-[12%] px-3 py-2.5 text-left font-mono text-[10px] uppercase tracking-wider text-[#555] whitespace-nowrap">Status</th>
-                <th className="w-[16%] px-3 py-2.5 text-left font-mono text-[10px] uppercase tracking-wider text-[#555] whitespace-nowrap">Started</th>
-                <th className="w-[16%] px-3 py-2.5 text-left font-mono text-[10px] uppercase tracking-wider text-[#555] whitespace-nowrap">Renews</th>
-                <th className="w-[16%] px-3 py-2.5 text-left font-mono text-[10px] uppercase tracking-wider text-[#555] whitespace-nowrap">Products</th>
-                <th className="w-[8%] px-3 py-2.5 text-left font-mono text-[10px] uppercase tracking-wider text-[#555] whitespace-nowrap">Alerts</th>
-                <th className="w-[12%] px-3 py-2.5 text-right font-mono text-[10px] uppercase tracking-wider text-[#555] whitespace-nowrap">Action</th>
-              </tr>
-            </thead>
-            <tbody>
-              {customer.subscriptions.map((sub) => {
-                const product = products.find((p) => p.id === sub.product_id);
-                const isExpanded = expandedSub === sub.id;
-                return (
-                  <React.Fragment key={sub.id}>
-                    <tr className="border-b border-solid border-[#1a1a1a] hover:bg-white/[0.02] cursor-pointer" onClick={() => setExpandedSub(isExpanded ? null : sub.id)}>
-                      <td className="px-3 py-3 font-mono text-[11px] text-[#555] whitespace-nowrap">
+          <div className="space-y-0">
+            {customer.subscriptions.map((sub) => {
+              const product = products.find((p) => p.id === sub.product_id);
+              const isExpanded = expandedSub === sub.id;
+              return (
+                <div key={sub.id}>
+                  <div
+                    className="flex items-center justify-between py-3 px-3 border-b border-solid border-white/[0.06] hover:bg-white/[0.02] cursor-pointer"
+                    onClick={() => setExpandedSub(isExpanded ? null : sub.id)}
+                  >
+                    <div className="flex items-center gap-4">
+                      <span className="font-mono text-[11px] text-[#555]">
                         {truncateId(sub.id)}
                         <CopyBtn text={sub.id} />
-                      </td>
-                      <td className="px-3 py-3">
-                        <span className={`border text-[10px] px-1.5 py-0.5 font-mono uppercase ${sub.status === "active" ? "border-[#4ADE80]/40 text-[#4ADE80]" : "border-[#FACC15]/40 text-[#FACC15]"}`}>
-                          {sub.status}
-                        </span>
-                      </td>
-                      <td className="px-3 py-3 font-mono text-[11px] text-white">{formatTime(sub.start_date)}</td>
-                      <td className="px-3 py-3 font-mono text-[11px] text-[#555]">—</td>
-                      <td className="px-3 py-3 font-mono text-[11px] text-white">
-                        {sub.product_name}
-                        <span className="text-[#333] ml-1 text-[10px]">{isExpanded ? "▾" : "▸"}</span>
-                      </td>
-                      <td className="px-3 py-3 font-mono text-[11px] text-[#555]">—</td>
-                      <td className="px-3 py-3 text-right" onClick={(e) => e.stopPropagation()}>
-                        {sub.status === "active" && (
-                          <button className="border border-solid border-[#ef4444]/30 text-[#ef4444] bg-transparent px-2.5 py-1 font-mono text-[10px] uppercase tracking-wide hover:bg-[#ef4444]/5">Unsubscribe</button>
-                        )}
-                      </td>
-                    </tr>
-                    {isExpanded && product && (
-                      <tr>
-                        <td colSpan={7} className="px-3 pb-3">
-                          <div className="ml-6 border-t border-solid border-[#1a1a1a] pt-3 space-y-1.5">
-                            {product.prices.map((price) => (
-                              <div key={price.id} className="flex items-center gap-4 font-mono text-[11px] text-[#555]">
-                                <span className="text-white/70 w-36">{price.event_type || "flat fee"}</span>
-                                <span className="text-[#444] w-20">{price.usage_calculation || "recurring"}</span>
-                                <span className="text-[#444] w-20">{price.billing_model}</span>
-                                <span className="text-[#4ADE80]">
-                                  {price.unit_price != null ? `$${price.unit_price} per ${price.volume_field || "event"}` : price.amount != null ? `$${price.amount.toFixed(2)}/month` : "—"}
-                                </span>
-                              </div>
-                            ))}
+                      </span>
+                      <span className={`border text-[10px] px-1.5 py-0.5 font-mono uppercase ${sub.status === "active" ? "border-[#4ADE80]/40 text-[#4ADE80]" : "border-[#FACC15]/40 text-[#FACC15]"}`}>
+                        {sub.status}
+                      </span>
+                      <span className="font-mono text-[11px] text-[#555]">Started {formatDateShort(sub.start_date)}</span>
+                    </div>
+                    <div className="flex items-center gap-3" onClick={(e) => e.stopPropagation()}>
+                      {sub.status === "active" && (
+                        <button className="border border-solid border-[#ef4444]/30 text-[#ef4444] bg-transparent px-2.5 py-1 font-mono text-[10px] uppercase tracking-wide hover:bg-[#ef4444]/5">Unsubscribe</button>
+                      )}
+                      <span className="text-[#333] text-[10px] font-mono">{isExpanded ? "▾" : "▸"}</span>
+                    </div>
+                  </div>
+                  {isExpanded && product && (
+                    <div className="px-6 py-3 border-b border-solid border-white/[0.06] bg-white/[0.01]">
+                      <div className="font-mono text-[10px] uppercase text-[#555] tracking-wider mb-2">Products</div>
+                      {product.prices.map((price) => (
+                        <div key={price.id} className="flex items-center justify-between py-1.5">
+                          <span className="font-mono text-[11px] text-white">{product.name}</span>
+                          <div className="flex items-center gap-3">
+                            <span className="font-mono text-[9px] text-[#444]">
+                              {price.billing_model === "recurring" ? "Recurring" : "Per-event"} · ${price.unit_price || price.amount || 0} / {price.event_type || "month"}
+                            </span>
+                            <span className="text-[9px] font-mono text-[#4ADE80] uppercase">Active</span>
                           </div>
-                        </td>
-                      </tr>
-                    )}
-                  </React.Fragment>
-                );
-              })}
-              {customer.subscriptions.length === 0 && (
-                <tr>
-                  <td colSpan={7} className="px-3 py-8 text-center font-mono text-sm text-[#555]">$ no subscriptions <span className="animate-pulse">█</span></td>
-                </tr>
-              )}
-            </tbody>
-          </table>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              );
+            })}
+            {customer.subscriptions.length === 0 && (
+              <div className="py-8 text-center font-mono text-sm text-[#555]">$ no subscriptions <span className="animate-pulse">█</span></div>
+            )}
+          </div>
         </div>
       )}
 
       {/* ==================== AUTO TOP-UP TAB ==================== */}
       {activeTab === "autotopup" && (
-        <div className="grid grid-cols-2 gap-4">
-          {customer.wallet.accounts.map((account) => {
-            const code = account.asset_code;
-            const cfg = customer.auto_topup?.[code];
-            const isFiat = allAssets.find(a => a.code === code)?.type === "fiat";
-            const enabled = cfg?.enabled || false;
+        <div>
+          <div className="border border-solid border-white/[0.08] p-5">
+            {(() => {
+              const primaryCode = customer.wallet.accounts[0]?.asset_code || "USD";
+              const cfg = customer.auto_topup?.[primaryCode];
+              const enabled = cfg?.enabled || false;
+              const isFiat = allAssets.find(a => a.code === primaryCode)?.type === "fiat";
 
-            return (
-              <div key={code} className="bg-[#0d0d0d] border border-solid border-[#1a1a1a] p-5">
-                {terminalHeader(`AUTO TOP-UP · ${code}`)}
+              return (
                 <div className="space-y-0">
-                  <div className="flex justify-between py-2 font-mono text-[13px] border-b border-solid border-[#1a1a1a]">
-                    <span className="text-[#555]">Status</span>
-                    <span className={enabled ? "text-[#4ADE80]" : "text-[#ef4444]"}>
-                      {enabled ? "Enabled" : "Disabled"}
+                  <div className="flex justify-between items-center py-2.5 border-b border-solid border-white/[0.06]">
+                    <span className="font-mono text-[12px] text-[#555]">Status</span>
+                    <div className="flex items-center gap-3">
+                      <span className={`font-mono text-[12px] ${enabled ? "text-[#4ADE80]" : "text-[#ef4444]"}`}>
+                        • {enabled ? "Enabled" : "Disabled"}
+                      </span>
+                      {!enabled && (
+                        <button className="border border-solid border-[#333] bg-transparent px-2.5 py-1 font-mono text-[10px] uppercase tracking-wide text-white hover:bg-white/5">Enable</button>
+                      )}
+                    </div>
+                  </div>
+                  <div className="flex justify-between py-2.5 border-b border-solid border-white/[0.06]">
+                    <span className="font-mono text-[12px] text-[#555]">Threshold</span>
+                    <span className="font-mono text-[12px] text-white">
+                      {enabled && cfg ? `${isFiat ? "$" : ""}${cfg.threshold.toFixed(isFiat ? 2 : 0)}${!isFiat ? ` ${primaryCode}` : ""}` : "Not configured"}
                     </span>
                   </div>
-                  <div className="flex justify-between py-2 font-mono text-[13px] border-b border-solid border-[#1a1a1a]">
-                    <span className="text-[#555]">Threshold</span>
-                    <span className="text-white">
-                      {enabled && cfg ? `${isFiat ? "$" : ""}${cfg.threshold.toFixed(isFiat ? 2 : 0)}${!isFiat ? ` ${code}` : ""}` : "Not configured"}
+                  <div className="flex justify-between py-2.5 border-b border-solid border-white/[0.06]">
+                    <span className="font-mono text-[12px] text-[#555]">Top-up amount</span>
+                    <span className="font-mono text-[12px] text-white">
+                      {enabled && cfg ? `${isFiat ? "$" : ""}${cfg.amount.toFixed(isFiat ? 2 : 0)}${!isFiat ? ` ${primaryCode}` : ""}` : "Not configured"}
                     </span>
                   </div>
-                  <div className="flex justify-between py-2 font-mono text-[13px] border-b border-solid border-[#1a1a1a]">
-                    <span className="text-[#555]">Top-up Amount</span>
-                    <span className="text-white">
-                      {enabled && cfg ? `${isFiat ? "$" : ""}${cfg.amount.toFixed(isFiat ? 2 : 0)}${!isFiat ? ` ${code}` : ""}` : "Not configured"}
-                    </span>
-                  </div>
-                  <div className="flex justify-between py-2 font-mono text-[13px]">
-                    <span className="text-[#555]">Linked Subscriptions</span>
-                    <span className="text-white">{customer.subscriptions.filter(s => s.status === "active").length} active</span>
+                  <div className="flex justify-between py-2.5">
+                    <span className="font-mono text-[12px] text-[#555]">Linked subscriptions</span>
+                    <span className="font-mono text-[12px] text-white">{customer.subscriptions.filter(s => s.status === "active").length} active</span>
                   </div>
                 </div>
-              </div>
-            );
-          })}
+              );
+            })()}
+          </div>
+          <div className="flex items-center gap-3 mt-4">
+            <button className="border border-solid border-[#333] bg-transparent px-4 py-2 font-mono text-[11px] uppercase tracking-wide text-white hover:bg-white/5">Configure auto top-up</button>
+            <button className="border border-solid border-[#333] bg-transparent px-4 py-2 font-mono text-[11px] uppercase tracking-wide text-white hover:bg-white/5" onClick={() => setShowTopupModal(true)}>+ Add funds manually</button>
+          </div>
         </div>
       )}
 
