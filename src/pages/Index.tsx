@@ -1,8 +1,10 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { customers } from "@/data/customers";
 import { events } from "@/data/events";
 import { useProductStore } from "@/stores/productStore";
+import OnboardingWizard from "@/components/onboarding/OnboardingWizard";
+import { loadOnboardingState } from "@/components/onboarding/onboardingState";
 import {
   AreaChart, Area, XAxis, Tooltip, ResponsiveContainer,
 } from "recharts";

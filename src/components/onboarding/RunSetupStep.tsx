@@ -92,23 +92,25 @@ export default function RunSetupStep({ state, onStateUpdate, onBack }: Props) {
           };
           response = { id: `prp_onb_${Date.now().toString(36)}`, status: "active", ...request.body };
 
-          // Actually add product to store
           addProduct({
             id: response.id,
             name: review.productName,
             code: review.productCode,
-            version: "v1",
             status: "active",
+            created_at: new Date().toISOString(),
             prices: [{
               id: `price_onb_${Date.now().toString(36)}`,
+              type: "usage" as const,
               event_type: review.eventType,
               billing_model: "real_time" as const,
-              calculation: (selections.pricingType === "unit" ? "unit" : selections.pricingType === "volume" ? "volume" : "unit_and_volume") as any,
+              usage_calculation: (selections.pricingType === "unit" ? "unit" : selections.pricingType === "volume" ? "volume" : "unit_and_volume") as any,
               volume_field: selections.volumeField || undefined,
-              unit_price: { amount: parseFloat(selections.rate || selections.flatCharge || "0"), asset_code: "USD" },
+              unit_price: parseFloat(selections.rate || selections.flatCharge || "0"),
+              asset_code: "USD",
               dimensions: [],
             }],
-            subscriptions: [],
+            versions: [{ version: 1, status: "published", created_at: new Date().toISOString() }],
+            subscriber_count: 0,
           });
           break;
 
